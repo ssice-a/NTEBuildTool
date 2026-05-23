@@ -5,6 +5,7 @@ NTE Build Tool is an Unreal Engine editor plugin for rebuilding NTE character as
 Current features:
 
 - Import a FModel `PhysicsAsset` Save Properties JSON file.
+- Analyze the JSON before import so future asset importers can reuse the same load/analyze/build flow.
 - Rebuild capsule bodies and physics constraints.
 - Restore disabled body collision pairs.
 - Assign the rebuilt `PhysicsAsset` to the selected `SkeletalMesh`.
@@ -45,6 +46,8 @@ It does not overwrite an existing PhysicsAsset.
 This repository contains only tooling code. It does not include game assets, extracted assets, or FModel output.
 
 KawaiiPhysics AnimLayer JSON import is planned, but not implemented yet.
+
+The plugin intentionally keeps the editor UI small. Import actions should call analysis internally instead of adding separate analysis-only buttons.
 
 ## License
 
