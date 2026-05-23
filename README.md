@@ -49,6 +49,8 @@ KawaiiPhysics AnimLayer JSON import is planned, but not implemented yet.
 
 The plugin intentionally keeps the editor UI small. Import actions should call analysis internally instead of adding separate analysis-only buttons.
 
+See `docs/kawaii-anim-layer-json.md` for the current KawaiiPhysics JSON parsing notes.
+
 ## License
 
 License is not selected yet.
