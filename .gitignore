@@ -1,0 +1,33 @@
+# Unreal build output
+Binaries/
+Intermediate/
+Saved/
+DerivedDataCache/
+.artifacts/
+Package/
+
+# IDE and local state
+.vs/
+.vscode/
+*.sln
+*.suo
+*.user
+*.userosscache
+*.sdf
+*.opensdf
+
+# Build products and symbols
+*.dll
+*.exe
+*.lib
+*.obj
+*.pdb
+*.exp
+*.ilk
+
+# Logs and temporary files
+*.log
+*.tmp
+*.cache
+Thumbs.db
+Desktop.ini
