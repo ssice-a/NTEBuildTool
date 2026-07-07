@@ -13,6 +13,7 @@ public class NTEBuildTool : ModuleRules
 			"Core",
 			"CoreUObject",
 			"Engine",
+			"InputCore",
 			"UnrealEd",
 			"AssetTools",
 			"AssetRegistry",
