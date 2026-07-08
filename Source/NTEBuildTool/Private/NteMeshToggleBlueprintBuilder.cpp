@@ -20,17 +20,15 @@
 #include "Engine/FontFace.h"
 #include "Engine/Blueprint.h"
 #include "Engine/SkeletalMesh.h"
-#include "GameFramework/PlayerController.h"
 #include "Fonts/CompositeFont.h"
 #include "IAssetTools.h"
-#include "Kismet/GameplayStatics.h"
-#include "Kismet/KismetInputLibrary.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "K2Node_CallFunction.h"
 #include "K2Node_DynamicCast.h"
 #include "K2Node_Event.h"
 #include "K2Node_ExecutionSequence.h"
 #include "K2Node_IfThenElse.h"
+#include "K2Node_Self.h"
 #include "K2Node_Variable.h"
 #include "K2Node_VariableGet.h"
 #include "K2Node_VariableSet.h"
@@ -1035,18 +1033,15 @@ bool PatchWidgetBlueprintSelfDragGraph(FRuntimeBuildContext& Context, UWidgetBlu
 
 	RemoveGeneratedWidgetDragNodes(WidgetBlueprint);
 
-	UFunction* GetOwningPlayerFunction = UWidget::StaticClass()->FindFunctionByName(TEXT("GetOwningPlayer"));
-	UFunction* IsInputKeyDownFunction = APlayerController::StaticClass()->FindFunctionByName(TEXT("IsInputKeyDown"));
-	UFunction* GetMousePositionFunction = UWidgetLayoutLibrary::StaticClass()->FindFunctionByName(TEXT("GetMousePositionScaledByDPI"));
-	UFunction* MakeVector2DFunction = UKismetMathLibrary::StaticClass()->FindFunctionByName(TEXT("MakeVector2D"));
+	UFunction* IsTitlePressedFunction = UButton::StaticClass()->FindFunctionByName(TEXT("IsPressed"));
+	UFunction* GetMousePositionFunction = UWidgetLayoutLibrary::StaticClass()->FindFunctionByName(TEXT("GetMousePositionOnViewport"));
 	UFunction* AddVector2DFunction = UKismetMathLibrary::StaticClass()->FindFunctionByName(TEXT("Add_Vector2DVector2D"));
 	UFunction* SubtractVector2DFunction = UKismetMathLibrary::StaticClass()->FindFunctionByName(TEXT("Subtract_Vector2DVector2D"));
 	UFunction* BoolAndFunction = UKismetMathLibrary::StaticClass()->FindFunctionByName(TEXT("BooleanAND"));
 	UFunction* BoolNotFunction = UKismetMathLibrary::StaticClass()->FindFunctionByName(TEXT("Not_PreBool"));
-	UFunction* IsHoveredFunction = UWidget::StaticClass()->FindFunctionByName(TEXT("IsHovered"));
 	UFunction* SetRenderTranslationFunction = UWidget::StaticClass()->FindFunctionByName(TEXT("SetRenderTranslation"));
 
-	if (!GetOwningPlayerFunction || !IsInputKeyDownFunction || !GetMousePositionFunction || !MakeVector2DFunction || !AddVector2DFunction || !SubtractVector2DFunction || !BoolAndFunction || !BoolNotFunction || !IsHoveredFunction || !SetRenderTranslationFunction)
+	if (!IsTitlePressedFunction || !GetMousePositionFunction || !AddVector2DFunction || !SubtractVector2DFunction || !BoolAndFunction || !BoolNotFunction || !SetRenderTranslationFunction)
 	{
 		OutError = TEXT("Could not resolve one or more UMG/Kismet functions needed for generated widget-owned dragging.");
 		return false;
@@ -1062,56 +1057,45 @@ bool PatchWidgetBlueprintSelfDragGraph(FRuntimeBuildContext& Context, UWidgetBlu
 	UK2Node_ExecutionSequence* SequenceNode = AddGeneratedWidgetDragNode<UK2Node_ExecutionSequence>(*EventGraph, 260, 0);
 	SequenceNode->AddInputPin();
 
-	UK2Node_CallFunction* GetOwningPlayerNode = AddGeneratedWidgetDragFunctionCall(*EventGraph, GetOwningPlayerFunction, 260, 180);
-	UK2Node_CallFunction* IsLeftMouseDownNode = AddGeneratedWidgetDragFunctionCall(*EventGraph, IsInputKeyDownFunction, 520, 180);
-	UK2Node_CallFunction* GetMousePositionNode = AddGeneratedWidgetDragFunctionCall(*EventGraph, GetMousePositionFunction, 520, 360);
-	UK2Node_CallFunction* MakeMousePositionNode = AddGeneratedWidgetDragFunctionCall(*EventGraph, MakeVector2DFunction, 780, 360);
+	UK2Node_Self* GetSelfNode = AddGeneratedWidgetDragNode<UK2Node_Self>(*EventGraph, 0, 180);
+	UK2Node_CallFunction* GetMousePositionNode = AddGeneratedWidgetDragFunctionCall(*EventGraph, GetMousePositionFunction, 260, 180);
 
-	UK2Node_VariableGet* GetTitleButtonForHoverNode = AddGeneratedWidgetDragVariableGet(*EventGraph, TEXT("NTE_Toggle_TitleBarButton"), 520, 560);
-	UK2Node_CallFunction* IsTitleHoveredNode = AddGeneratedWidgetDragFunctionCall(*EventGraph, IsHoveredFunction, 780, 560);
-	UK2Node_CallFunction* NotPreviousMouseDownNode = AddGeneratedWidgetDragFunctionCall(*EventGraph, BoolNotFunction, 780, 700);
-	UK2Node_VariableGet* GetPreviousMouseDownForNotNode = AddGeneratedWidgetDragVariableGet(*EventGraph, TEXT("NTE_Toggle_WBP_PreviousLeftMouseDown"), 520, 700);
-	UK2Node_CallFunction* DownAndHoveredNode = AddGeneratedWidgetDragFunctionCall(*EventGraph, BoolAndFunction, 1040, 600);
-	UK2Node_CallFunction* StartDragConditionNode = AddGeneratedWidgetDragFunctionCall(*EventGraph, BoolAndFunction, 1300, 600);
-	UK2Node_IfThenElse* StartDragBranchNode = AddGeneratedWidgetDragNode<UK2Node_IfThenElse>(*EventGraph, 1560, 600);
-	UK2Node_VariableSet* SetDraggingTrueNode = AddGeneratedWidgetDragVariableSet(*EventGraph, TEXT("NTE_Toggle_WBP_UIDragging"), 1820, 600);
-	UK2Node_VariableSet* SetDragLastMouseOnStartNode = AddGeneratedWidgetDragVariableSet(*EventGraph, TEXT("NTE_Toggle_WBP_DragLastMousePosition"), 2080, 600);
+	UK2Node_VariableGet* GetTitleButtonForPressedNode = AddGeneratedWidgetDragVariableGet(*EventGraph, TEXT("NTE_Toggle_TitleBarButton"), 520, 360);
+	UK2Node_CallFunction* IsTitlePressedNode = AddGeneratedWidgetDragFunctionCall(*EventGraph, IsTitlePressedFunction, 780, 360);
+	UK2Node_CallFunction* NotPreviousMouseDownNode = AddGeneratedWidgetDragFunctionCall(*EventGraph, BoolNotFunction, 780, 520);
+	UK2Node_VariableGet* GetPreviousMouseDownForNotNode = AddGeneratedWidgetDragVariableGet(*EventGraph, TEXT("NTE_Toggle_WBP_PreviousLeftMouseDown"), 520, 520);
+	UK2Node_CallFunction* StartDragConditionNode = AddGeneratedWidgetDragFunctionCall(*EventGraph, BoolAndFunction, 1040, 440);
+	UK2Node_IfThenElse* StartDragBranchNode = AddGeneratedWidgetDragNode<UK2Node_IfThenElse>(*EventGraph, 1300, 440);
+	UK2Node_VariableSet* SetDraggingTrueNode = AddGeneratedWidgetDragVariableSet(*EventGraph, TEXT("NTE_Toggle_WBP_UIDragging"), 1560, 440);
+	UK2Node_VariableSet* SetDragLastMouseOnStartNode = AddGeneratedWidgetDragVariableSet(*EventGraph, TEXT("NTE_Toggle_WBP_DragLastMousePosition"), 1820, 440);
 
-	UK2Node_VariableGet* GetDraggingNode = AddGeneratedWidgetDragVariableGet(*EventGraph, TEXT("NTE_Toggle_WBP_UIDragging"), 520, 900);
-	UK2Node_CallFunction* NotLeftMouseDownNode = AddGeneratedWidgetDragFunctionCall(*EventGraph, BoolNotFunction, 780, 900);
-	UK2Node_IfThenElse* StopDragBranchNode = AddGeneratedWidgetDragNode<UK2Node_IfThenElse>(*EventGraph, 1040, 900);
-	UK2Node_VariableSet* SetDraggingFalseNode = AddGeneratedWidgetDragVariableSet(*EventGraph, TEXT("NTE_Toggle_WBP_UIDragging"), 1300, 900);
-	UK2Node_IfThenElse* DragMoveBranchNode = AddGeneratedWidgetDragNode<UK2Node_IfThenElse>(*EventGraph, 1040, 1080);
-	UK2Node_VariableGet* GetLastMouseForDeltaNode = AddGeneratedWidgetDragVariableGet(*EventGraph, TEXT("NTE_Toggle_WBP_DragLastMousePosition"), 1040, 1260);
-	UK2Node_CallFunction* MouseDeltaNode = AddGeneratedWidgetDragFunctionCall(*EventGraph, SubtractVector2DFunction, 1300, 1180);
-	UK2Node_VariableGet* GetDragOffsetNode = AddGeneratedWidgetDragVariableGet(*EventGraph, TEXT("NTE_Toggle_WBP_DragOffset"), 1300, 1360);
-	UK2Node_CallFunction* NewDragOffsetNode = AddGeneratedWidgetDragFunctionCall(*EventGraph, AddVector2DFunction, 1560, 1220);
-	UK2Node_VariableSet* SetDragOffsetNode = AddGeneratedWidgetDragVariableSet(*EventGraph, TEXT("NTE_Toggle_WBP_DragOffset"), 1820, 1220);
-	UK2Node_VariableGet* GetWindowPanelForMoveNode = AddGeneratedWidgetDragVariableGet(*EventGraph, TEXT("NTE_Toggle_WindowPanel"), 1820, 1420);
-	UK2Node_CallFunction* SetRenderTranslationNode = AddGeneratedWidgetDragFunctionCall(*EventGraph, SetRenderTranslationFunction, 2080, 1220);
-	UK2Node_VariableSet* SetDragLastMouseAfterMoveNode = AddGeneratedWidgetDragVariableSet(*EventGraph, TEXT("NTE_Toggle_WBP_DragLastMousePosition"), 2340, 1220);
+	UK2Node_VariableGet* GetDraggingNode = AddGeneratedWidgetDragVariableGet(*EventGraph, TEXT("NTE_Toggle_WBP_UIDragging"), 520, 780);
+	UK2Node_CallFunction* NotTitlePressedNode = AddGeneratedWidgetDragFunctionCall(*EventGraph, BoolNotFunction, 780, 780);
+	UK2Node_IfThenElse* StopDragBranchNode = AddGeneratedWidgetDragNode<UK2Node_IfThenElse>(*EventGraph, 1040, 780);
+	UK2Node_VariableSet* SetDraggingFalseNode = AddGeneratedWidgetDragVariableSet(*EventGraph, TEXT("NTE_Toggle_WBP_UIDragging"), 1300, 780);
+	UK2Node_IfThenElse* DragMoveBranchNode = AddGeneratedWidgetDragNode<UK2Node_IfThenElse>(*EventGraph, 1040, 960);
+	UK2Node_VariableGet* GetLastMouseForDeltaNode = AddGeneratedWidgetDragVariableGet(*EventGraph, TEXT("NTE_Toggle_WBP_DragLastMousePosition"), 1040, 1140);
+	UK2Node_CallFunction* MouseDeltaNode = AddGeneratedWidgetDragFunctionCall(*EventGraph, SubtractVector2DFunction, 1300, 1060);
+	UK2Node_VariableGet* GetDragOffsetNode = AddGeneratedWidgetDragVariableGet(*EventGraph, TEXT("NTE_Toggle_WBP_DragOffset"), 1300, 1240);
+	UK2Node_CallFunction* NewDragOffsetNode = AddGeneratedWidgetDragFunctionCall(*EventGraph, AddVector2DFunction, 1560, 1100);
+	UK2Node_VariableSet* SetDragOffsetNode = AddGeneratedWidgetDragVariableSet(*EventGraph, TEXT("NTE_Toggle_WBP_DragOffset"), 1820, 1100);
+	UK2Node_VariableGet* GetWindowPanelForMoveNode = AddGeneratedWidgetDragVariableGet(*EventGraph, TEXT("NTE_Toggle_WindowPanel"), 1820, 1300);
+	UK2Node_CallFunction* SetRenderTranslationNode = AddGeneratedWidgetDragFunctionCall(*EventGraph, SetRenderTranslationFunction, 2080, 1100);
+	UK2Node_VariableSet* SetDragLastMouseAfterMoveNode = AddGeneratedWidgetDragVariableSet(*EventGraph, TEXT("NTE_Toggle_WBP_DragLastMousePosition"), 2340, 1100);
 
 	UK2Node_VariableSet* SetPreviousMouseDownNode = AddGeneratedWidgetDragVariableSet(*EventGraph, TEXT("NTE_Toggle_WBP_PreviousLeftMouseDown"), 520, 1600);
 
-	TryLinkPins(FindThenPin(*TickEvent), FindExecPin(*SequenceNode));
+	TryLinkPins(FindThenPin(*TickEvent), FindExecPin(*GetMousePositionNode));
+	TryLinkPins(FindThenPin(*GetMousePositionNode), FindExecPin(*SequenceNode));
 	TryLinkPins(FindPinByName(*SequenceNode, TEXT("then_0")), FindExecPin(*StartDragBranchNode));
 	TryLinkPins(FindPinByName(*SequenceNode, TEXT("then_1")), FindExecPin(*StopDragBranchNode));
 	TryLinkPins(FindPinByName(*SequenceNode, TEXT("then_2")), FindExecPin(*SetPreviousMouseDownNode));
 
-	TryLinkPins(FindPinByName(*GetOwningPlayerNode, TEXT("ReturnValue")), FindPinByName(*IsLeftMouseDownNode, TEXT("self")));
-	TryLinkPins(FindPinByName(*GetOwningPlayerNode, TEXT("ReturnValue")), FindPinByName(*GetMousePositionNode, TEXT("Player")));
-	if (UEdGraphPin* KeyPin = FindPinByName(*IsLeftMouseDownNode, TEXT("Key")))
-	{
-		KeyPin->DefaultValue = TEXT("LeftMouseButton");
-	}
-	TryLinkPins(FindPinByName(*GetMousePositionNode, TEXT("LocationX")), FindPinByName(*MakeMousePositionNode, TEXT("X")));
-	TryLinkPins(FindPinByName(*GetMousePositionNode, TEXT("LocationY")), FindPinByName(*MakeMousePositionNode, TEXT("Y")));
+	TryLinkPins(FindPinByName(*GetSelfNode, TEXT("self")), FindPinByName(*GetMousePositionNode, TEXT("WorldContextObject")));
 
-	TryLinkPins(FindPinByName(*GetTitleButtonForHoverNode, TEXT("NTE_Toggle_TitleBarButton")), FindPinByName(*IsTitleHoveredNode, TEXT("self")));
+	TryLinkPins(FindPinByName(*GetTitleButtonForPressedNode, TEXT("NTE_Toggle_TitleBarButton")), FindPinByName(*IsTitlePressedNode, TEXT("self")));
 	TryLinkPins(FindPinByName(*GetPreviousMouseDownForNotNode, TEXT("NTE_Toggle_WBP_PreviousLeftMouseDown")), FindPinByName(*NotPreviousMouseDownNode, TEXT("A")));
-	TryLinkPins(FindPinByName(*IsLeftMouseDownNode, TEXT("ReturnValue")), FindPinByName(*DownAndHoveredNode, TEXT("A")));
-	TryLinkPins(FindPinByName(*IsTitleHoveredNode, TEXT("ReturnValue")), FindPinByName(*DownAndHoveredNode, TEXT("B")));
-	TryLinkPins(FindPinByName(*DownAndHoveredNode, TEXT("ReturnValue")), FindPinByName(*StartDragConditionNode, TEXT("A")));
+	TryLinkPins(FindPinByName(*IsTitlePressedNode, TEXT("ReturnValue")), FindPinByName(*StartDragConditionNode, TEXT("A")));
 	TryLinkPins(FindPinByName(*NotPreviousMouseDownNode, TEXT("ReturnValue")), FindPinByName(*StartDragConditionNode, TEXT("B")));
 	TryLinkPins(FindPinByName(*StartDragConditionNode, TEXT("ReturnValue")), FindPinByName(*StartDragBranchNode, TEXT("Condition")));
 	TryLinkPins(FindThenPin(*StartDragBranchNode), FindExecPin(*SetDraggingTrueNode));
@@ -1120,10 +1104,10 @@ bool PatchWidgetBlueprintSelfDragGraph(FRuntimeBuildContext& Context, UWidgetBlu
 		DraggingTruePin->DefaultValue = TEXT("true");
 	}
 	TryLinkPins(FindThenPin(*SetDraggingTrueNode), FindExecPin(*SetDragLastMouseOnStartNode));
-	TryLinkPins(FindPinByName(*MakeMousePositionNode, TEXT("ReturnValue")), FindPinByName(*SetDragLastMouseOnStartNode, TEXT("NTE_Toggle_WBP_DragLastMousePosition")));
+	TryLinkPins(FindPinByName(*GetMousePositionNode, TEXT("ReturnValue")), FindPinByName(*SetDragLastMouseOnStartNode, TEXT("NTE_Toggle_WBP_DragLastMousePosition")));
 
-	TryLinkPins(FindPinByName(*IsLeftMouseDownNode, TEXT("ReturnValue")), FindPinByName(*NotLeftMouseDownNode, TEXT("A")));
-	TryLinkPins(FindPinByName(*NotLeftMouseDownNode, TEXT("ReturnValue")), FindPinByName(*StopDragBranchNode, TEXT("Condition")));
+	TryLinkPins(FindPinByName(*IsTitlePressedNode, TEXT("ReturnValue")), FindPinByName(*NotTitlePressedNode, TEXT("A")));
+	TryLinkPins(FindPinByName(*NotTitlePressedNode, TEXT("ReturnValue")), FindPinByName(*StopDragBranchNode, TEXT("Condition")));
 	TryLinkPins(FindThenPin(*StopDragBranchNode), FindExecPin(*SetDraggingFalseNode));
 	if (UEdGraphPin* DraggingFalsePin = FindPinByName(*SetDraggingFalseNode, TEXT("NTE_Toggle_WBP_UIDragging")))
 	{
@@ -1133,7 +1117,7 @@ bool PatchWidgetBlueprintSelfDragGraph(FRuntimeBuildContext& Context, UWidgetBlu
 	TryLinkPins(FindPinByName(*GetDraggingNode, TEXT("NTE_Toggle_WBP_UIDragging")), FindPinByName(*DragMoveBranchNode, TEXT("Condition")));
 	TryLinkPins(FindThenPin(*DragMoveBranchNode), FindExecPin(*SetDragOffsetNode));
 
-	TryLinkPins(FindPinByName(*MakeMousePositionNode, TEXT("ReturnValue")), FindPinByName(*MouseDeltaNode, TEXT("A")));
+	TryLinkPins(FindPinByName(*GetMousePositionNode, TEXT("ReturnValue")), FindPinByName(*MouseDeltaNode, TEXT("A")));
 	TryLinkPins(FindPinByName(*GetLastMouseForDeltaNode, TEXT("NTE_Toggle_WBP_DragLastMousePosition")), FindPinByName(*MouseDeltaNode, TEXT("B")));
 	TryLinkPins(FindPinByName(*GetDragOffsetNode, TEXT("NTE_Toggle_WBP_DragOffset")), FindPinByName(*NewDragOffsetNode, TEXT("A")));
 	TryLinkPins(FindPinByName(*MouseDeltaNode, TEXT("ReturnValue")), FindPinByName(*NewDragOffsetNode, TEXT("B")));
@@ -1142,9 +1126,9 @@ bool PatchWidgetBlueprintSelfDragGraph(FRuntimeBuildContext& Context, UWidgetBlu
 	TryLinkPins(FindPinByName(*GetWindowPanelForMoveNode, TEXT("NTE_Toggle_WindowPanel")), FindPinByName(*SetRenderTranslationNode, TEXT("self")));
 	TryLinkPins(FindPinByName(*NewDragOffsetNode, TEXT("ReturnValue")), FindPinByName(*SetRenderTranslationNode, TEXT("Translation")));
 	TryLinkPins(FindThenPin(*SetRenderTranslationNode), FindExecPin(*SetDragLastMouseAfterMoveNode));
-	TryLinkPins(FindPinByName(*MakeMousePositionNode, TEXT("ReturnValue")), FindPinByName(*SetDragLastMouseAfterMoveNode, TEXT("NTE_Toggle_WBP_DragLastMousePosition")));
+	TryLinkPins(FindPinByName(*GetMousePositionNode, TEXT("ReturnValue")), FindPinByName(*SetDragLastMouseAfterMoveNode, TEXT("NTE_Toggle_WBP_DragLastMousePosition")));
 
-	TryLinkPins(FindPinByName(*IsLeftMouseDownNode, TEXT("ReturnValue")), FindPinByName(*SetPreviousMouseDownNode, TEXT("NTE_Toggle_WBP_PreviousLeftMouseDown")));
+	TryLinkPins(FindPinByName(*IsTitlePressedNode, TEXT("ReturnValue")), FindPinByName(*SetPreviousMouseDownNode, TEXT("NTE_Toggle_WBP_PreviousLeftMouseDown")));
 
 	EventGraph->NotifyGraphChanged();
 	FBlueprintEditorUtils::MarkBlueprintAsStructurallyModified(&WidgetBlueprint);
