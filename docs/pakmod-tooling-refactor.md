@@ -262,7 +262,8 @@ This still needs the Post Process Anim Blueprint to run at least once. It reduce
 ### Input Rules
 
 - Group hotkeys use edge-triggered polling.
-- `player_075_oneir_rpg_level2` uses the keyboard Up arrow key, not numpad Up or numpad 8.
+- Shortcut keys are user-authored data. The tool must validate and preserve them, not infer defaults from slot numbers.
+- `player_075_oneir_rpg_level2` currently uses `NumPadEight` for slot 2 and `NumPadTwo` for slot 3.
 - UI hotkey remains configurable.
 - UI close button must always exist.
 - If the UI is open, both the UI close button and the configured UI hotkey should be able to close it.
@@ -397,10 +398,26 @@ Intended setup:
 
 - target cloth mesh under `player_075_oneir_rpg_level2_cloth`;
 - slots 0 and 1 are always visible;
-- slots 2 and 3 toggle together using the keyboard Up arrow key;
+- slot 2 toggles with numpad Up (`NumPadEight`);
+- slot 3 toggles with numpad Down (`NumPadTwo`);
 - slot 2 and 3 material setup follows the task notes: slot 2 and 3 use the material relationship derived from slot 0/1, with material 1 getting its own instance inheriting material 0 as required;
 - body texture overrides are the existing `body_bml`, `body_id`, `body_nm`, `body_rmt`;
 - pants textures from the sibling pants folder must be included in the package job.
+- current inspection shows the `cloth` target is a `StaticMesh`, while the pure-pak runtime anchor path can only assign a Post Process Anim Blueprint to a `SkeletalMesh`; reimporting the PSK as a `SkeletalMesh` or choosing another loaded skeletal anchor is required before pure-pak hotkey/UI toggles can be considered runtime-ready.
+
+## Final Package Output Layout
+
+The verified package outputs must be copied into the live Mods tree:
+
+```text
+F:\Neverness To Everness\Client\WindowsNoEditor\HT\Content\Paks\Mods\安魂曲\lacrimosa_mod_P.*
+F:\Neverness To Everness\Client\WindowsNoEditor\HT\Content\Paks\Mods\yly-level0\oneir075_level0_cloth_mod_P.*
+F:\Neverness To Everness\Client\WindowsNoEditor\HT\Content\Paks\Mods\yly-level1\nte_mod_P.*
+F:\Neverness To Everness\Client\WindowsNoEditor\HT\Content\Paks\Mods\yly-level2\oneir075_level2_mod_P.*
+F:\Neverness To Everness\Client\WindowsNoEditor\HT\Content\Paks\Mods\yly-level3\oneir075_level3_mod_P.*
+```
+
+The source package lists come from the old `PhyLab` package jobs under `Saved\NTEBuildTool\Packages`. The refactor should normalize their `ModsDir` fields without changing the package coverage unless inspection finds a missing required asset.
 
 ### Oneir 075 Level 3
 
@@ -447,6 +464,28 @@ The editor plugin can verify graph structure and asset references. In-game verif
 - whether the UI close button recovers from input focus changes.
 
 If preview pages still do not run the anchor, record evidence before considering DLL work.
+
+## 2026-07-08 Verification Result
+
+This refactor checkpoint has been built and exercised through the `PhyLab` mirror project.
+
+- `PhyLabEditor` builds successfully after syncing the standalone plugin into `F:\NTE\PhyLab\Plugins\NTEBuildTool`.
+- `NteMaterialConfig` recreated/updated `player_075_oneir_rpg_level2` slot 2 and slot 3 bindings to `/Game/.../player_075_oneir_rpg_level2_cloth/mod/Materials/MI_mod_body`.
+- `NteAssetInspection` confirms level2 `cloth` is still a `StaticMesh`, slots 2 and 3 both use `MI_mod_body`, and the level2 pants texture package loads.
+- Existing 004/level1/level3 toggle setups validate and reassign their Post Process Anim Blueprint. They still warn that `BP_NTE_ModToggleController` is absent, which matches the old hardcoded Post Process runtime rather than the planned thin-anchor/controller model.
+- Level2 toggle setup fails intentionally with a StaticMesh Runtime Anchor error. This is the current blocker for pure-pak hotkey/UI toggles on level2.
+- Five package jobs complete through `NteModPackage` and copy verified `.pak/.utoc/.ucas` outputs into the final Mods subfolders.
+- `BuildNteMod.ps1` reads package jobs as UTF-8 and shared JSON writes now include a UTF-8 BOM, preventing Windows PowerShell from corrupting non-ASCII paths such as `Mods\安魂曲`.
+
+The generated outputs are:
+
+```text
+F:\Neverness To Everness\Client\WindowsNoEditor\HT\Content\Paks\Mods\安魂曲\lacrimosa_mod_P.pak/.utoc/.ucas
+F:\Neverness To Everness\Client\WindowsNoEditor\HT\Content\Paks\Mods\yly-level0\oneir075_level0_cloth_mod_P.pak/.utoc/.ucas
+F:\Neverness To Everness\Client\WindowsNoEditor\HT\Content\Paks\Mods\yly-level1\nte_mod_P.pak/.utoc/.ucas
+F:\Neverness To Everness\Client\WindowsNoEditor\HT\Content\Paks\Mods\yly-level2\oneir075_level2_mod_P.pak/.utoc/.ucas
+F:\Neverness To Everness\Client\WindowsNoEditor\HT\Content\Paks\Mods\yly-level3\oneir075_level3_mod_P.pak/.utoc/.ucas
+```
 
 ## Git Strategy
 

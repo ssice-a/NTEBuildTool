@@ -37,7 +37,7 @@ bool SaveJsonObjectToFile(const TSharedRef<FJsonObject>& Object, const FString& 
 		return false;
 	}
 
-	if (!FFileHelper::SaveStringToFile(JsonText, *Filename, FFileHelper::EEncodingOptions::ForceUTF8WithoutBOM))
+	if (!FFileHelper::SaveStringToFile(JsonText, *Filename, FFileHelper::EEncodingOptions::ForceUTF8))
 	{
 		OutError = FString::Printf(TEXT("Could not write file: %s"), *Filename);
 		return false;

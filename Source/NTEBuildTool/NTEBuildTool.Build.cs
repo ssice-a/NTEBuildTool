@@ -21,6 +21,7 @@ public class NTEBuildTool : ModuleRules
 			"DesktopPlatform",
 			"LevelEditor",
 			"PhysicsUtilities",
+			"Projects",
 			"Json",
 			"JsonUtilities",
 			"Slate",

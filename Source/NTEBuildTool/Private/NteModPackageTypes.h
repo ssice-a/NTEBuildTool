@@ -26,6 +26,7 @@ struct FNteModPackageJob
 	TArray<FString> Packages;
 	TArray<FString> NeverPackPackagePrefixes;
 	bool bUnversioned = false;
+	bool bSkipCook = false;
 };
 
 struct FNteModPackageLaunchResult

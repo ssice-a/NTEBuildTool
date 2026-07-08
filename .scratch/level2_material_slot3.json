@@ -1,0 +1,19 @@
+{
+  "SourceMaterialJson": "F:/NTE/PhyLab/Content/Maps_4N/Characters/Player/075_oneir_rpg/player_075_oneir_rpg_level2/player_075_oneir_rpg_level2_cloth/ter/MI_player_075_oneiroi_rpg_level2_cloth.json",
+  "ParentMaterial": "/Game/Maps_4N/Characters/Player/075_oneir_rpg/player_075_oneir_rpg_level2/player_075_oneir_rpg_level2_cloth/MI_player_075_oneiroi_rpg_level2_cloth",
+  "CopySourceParameters": true,
+  "CopySourceTextures": false,
+  "ResetForPakTextureOnly": false,
+  "OutputMaterial": "/Game/Maps_4N/Characters/Player/075_oneir_rpg/player_075_oneir_rpg_level2/player_075_oneir_rpg_level2_cloth/mod/Materials/MI_mod_body",
+  "Mesh": "/Game/Maps_4N/Characters/Player/075_oneir_rpg/player_075_oneir_rpg_level2/player_075_oneir_rpg_level2_cloth/cloth",
+  "Slot": 3,
+  "TextureOverrides": {
+    "PM_Diffuse": "/Game/Maps_4N/Characters/Player/075_oneir_rpg/player_075_oneir_rpg_level2/player_075_oneir_rpg_level2_cloth/body_id",
+    "ID_Tex": "/Game/Maps_4N/Characters/Player/075_oneir_rpg/player_075_oneir_rpg_level2/player_075_oneir_rpg_level2_cloth/body_id",
+    "BaseColor": "/Game/Maps_4N/Characters/Player/075_oneir_rpg/player_075_oneir_rpg_level2/player_075_oneir_rpg_level2_cloth/body_bml",
+    "LightMap": "/Game/Maps_4N/Characters/Player/075_oneir_rpg/player_075_oneir_rpg_level2/player_075_oneir_rpg_level2_cloth/body_rmt",
+    "player_075_oneiroi_rpg_level2_cloth_m": "/Game/Maps_4N/Characters/Player/075_oneir_rpg/player_075_oneir_rpg_level2/player_075_oneir_rpg_level2_cloth/body_rmt",
+    "PM_SpecularMasks": "/Game/Maps_4N/Characters/Player/075_oneir_rpg/player_075_oneir_rpg_level2/player_075_oneir_rpg_level2_cloth/body_nm",
+    "NomralMap": "/Game/Maps_4N/Characters/Player/075_oneir_rpg/player_075_oneir_rpg_level2/player_075_oneir_rpg_level2_cloth/body_nm"
+  }
+}

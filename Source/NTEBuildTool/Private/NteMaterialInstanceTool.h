@@ -6,7 +6,7 @@
 #include "Dom/JsonObject.h"
 
 class UMaterialInstanceConstant;
-class USkeletalMesh;
+class UObject;
 
 namespace NTEBuildTool::Material
 {
@@ -41,7 +41,7 @@ struct FNteMaterialInstanceOptions
 struct FNteMaterialInstanceCreateResult
 {
 	UMaterialInstanceConstant* MaterialInstance = nullptr;
-	USkeletalMesh* TargetMesh = nullptr;
+	UObject* TargetMesh = nullptr;
 	FString AssignedMaterialPath;
 	FNteMaterialApplySummary ApplySummary;
 	bool bCreatedParentPlaceholder = false;

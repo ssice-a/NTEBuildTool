@@ -27,7 +27,7 @@ The current verification set contains five pakmods:
 - `Content\Maps_4N\Characters\Player\075_oneir_rpg\player_075_oneir_rpg_level2`
 - `Content\Maps_4N\Characters\Player\075_oneir_rpg\player_075_oneir_rpg_level3`
 
-`player_075_oneir_rpg_level2` is newly imported and still needs material-instance setup. Its intended toggle uses the Up arrow key, with slots 0 and 1 always visible and slots 2 and 3 toggled together. Slot 2 and 3 should use the material relationship described in the task notes, and the pants texture package must be included in its package job.
+`player_075_oneir_rpg_level2` is newly imported and still needs material-instance and runtime-anchor validation. Slots 0 and 1 are always visible. Slot 2 is toggled with numpad Up (`NumPadEight`) and slot 3 is toggled with numpad Down (`NumPadTwo`); shortcut keys are user-authored data, not inferred by the tool. Slot 2 and 3 should use the material relationship described in the task notes, and the pants texture package must be included in its package job.
 
 ## Architectural Direction
 

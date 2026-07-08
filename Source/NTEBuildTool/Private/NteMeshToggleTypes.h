@@ -52,7 +52,7 @@ struct FNteMeshToggleSetupResult
 	USkeletalMesh* TargetMesh = nullptr;
 	UAnimBlueprint* PostProcessAnimBlueprint = nullptr;
 	UBlueprint* ControllerBlueprint = nullptr;
-	UWidgetBlueprint* WidgetBlueprint = nullptr;
+	UBlueprint* WidgetBlueprint = nullptr;
 	UBlueprint* SaveGameBlueprint = nullptr;
 	FString ConfigAssetPath;
 	FString ConfigFilename;
@@ -60,5 +60,6 @@ struct FNteMeshToggleSetupResult
 	FString ControllerBlueprintPath;
 	FString WidgetBlueprintPath;
 	FString SaveGameBlueprintPath;
+	TArray<FString> Warnings;
 };
 }

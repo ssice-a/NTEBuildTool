@@ -1,0 +1,3 @@
+﻿/Game/Maps_4N/Characters/Player/075_oneir_rpg/player_075_oneir_rpg_level1/player_075_oneir_rpg_level1_cloth/cloth
+/Game/Maps_4N/Characters/Player/075_oneir_rpg/player_075_oneir_rpg_level1/player_075_oneir_rpg_level1_cloth/mod/Materials/MI_mod_body
+/Game/Maps_4N/Characters/Player/075_oneir_rpg/player_075_oneir_rpg_level1/player_075_oneir_rpg_level1_cloth/mod/Materials/MI_mod_body_test

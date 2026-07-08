@@ -1,0 +1,26 @@
+{
+  "Format": "NTE.ModPackageJob",
+  "Version": 1,
+  "ProjectRoot": "F:/NTE/PhyLab",
+  "ProjectFile": "F:/NTE/PhyLab/PhyLab.uproject",
+  "ProjectName": "PhyLab",
+  "EngineRoot": "F:/ue5.6.1/UE_5.6",
+  "GameMountName": "HT",
+  "ModsDir": "F:/Neverness To Everness/Client/WindowsNoEditor/HT/Content/Paks/Mods",
+  "ModName": "oneir075_level2_mod_P",
+  "Mode": "CookAndPack",
+  "SkipCook": false,
+  "NeverPackPackagePrefixes": [
+    "/Game/Maps_4N/Characters/Player/075_oneir_rpg/player_075_oneir_rpg_level2/player_075_oneir_rpg_level2_cloth/ter",
+    "/Game/Maps_4N/Characters/Player/075_oneir_rpg/player_075_oneir_rpg_level2/player_075_oneir_rpg_level2_pants/ter/MI_player_075_oneiroi_rpg_level2_pants"
+  ],
+  "Packages": [
+    "/Game/Maps_4N/Characters/Player/075_oneir_rpg/player_075_oneir_rpg_level2/player_075_oneir_rpg_level2_cloth/cloth",
+    "/Game/Maps_4N/Characters/Player/075_oneir_rpg/player_075_oneir_rpg_level2/player_075_oneir_rpg_level2_cloth/mod/Materials/MI_mod_body",
+    "/Game/Maps_4N/Characters/Player/075_oneir_rpg/player_075_oneir_rpg_level2/player_075_oneir_rpg_level2_cloth/body_bml",
+    "/Game/Maps_4N/Characters/Player/075_oneir_rpg/player_075_oneir_rpg_level2/player_075_oneir_rpg_level2_cloth/body_id",
+    "/Game/Maps_4N/Characters/Player/075_oneir_rpg/player_075_oneir_rpg_level2/player_075_oneir_rpg_level2_cloth/body_nm",
+    "/Game/Maps_4N/Characters/Player/075_oneir_rpg/player_075_oneir_rpg_level2/player_075_oneir_rpg_level2_cloth/body_rmt",
+    "/Game/Maps_4N/Characters/Player/075_oneir_rpg/player_075_oneir_rpg_level2/player_075_oneir_rpg_level2_pants/ter/player_075_oneiroi_rpg_level2_pants_d"
+  ]
+}
