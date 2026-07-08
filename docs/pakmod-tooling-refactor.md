@@ -360,6 +360,8 @@ That mode should be implemented as `RuntimeMode=ThinAnchorController` with its o
 - Shortcut keys are user-authored data. The tool must validate and preserve them, not infer defaults from slot numbers.
 - `player_075_oneir_rpg_level2` currently uses `NumPadEight` for slot 2 and `NumPadTwo` for slot 3.
 - UI hotkey remains configurable.
+- Toggle item labels are required. Blank labels are rejected before generation because generated UI buttons must remain identifiable.
+- Toggle item hotkeys are optional, but configured hotkey chords must be unique and must not collide with the UI show/hide chord.
 - UI close button must always exist.
 - If the UI is open, both the UI close button and the configured UI hotkey should be able to close it.
 

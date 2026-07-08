@@ -159,13 +159,30 @@ FNteMeshToggleSlotBinding SlotBindingFromJsonObject(const FJsonObject& Object)
 	return Binding;
 }
 
+FString MakeChordIdentity(const FInputChord& Chord)
+{
+	return FString::Printf(
+		TEXT("%s%s%s%s%s"),
+		Chord.bCtrl ? TEXT("Ctrl+") : TEXT(""),
+		Chord.bAlt ? TEXT("Alt+") : TEXT(""),
+		Chord.bShift ? TEXT("Shift+") : TEXT(""),
+		Chord.bCmd ? TEXT("Cmd+") : TEXT(""),
+		Chord.Key.IsValid() ? *Chord.Key.GetFName().ToString() : TEXT(""));
+}
+
 bool ValidateToggleGroupsAgainstMaterialCount(const FString& TargetMeshPath, const int32 MaterialCount, const TArray<FNteMeshToggleGroup>& Groups, FString& OutError)
 {
+	TSet<FString> UsedKeys;
 	for (const FNteMeshToggleGroup& Group : Groups)
 	{
 		if (Group.GroupId.IsEmpty())
 		{
 			OutError = TEXT("Toggle group is missing GroupId.");
+			return false;
+		}
+		if (Group.Label.TrimStartAndEnd().IsEmpty())
+		{
+			OutError = FString::Printf(TEXT("Toggle group %s is missing a UI Label. Labels are required so generated UI buttons are not blank."), *Group.GroupId);
 			return false;
 		}
 		if (Group.Slots.IsEmpty())
@@ -186,8 +203,39 @@ bool ValidateToggleGroupsAgainstMaterialCount(const FString& TargetMeshPath, con
 				return false;
 			}
 		}
+
+		if (Group.Chord.Key.IsValid())
+		{
+			const FString ChordName = MakeChordIdentity(Group.Chord);
+			if (UsedKeys.Contains(ChordName))
+			{
+				OutError = FString::Printf(TEXT("Multiple toggle groups use the same hotkey '%s'. Give each hotkey-controlled group a unique key, or leave a group hotkey empty for UI-only control."), *ChordName);
+				return false;
+			}
+			UsedKeys.Add(ChordName);
+		}
 	}
 
+	return true;
+}
+
+bool ValidateUiChordAgainstGroups(const FInputChord& UiChord, const TArray<FNteMeshToggleGroup>& Groups, FString& OutError)
+{
+	if (!UiChord.Key.IsValid())
+	{
+		OutError = TEXT("UIInputChord must contain a key so the generated UI can be opened and closed.");
+		return false;
+	}
+
+	const FString UiChordName = MakeChordIdentity(UiChord);
+	for (const FNteMeshToggleGroup& Group : Groups)
+	{
+		if (Group.Chord.Key.IsValid() && MakeChordIdentity(Group.Chord) == UiChordName)
+		{
+			OutError = FString::Printf(TEXT("UIInputChord '%s' conflicts with toggle group %s. Use a distinct chord for UI show/hide."), *UiChordName, *Group.GroupId);
+			return false;
+		}
+	}
 	return true;
 }
 
@@ -542,6 +590,10 @@ bool RunMeshToggleUiSetup(FNteMeshToggleSetupOptions Options, FNteMeshToggleSetu
 	OutResult.RuntimeAnchorMesh = AnchorSkeletalMesh;
 
 	if (!ValidateToggleGroupsAgainstMesh(*TargetMeshAsset, Options.ToggleGroups, OutError))
+	{
+		return false;
+	}
+	if (!ValidateUiChordAgainstGroups(Options.UiChord, Options.ToggleGroups, OutError))
 	{
 		return false;
 	}
