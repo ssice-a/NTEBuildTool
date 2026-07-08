@@ -317,7 +317,6 @@ bool LoadMeshToggleSetupOptionsFromJsonFile(const FString& ConfigFilename, FNteM
 	GetBoolAny(*Root, OutOptions.bValidateOnly, TEXT("ValidateOnly"), TEXT("validateOnly"));
 	GetBoolAny(*Root, OutOptions.bAssignPostProcessAnimBlueprint, TEXT("AssignPostProcess"), TEXT("AssignPostProcessAnimBlueprint"));
 	GetBoolAny(*Root, OutOptions.bAssignPostProcessAnimBlueprint, TEXT("assignPostProcess"));
-	GetBoolAny(*Root, OutOptions.bCreateBlueprintAssets, TEXT("CreateBlueprintAssets"), TEXT("createBlueprintAssets"));
 	GetBoolAny(*Root, OutOptions.bSaveDirtyAssetsAfterCreate, TEXT("SaveDirtyAssetsAfterCreate"), TEXT("saveDirtyAssetsAfterCreate"));
 	GetBoolAny(*Root, OutOptions.bOverwriteExistingRuntimeAssets, TEXT("OverwriteExistingRuntimeAssets"), TEXT("overwriteExistingRuntimeAssets"));
 
@@ -445,7 +444,6 @@ bool SaveMeshToggleSetupOptionsToJsonFile(const FNteMeshToggleSetupOptions& Opti
 	Root->SetStringField(TEXT("StaticMeshVisibilityAdapter"), Options.StaticMeshVisibilityAdapter);
 	Root->SetStringField(TEXT("HiddenMaterial"), Options.HiddenMaterialPath);
 	Root->SetBoolField(TEXT("AssignPostProcess"), Options.bAssignPostProcessAnimBlueprint);
-	Root->SetBoolField(TEXT("CreateBlueprintAssets"), Options.bCreateBlueprintAssets);
 	Root->SetBoolField(TEXT("SaveDirtyAssetsAfterCreate"), Options.bSaveDirtyAssetsAfterCreate);
 	Root->SetBoolField(TEXT("OverwriteExistingRuntimeAssets"), Options.bOverwriteExistingRuntimeAssets);
 	Root->SetBoolField(TEXT("ValidateOnly"), Options.bValidateOnly);
@@ -579,9 +577,9 @@ bool RunMeshToggleUiSetup(FNteMeshToggleSetupOptions Options, FNteMeshToggleSetu
 	const bool bHasAllTemplatePaths = !Options.TemplatePostProcessAnimBlueprintPath.IsEmpty()
 		&& !Options.TemplateWidgetBlueprintPath.IsEmpty()
 		&& !Options.TemplateSaveGameBlueprintPath.IsEmpty();
-	if (Options.bCreateBlueprintAssets && !bHasAllTemplatePaths)
+	if (!bHasAllTemplatePaths)
 	{
-		OutError = TEXT("CreateBlueprintAssets=true requires TemplatePostProcessAnimBlueprint, TemplateWidgetBlueprint, and TemplateSaveGameBlueprint. Set CreateBlueprintAssets=false only when reusing existing runtime assets.");
+		OutError = TEXT("Mesh toggle generation requires TemplatePostProcessAnimBlueprint, TemplateWidgetBlueprint, and TemplateSaveGameBlueprint because hotkey/UI bindings are generated into runtime Blueprint assets.");
 		return false;
 	}
 
@@ -593,7 +591,7 @@ bool RunMeshToggleUiSetup(FNteMeshToggleSetupOptions Options, FNteMeshToggleSetu
 		}
 	}
 
-	if (Options.bCreateBlueprintAssets)
+	if (!Options.bValidateOnly)
 	{
 		FNteMeshToggleBlueprintBuildResult BuildResult;
 		if (!BuildMeshToggleRuntimeBlueprints(Options, OutResult, BuildResult, OutError))
@@ -608,10 +606,7 @@ bool RunMeshToggleUiSetup(FNteMeshToggleSetupOptions Options, FNteMeshToggleSetu
 	{
 		if (!LoadRequiredAsset(LoadedAsset, OutResult.PostProcessAnimBlueprintPath, TEXT("PostProcessAnimBlueprint"), OutError))
 		{
-			if (Options.bCreateBlueprintAssets)
-			{
-				OutError += LINE_TERMINATOR TEXT("Add TemplatePostProcessAnimBlueprint, TemplateWidgetBlueprint, and TemplateSaveGameBlueprint to generate runtime assets from a template.");
-			}
+			OutError += LINE_TERMINATOR TEXT("Add TemplatePostProcessAnimBlueprint, TemplateWidgetBlueprint, and TemplateSaveGameBlueprint to generate runtime assets from a template.");
 			return false;
 		}
 		OutResult.PostProcessAnimBlueprint = Cast<UAnimBlueprint>(LoadedAsset);

@@ -317,7 +317,9 @@ bool ShowMeshToggleSetupDialog(USkeletalMesh& SkeletalMesh, FNteMeshToggleSetupO
 	FString TemplatePostProcess;
 	FString TemplateWidget;
 	FString TemplateSaveGame;
-	bool bCreateRuntimeAssets = false;
+	FString PostProcessAnimBlueprintName = TEXT("ABP_NTE_ModToggle_PostProcess");
+	FString WidgetBlueprintName = TEXT("WBP_NTE_ModToggleMenu");
+	FString SaveGameBlueprintName = TEXT("BP_NTE_ModToggleSaveGame");
 	bool bAccepted = false;
 
 	FString ExistingSetupFilename = FPackageName::LongPackageNameToFilename(
@@ -335,6 +337,9 @@ bool ShowMeshToggleSetupDialog(USkeletalMesh& SkeletalMesh, FNteMeshToggleSetupO
 		TemplatePostProcess = ExistingOptions.TemplatePostProcessAnimBlueprintPath;
 		TemplateWidget = ExistingOptions.TemplateWidgetBlueprintPath;
 		TemplateSaveGame = ExistingOptions.TemplateSaveGameBlueprintPath;
+		PostProcessAnimBlueprintName = ExistingOptions.PostProcessAnimBlueprintName.IsEmpty() ? PostProcessAnimBlueprintName : ExistingOptions.PostProcessAnimBlueprintName;
+		WidgetBlueprintName = ExistingOptions.WidgetBlueprintName.IsEmpty() ? WidgetBlueprintName : ExistingOptions.WidgetBlueprintName;
+		SaveGameBlueprintName = ExistingOptions.SaveGameBlueprintName.IsEmpty() ? SaveGameBlueprintName : ExistingOptions.SaveGameBlueprintName;
 	}
 
 	TSharedPtr<SEditableTextBox> OutputFolderTextBox;
@@ -342,7 +347,6 @@ bool ShowMeshToggleSetupDialog(USkeletalMesh& SkeletalMesh, FNteMeshToggleSetupO
 	TSharedPtr<SEditableTextBox> TemplatePostProcessTextBox;
 	TSharedPtr<SEditableTextBox> TemplateWidgetTextBox;
 	TSharedPtr<SEditableTextBox> TemplateSaveGameTextBox;
-	TSharedPtr<SCheckBox> CreateRuntimeAssetsCheckBox;
 	TSharedPtr<SWindow> Window;
 	TArray<TSharedPtr<FMeshToggleGroupRow>> GroupRows;
 	TSharedPtr<SVerticalBox> GroupList;
@@ -502,21 +506,6 @@ bool ShowMeshToggleSetupDialog(USkeletalMesh& SkeletalMesh, FNteMeshToggleSetupO
 			.AutoHeight()
 			.Padding(16, 8)
 			[
-				SAssignNew(CreateRuntimeAssetsCheckBox, SCheckBox)
-				.IsChecked(bCreateRuntimeAssets ? ECheckBoxState::Checked : ECheckBoxState::Unchecked)
-				.OnCheckStateChanged_Lambda([&bCreateRuntimeAssets](ECheckBoxState NewState)
-				{
-					bCreateRuntimeAssets = NewState == ECheckBoxState::Checked;
-				})
-				[
-					SNew(STextBlock)
-					.Text(LOCTEXT("CreateRuntimeAssetsLabel", "Create or overwrite runtime Blueprint assets from templates"))
-				]
-			]
-			+ SVerticalBox::Slot()
-			.AutoHeight()
-			.Padding(16, 8)
-			[
 				MakeLabeledTextBox(
 					LOCTEXT("TemplatePostProcessLabel", "Template Post Process Anim Blueprint"),
 					SAssignNew(TemplatePostProcessTextBox, SEditableTextBox).Text(FText::FromString(TemplatePostProcess)))
@@ -583,7 +572,6 @@ bool ShowMeshToggleSetupDialog(USkeletalMesh& SkeletalMesh, FNteMeshToggleSetupO
 	TemplatePostProcess = TemplatePostProcessTextBox->GetText().ToString();
 	TemplateWidget = TemplateWidgetTextBox->GetText().ToString();
 	TemplateSaveGame = TemplateSaveGameTextBox->GetText().ToString();
-	bCreateRuntimeAssets = CreateRuntimeAssetsCheckBox.IsValid() && CreateRuntimeAssetsCheckBox->IsChecked();
 
 	FString Error;
 	FInputChord UiChord;
@@ -598,12 +586,14 @@ bool ShowMeshToggleSetupDialog(USkeletalMesh& SkeletalMesh, FNteMeshToggleSetupO
 	OutOptions.TargetMeshPath = MeshPath;
 	OutOptions.RuntimeAnchorMeshPath = MeshPath;
 	OutOptions.OutputFolder = NTEBuildTool::Editor::NormalizeAssetPathForText(OutputFolder);
+	OutOptions.PostProcessAnimBlueprintName = PostProcessAnimBlueprintName;
+	OutOptions.WidgetBlueprintName = WidgetBlueprintName;
+	OutOptions.SaveGameBlueprintName = SaveGameBlueprintName;
 	OutOptions.UiChord = UiChord;
 	OutOptions.TemplatePostProcessAnimBlueprintPath = NTEBuildTool::Editor::NormalizeAssetPathForText(TemplatePostProcess);
 	OutOptions.TemplateWidgetBlueprintPath = NTEBuildTool::Editor::NormalizeAssetPathForText(TemplateWidget);
 	OutOptions.TemplateSaveGameBlueprintPath = NTEBuildTool::Editor::NormalizeAssetPathForText(TemplateSaveGame);
 	OutOptions.RuntimeMode = TEXT("StandardPostProcessTemplate");
-	OutOptions.bCreateBlueprintAssets = bCreateRuntimeAssets;
 	OutOptions.bAssignPostProcessAnimBlueprint = true;
 	OutOptions.bOverwriteExistingRuntimeAssets = true;
 

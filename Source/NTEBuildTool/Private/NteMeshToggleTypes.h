@@ -53,7 +53,6 @@ struct FNteMeshToggleSetupOptions
 	FInputChord UiChord = FInputChord(EKeys::Slash, false, true, false, false);
 	TArray<FNteMeshToggleGroup> ToggleGroups;
 	bool bAssignPostProcessAnimBlueprint = true;
-	bool bCreateBlueprintAssets = true;
 	bool bSaveDirtyAssetsAfterCreate = true;
 	bool bOverwriteExistingRuntimeAssets = true;
 	bool bValidateOnly = false;

@@ -45,7 +45,7 @@ struct FRuntimeBuildContext
 	UBlueprint* WidgetBlueprint = nullptr;
 	UBlueprint* SaveGameBlueprint = nullptr;
 	FNteMeshToggleBlueprintBuildResult* Result = nullptr;
-	TMap<int32, int32> NextShowMaterialSectionSlotOrdinalByGroup;
+	TMap<int32, int32> ShowMaterialSectionNodeOrdinalByGroup;
 	TMap<int32, int32> PatchedShowMaterialSectionNodeCountByGroup;
 };
 
@@ -289,18 +289,11 @@ void PatchShowMaterialSectionNode(FRuntimeBuildContext& Context, UEdGraphNode& N
 		return;
 	}
 
-	int32& NextSlotOrdinal = Context.NextShowMaterialSectionSlotOrdinalByGroup.FindOrAdd(TemplateGroupOrdinal);
-	const int32 SlotOrdinal = NextSlotOrdinal++;
+	int32& NodeOrdinal = Context.ShowMaterialSectionNodeOrdinalByGroup.FindOrAdd(TemplateGroupOrdinal);
+	const int32 SlotOrdinal = NodeOrdinal % Slots.Num();
+	++NodeOrdinal;
 	Context.PatchedShowMaterialSectionNodeCountByGroup.FindOrAdd(TemplateGroupOrdinal)++;
-	const int32 SlotIndex = Slots[FMath::Min(SlotOrdinal, Slots.Num() - 1)];
-	if (SlotOrdinal >= Slots.Num() && Context.Result)
-	{
-		Context.Result->Warnings.Add(FString::Printf(
-			TEXT("Template has more ShowMaterialSection nodes than configured slots for group %d; reusing slot %d for node %s."),
-			TemplateGroupOrdinal,
-			SlotIndex,
-			*Node.GetName()));
-	}
+	const int32 SlotIndex = Slots[SlotOrdinal];
 
 	const FString SlotText = FString::FromInt(SlotIndex);
 	if (UEdGraphPin* MaterialIdPin = FindPinByName(Node, TEXT("MaterialID")))
@@ -339,6 +332,14 @@ void WarnAboutUnpatchedMaterialSlots(FRuntimeBuildContext& Context)
 				*Group.Label,
 				Group.Slots.Num(),
 				*FString::Join(UnpatchedSlots, TEXT(","))));
+		}
+		else if (Group.Slots.Num() > 1 && PatchedNodeCount % Group.Slots.Num() != 0)
+		{
+			Context.Result->Warnings.Add(FString::Printf(
+				TEXT("Template group %d has %d ShowMaterialSection node(s) for %d configured slots. Slots were assigned cyclically, but the final pass is partial; verify the template graph layout."),
+				TemplateGroupOrdinal,
+				PatchedNodeCount,
+				Group.Slots.Num()));
 		}
 	}
 }
