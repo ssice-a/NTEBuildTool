@@ -189,8 +189,11 @@ bool CreateModPackageJobFromSelection(const FNteModPackageJobCreateOptions& Opti
 	OutResult = FNteModPackageJobCreateResult();
 
 	TArray<FString> Packages = Options.Packages;
-	CollectSelectedAssetPackages(Packages);
-	CollectSelectedFolderPackages(Packages);
+	if (Options.bCollectContentBrowserSelection)
+	{
+		CollectSelectedAssetPackages(Packages);
+		CollectSelectedFolderPackages(Packages);
+	}
 	Packages.Sort();
 
 	if (Packages.IsEmpty())

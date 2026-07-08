@@ -47,6 +47,7 @@ struct FNteModPackageJobCreateOptions
 	TArray<FString> NeverPackPackagePrefixes;
 	bool bUnversioned = false;
 	bool bSkipCook = false;
+	bool bCollectContentBrowserSelection = true;
 };
 
 struct FNteModPackageJobCreateResult
@@ -55,5 +56,30 @@ struct FNteModPackageJobCreateResult
 	FString ModName;
 	int32 PackageCount = 0;
 	FNteModPackageJob Job;
+};
+
+enum class ENtePackagePlanCandidateKind
+{
+	SelectedAsset,
+	SelectedFolderAsset,
+	HardDependency,
+	GeneratedRuntimeAsset,
+	ModAuthoredAsset,
+	SourceGameDependency,
+	EditorOnlyProxy,
+	Unknown
+};
+
+struct FNtePackagePlanCandidate
+{
+	FString PackageName;
+	ENtePackagePlanCandidateKind Kind = ENtePackagePlanCandidateKind::Unknown;
+	FString Reason;
+	bool bDefaultIncluded = true;
+};
+
+struct FNtePackagePlan
+{
+	TArray<FNtePackagePlanCandidate> Candidates;
 };
 }

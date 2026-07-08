@@ -261,6 +261,14 @@ The Package Plan is a convenience, not an authority. Users can manually add or r
 
 The package job remains the stable interface shared by UI, CLI, and future automation.
 
+Current implementation checkpoint:
+
+- `Build Mod Package` first creates a Package Plan from the Content Browser selection.
+- Selected assets, `/mod/` assets, and generated runtime assets are checked by default.
+- Source-game hard dependencies and likely editor-only Material Proxy assets are shown but unchecked by default.
+- The user confirms the plan before the package job JSON is written.
+- The commandlet path still consumes a stable Package Job directly, so manual JSON packaging remains supported.
+
 ### Shared Editor Utilities
 
 Proposed files:

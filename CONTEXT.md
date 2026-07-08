@@ -23,7 +23,7 @@ This repository contains an Unreal Engine editor plugin for rebuilding and packa
 - **Material Proxy**: An editor-only stand-in for a missing cooked game parent material. It lets the Mirror Project create and inspect a mod `MaterialInstanceConstant` that intends to inherit a source game material path. A Material Proxy must not be treated as a Replaced Asset and should not be included in the pakmod package.
 - **Source Texture Usage**: The grouped view of a source material's texture parameters, keyed by the source texture asset. It answers "which texture does this source material use, and which parameters use it?" so the user can replace one source texture once and have that new texture override every matching parameter.
 - **Package Job**: A JSON description of a cook/package run. It lists the project, engine, game mount, output mods directory, mod name, package list, exclusions, and cook/pack options.
-- **Package Plan**: An editable candidate package list derived from one or more selected assets, usually starting from a selected mesh. It is a convenience preview, not an automatic decision: the tool should show dependencies and their reasons, then let the user remove or add packages before writing a Package Job.
+- **Package Plan**: An editable candidate package list derived from one or more selected assets, usually starting from a selected mesh. It is a convenience preview, not an automatic decision: the tool shows selected packages, hard dependencies, candidate kinds, and reasons, then lets the user remove packages before writing a Package Job. Source-game dependencies and editor-only Material Proxy candidates are visible but default to not packed.
 
 ## Current Mod Targets
 

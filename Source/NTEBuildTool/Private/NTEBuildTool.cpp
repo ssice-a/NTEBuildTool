@@ -7,7 +7,9 @@
 #include "NteMaterialInstanceTool.h"
 #include "NteMeshToggleConfig.h"
 #include "NteMeshToggleDialog.h"
+#include "NteModPackageDialog.h"
 #include "NteModPackageJob.h"
+#include "NteModPackagePlan.h"
 #include "NteNotificationUtils.h"
 
 #include "ContentBrowserModule.h"
@@ -185,6 +187,25 @@ void FNTEBuildToolModule::CreateMeshToggleUiSetup()
 
 void FNTEBuildToolModule::BuildSelectedAssetsModPackage()
 {
+	FString Error;
+	NTEBuildTool::Package::FNtePackagePlan Plan;
+	if (!NTEBuildTool::Package::BuildPackagePlanFromSelection(Plan, Error))
+	{
+		NTEBuildTool::Editor::ShowError(FText::FromString(Error));
+		return;
+	}
+	if (!NTEBuildTool::Package::ShowPackagePlanDialog(Plan))
+	{
+		return;
+	}
+
+	const TArray<FString> Packages = NTEBuildTool::Package::GetIncludedPackageNames(Plan);
+	if (Packages.IsEmpty())
+	{
+		NTEBuildTool::Editor::ShowError(LOCTEXT("NoPackagePlanIncludes", "The package plan has no checked packages."));
+		return;
+	}
+
 	FString ModsDir;
 	if (!NTEBuildTool::Editor::ChooseDirectoryWithTitle(
 		LOCTEXT("ChooseModsOutputDirectory", "Choose Mods Output Directory"),
@@ -206,8 +227,9 @@ void FNTEBuildToolModule::BuildSelectedAssetsModPackage()
 	NTEBuildTool::Package::FNteModPackageJobCreateOptions CreateOptions;
 	CreateOptions.ModsDir = ModsDir;
 	CreateOptions.JobFilename = JobFilename;
+	CreateOptions.Packages = Packages;
+	CreateOptions.bCollectContentBrowserSelection = false;
 
-	FString Error;
 	NTEBuildTool::Package::FNteModPackageJobCreateResult CreateResult;
 	if (!NTEBuildTool::Package::CreateModPackageJobFromSelection(CreateOptions, CreateResult, Error))
 	{
