@@ -189,7 +189,7 @@ Responsibilities:
 - assign the generated Post Process Anim Blueprint to the target `SkeletalMesh` only when requested;
 - inspect generated assets for expected graph/variable/widget structure.
 
-The current core path is deliberately narrow: select one `SkeletalMesh`, enter a UI hotkey and one hotkey per material-slot group, then generate runtime assets from a standard template contract. The generator should not adapt arbitrary old project assets or infer behaviour from the current five mods.
+The current core path is deliberately narrow: select one `SkeletalMesh`, enter a UI hotkey, define toggle items, and generate runtime assets from a standard template contract. A toggle item is user-authored data: UI label, optional hotkey, default visible state, and one or more material slots. The generator should not adapt arbitrary old project assets or infer behaviour from the current five mods.
 
 The future deeper runtime target is separating the runtime controller from the post-process animation instance. In that mode, the Post Process Anim Blueprint becomes a thin anchor that ensures a controller exists and has the target `SkinnedMeshComponent`. The controller owns:
 
@@ -268,7 +268,10 @@ The core generator duplicates three user-supplied template assets and patches on
 - `TemplateWidgetBlueprint` is a `UserWidget` template used by the standard post-process runtime.
 - `TemplateSaveGameBlueprint` stores one visible-state variable per toggle group.
 - Visible-state variables use `NTE_Toggle_XX_toggle_group_N_Visible`, where `N` is the 1-based setup group ordinal.
-- Group input marker variables use `NTE_Toggle_Input_N_...`, where `N` is the 1-based setup group ordinal.
+- Group input marker variables use `NTE_Toggle_Input_N_...`, where `N` is the 1-based setup group ordinal. Empty user hotkeys are patched to `None`, so the UI button remains usable without accidentally inheriting a template placeholder key.
+- UI button widgets use `NTE_Toggle_Button_XX_toggle_group_N`, and their label `TextBlock` widgets use `NTE_Toggle_Button_XX_toggle_group_N_Label`. The generator patches the label text from the setup JSON; unlabeled old-style button-only widgets are not valid standard templates.
+- UI button click handlers in the template must toggle the same visible-state variable used by the group hotkey and save-game state.
+- A toggle item may bind multiple material slots. The Post Process template must contain enough `ShowMaterialSection` nodes linked to that group's visible-state variable to cover all configured slots; the generator assigns slot indices to those nodes in graph traversal order and warns if a configured slot has no node to control it.
 - The template group count must match `Groups.Num()` in the setup JSON.
 - UI hotkey placeholder nodes use `Slash` and modifier-key pins; those pins are patched from `UIInputChord`.
 
@@ -546,7 +549,7 @@ The core toggle workflow is now intentionally scoped to a standard interface:
 ```text
 select SkeletalMesh
   -> enter UI hotkey
-  -> enable material slots and enter each slot/group hotkey
+  -> add toggle items with label, optional hotkey, default state, and material slots
   -> choose standard PostProcess, Widget, and SaveGame templates
   -> generate setup JSON and runtime assets
 ```

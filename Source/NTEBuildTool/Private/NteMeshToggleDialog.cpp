@@ -3,6 +3,7 @@
 #include "NteMeshToggleDialog.h"
 
 #include "NteEditorAssetUtils.h"
+#include "NteMeshToggleConfig.h"
 #include "NteNotificationUtils.h"
 
 #include "Engine/SkeletalMesh.h"
@@ -10,6 +11,7 @@
 #include "InputCoreTypes.h"
 #include "Materials/MaterialInterface.h"
 #include "Misc/PackageName.h"
+#include "Misc/Paths.h"
 #include "Widgets/Input/SButton.h"
 #include "Widgets/Input/SCheckBox.h"
 #include "Widgets/Input/SEditableTextBox.h"
@@ -30,10 +32,18 @@ struct FMeshToggleSlotRow
 	FString SlotName;
 	FString ImportedSlotName;
 	FString MaterialPath;
-	bool bEnabled = false;
+};
+
+struct FMeshToggleGroupRow
+{
+	FString Label;
 	FString KeyName;
-	TSharedPtr<SCheckBox> EnabledCheckBox;
+	FString SlotsText;
+	bool bDefaultVisible = true;
+	TSharedPtr<SEditableTextBox> LabelTextBox;
 	TSharedPtr<SEditableTextBox> KeyTextBox;
+	TSharedPtr<SEditableTextBox> SlotsTextBox;
+	TSharedPtr<SCheckBox> DefaultVisibleCheckBox;
 };
 
 FString ChordToConfigText(const FInputChord& Chord)
@@ -149,34 +159,136 @@ TSharedRef<SWidget> MakeSlotRow(const TSharedPtr<FMeshToggleSlotRow>& Row)
 {
 	return SNew(SHorizontalBox)
 		+ SHorizontalBox::Slot()
-		.AutoWidth()
-		.VAlign(VAlign_Center)
-		[
-			SAssignNew(Row->EnabledCheckBox, SCheckBox)
-			.IsChecked(Row->bEnabled ? ECheckBoxState::Checked : ECheckBoxState::Unchecked)
-			.OnCheckStateChanged_Lambda([Row](ECheckBoxState NewState)
-			{
-				Row->bEnabled = NewState == ECheckBoxState::Checked;
-			})
-		]
-		+ SHorizontalBox::Slot()
 		.FillWidth(1.0f)
 		.Padding(8, 0)
 		.VAlign(VAlign_Center)
 		[
 			SNew(STextBlock)
 			.Text(FText::FromString(FString::Printf(TEXT("%d  %s"), Row->SlotIndex, *Row->SlotName)))
+		];
+}
+
+FString SlotsToText(const TArray<int32>& Slots)
+{
+	TArray<FString> Parts;
+	for (const int32 SlotIndex : Slots)
+	{
+		Parts.Add(FString::FromInt(SlotIndex));
+	}
+	return FString::Join(Parts, TEXT(","));
+}
+
+bool ParseSlotsText(FString Text, const int32 MaterialCount, TArray<int32>& OutSlots, FString& OutError)
+{
+	Text.TrimStartAndEndInline();
+	OutSlots.Reset();
+	if (Text.IsEmpty())
+	{
+		OutError = TEXT("Each toggle item needs at least one material slot.");
+		return false;
+	}
+
+	Text.ReplaceInline(TEXT(";"), TEXT(","));
+	Text.ReplaceInline(TEXT(" "), TEXT(","));
+	TArray<FString> Parts;
+	Text.ParseIntoArray(Parts, TEXT(","), true);
+	for (FString Part : Parts)
+	{
+		Part.TrimStartAndEndInline();
+		if (Part.IsEmpty())
+		{
+			continue;
+		}
+
+		if (!Part.IsNumeric())
+		{
+			OutError = FString::Printf(TEXT("Material slot '%s' is not a number."), *Part);
+			return false;
+		}
+
+		const int32 SlotIndex = FCString::Atoi(*Part);
+		if (SlotIndex < 0 || SlotIndex >= MaterialCount)
+		{
+			OutError = FString::Printf(TEXT("Material slot %d is out of range. Valid range is 0-%d."), SlotIndex, MaterialCount - 1);
+			return false;
+		}
+		OutSlots.AddUnique(SlotIndex);
+	}
+
+	if (OutSlots.IsEmpty())
+	{
+		OutError = TEXT("Each toggle item needs at least one material slot.");
+		return false;
+	}
+	return true;
+}
+
+TSharedRef<SWidget> MakeGroupRow(
+	const TSharedPtr<FMeshToggleGroupRow>& Row,
+	const FSimpleDelegate& OnRemove)
+{
+	return SNew(SHorizontalBox)
+		+ SHorizontalBox::Slot()
+		.FillWidth(0.75f)
+		.Padding(0, 0, 8, 0)
+		.VAlign(VAlign_Center)
+		[
+			SAssignNew(Row->LabelTextBox, SEditableTextBox)
+			.Text(FText::FromString(Row->Label))
+			.HintText(LOCTEXT("ToggleGroupLabelHint", "UI button label"))
+			.OnTextCommitted_Lambda([Row](const FText& NewText, ETextCommit::Type)
+			{
+				Row->Label = NewText.ToString();
+			})
 		]
 		+ SHorizontalBox::Slot()
-		.FillWidth(0.45f)
+		.FillWidth(0.55f)
+		.Padding(0, 0, 8, 0)
 		.VAlign(VAlign_Center)
 		[
 			SAssignNew(Row->KeyTextBox, SEditableTextBox)
 			.Text(FText::FromString(Row->KeyName))
-			.HintText(LOCTEXT("ToggleSlotKeyHint", "Up"))
+			.HintText(LOCTEXT("ToggleGroupKeyHint", "optional hotkey"))
 			.OnTextCommitted_Lambda([Row](const FText& NewText, ETextCommit::Type)
 			{
 				Row->KeyName = NewText.ToString();
+			})
+		]
+		+ SHorizontalBox::Slot()
+		.FillWidth(0.75f)
+		.Padding(0, 0, 8, 0)
+		.VAlign(VAlign_Center)
+		[
+			SAssignNew(Row->SlotsTextBox, SEditableTextBox)
+			.Text(FText::FromString(Row->SlotsText))
+			.HintText(LOCTEXT("ToggleGroupSlotsHint", "1,13,15"))
+			.OnTextCommitted_Lambda([Row](const FText& NewText, ETextCommit::Type)
+			{
+				Row->SlotsText = NewText.ToString();
+			})
+		]
+		+ SHorizontalBox::Slot()
+		.AutoWidth()
+		.Padding(0, 0, 8, 0)
+		.VAlign(VAlign_Center)
+		[
+			SAssignNew(Row->DefaultVisibleCheckBox, SCheckBox)
+			.IsChecked(Row->bDefaultVisible ? ECheckBoxState::Checked : ECheckBoxState::Unchecked)
+			.OnCheckStateChanged_Lambda([Row](ECheckBoxState NewState)
+			{
+				Row->bDefaultVisible = NewState == ECheckBoxState::Checked;
+			})
+		]
+		+ SHorizontalBox::Slot()
+		.AutoWidth()
+		.VAlign(VAlign_Center)
+		[
+			SNew(SButton)
+			.Text(LOCTEXT("RemoveToggleGroup", "Remove"))
+			.OnClicked_Lambda([OnRemove]()
+			{
+				OnRemove.ExecuteIfBound();
+				return FReply::Handled();
 			})
 		];
 }
@@ -205,14 +317,35 @@ bool ShowMeshToggleSetupDialog(USkeletalMesh& SkeletalMesh, FNteMeshToggleSetupO
 	FString TemplatePostProcess;
 	FString TemplateWidget;
 	FString TemplateSaveGame;
+	bool bCreateRuntimeAssets = false;
 	bool bAccepted = false;
+
+	FString ExistingSetupFilename = FPackageName::LongPackageNameToFilename(
+		NTEBuildTool::Editor::JoinAssetPath(OutputFolder, TEXT("NTE_ModToggleSetup")),
+		TEXT(".json"));
+	FNteMeshToggleSetupOptions ExistingOptions;
+	FString ExistingLoadError;
+	const bool bHasExistingSetup = FPaths::FileExists(ExistingSetupFilename)
+		&& LoadMeshToggleSetupOptionsFromJsonFile(ExistingSetupFilename, ExistingOptions, ExistingLoadError)
+		&& ExistingOptions.TargetMeshPath == MeshPath;
+	if (bHasExistingSetup)
+	{
+		OutputFolder = ExistingOptions.OutputFolder;
+		UiChordText = ChordToConfigText(ExistingOptions.UiChord);
+		TemplatePostProcess = ExistingOptions.TemplatePostProcessAnimBlueprintPath;
+		TemplateWidget = ExistingOptions.TemplateWidgetBlueprintPath;
+		TemplateSaveGame = ExistingOptions.TemplateSaveGameBlueprintPath;
+	}
 
 	TSharedPtr<SEditableTextBox> OutputFolderTextBox;
 	TSharedPtr<SEditableTextBox> UiChordTextBox;
 	TSharedPtr<SEditableTextBox> TemplatePostProcessTextBox;
 	TSharedPtr<SEditableTextBox> TemplateWidgetTextBox;
 	TSharedPtr<SEditableTextBox> TemplateSaveGameTextBox;
+	TSharedPtr<SCheckBox> CreateRuntimeAssetsCheckBox;
 	TSharedPtr<SWindow> Window;
+	TArray<TSharedPtr<FMeshToggleGroupRow>> GroupRows;
+	TSharedPtr<SVerticalBox> GroupList;
 
 	TSharedRef<SVerticalBox> SlotList = SNew(SVerticalBox);
 	for (const TSharedPtr<FMeshToggleSlotRow>& Row : Rows)
@@ -225,9 +358,75 @@ bool ShowMeshToggleSetupDialog(USkeletalMesh& SkeletalMesh, FNteMeshToggleSetupO
 			];
 	}
 
+	const auto AddGroupRowFromValues = [&GroupRows](const FString& Label, const FString& KeyName, const FString& SlotsText, const bool bDefaultVisible)
+	{
+		TSharedPtr<FMeshToggleGroupRow> Row = MakeShared<FMeshToggleGroupRow>();
+		Row->Label = Label;
+		Row->KeyName = KeyName;
+		Row->SlotsText = SlotsText;
+		Row->bDefaultVisible = bDefaultVisible;
+		GroupRows.Add(Row);
+	};
+
+	if (bHasExistingSetup)
+	{
+		for (const FNteMeshToggleGroup& Group : ExistingOptions.ToggleGroups)
+		{
+			AddGroupRowFromValues(Group.Label, ChordToConfigText(Group.Chord), SlotsToText(Group.Slots), Group.bDefaultVisible);
+		}
+	}
+	if (GroupRows.IsEmpty())
+	{
+		AddGroupRowFromValues(TEXT("Toggle 1"), FString(), FString(), true);
+	}
+
+	TFunction<void()> RebuildGroupList;
+	RebuildGroupList = [&GroupRows, &GroupList, &RebuildGroupList]()
+	{
+		if (!GroupList.IsValid())
+		{
+			return;
+		}
+
+		GroupList->ClearChildren();
+		GroupList->AddSlot()
+			.AutoHeight()
+			.Padding(0, 0, 0, 4)
+			[
+				SNew(SHorizontalBox)
+				+ SHorizontalBox::Slot().FillWidth(0.75f).Padding(0, 0, 8, 0)[SNew(STextBlock).Text(LOCTEXT("ToggleGroupHeaderLabel", "UI Button"))]
+				+ SHorizontalBox::Slot().FillWidth(0.55f).Padding(0, 0, 8, 0)[SNew(STextBlock).Text(LOCTEXT("ToggleGroupHeaderKey", "Hotkey"))]
+				+ SHorizontalBox::Slot().FillWidth(0.75f).Padding(0, 0, 8, 0)[SNew(STextBlock).Text(LOCTEXT("ToggleGroupHeaderSlots", "Material Slots"))]
+				+ SHorizontalBox::Slot().AutoWidth().Padding(0, 0, 8, 0)[SNew(STextBlock).Text(LOCTEXT("ToggleGroupHeaderDefault", "On"))]
+				+ SHorizontalBox::Slot().AutoWidth()[SNew(STextBlock).Text(FText::GetEmpty())]
+			];
+
+		for (int32 Index = 0; Index < GroupRows.Num(); ++Index)
+		{
+			const TSharedPtr<FMeshToggleGroupRow> Row = GroupRows[Index];
+			GroupList->AddSlot()
+				.AutoHeight()
+				.Padding(0, 3)
+				[
+					MakeGroupRow(Row, FSimpleDelegate::CreateLambda([&GroupRows, &RebuildGroupList, Row]()
+					{
+						GroupRows.Remove(Row);
+						if (GroupRows.IsEmpty())
+						{
+							TSharedPtr<FMeshToggleGroupRow> NewRow = MakeShared<FMeshToggleGroupRow>();
+							NewRow->Label = TEXT("Toggle 1");
+							NewRow->bDefaultVisible = true;
+							GroupRows.Add(NewRow);
+						}
+						RebuildGroupList();
+					}))
+				];
+		}
+	};
+
 	SAssignNew(Window, SWindow)
 		.Title(LOCTEXT("MeshToggleSetupDialogTitle", "NTE Mesh Toggle Runtime"))
-		.ClientSize(FVector2D(760, 680))
+		.ClientSize(FVector2D(900, 760))
 		.SupportsMaximize(false)
 		.SupportsMinimize(false)
 		[
@@ -264,6 +463,60 @@ bool ShowMeshToggleSetupDialog(USkeletalMesh& SkeletalMesh, FNteMeshToggleSetupO
 			.AutoHeight()
 			.Padding(16, 8)
 			[
+				SNew(STextBlock)
+				.Text(LOCTEXT("ToggleGroupsTitle", "Toggle Items"))
+			]
+			+ SVerticalBox::Slot()
+			.AutoHeight()
+			.Padding(16, 0, 16, 8)
+			[
+				SAssignNew(GroupList, SVerticalBox)
+			]
+			+ SVerticalBox::Slot()
+			.AutoHeight()
+			.Padding(16, 0, 16, 8)
+			[
+				SNew(SButton)
+				.Text(LOCTEXT("AddToggleGroup", "Add Toggle Item"))
+				.OnClicked_Lambda([&GroupRows, &RebuildGroupList]()
+				{
+					TSharedPtr<FMeshToggleGroupRow> Row = MakeShared<FMeshToggleGroupRow>();
+					Row->Label = FString::Printf(TEXT("Toggle %d"), GroupRows.Num() + 1);
+					Row->bDefaultVisible = true;
+					GroupRows.Add(Row);
+					RebuildGroupList();
+					return FReply::Handled();
+				})
+			]
+			+ SVerticalBox::Slot()
+			.FillHeight(0.35f)
+			.Padding(16, 4)
+			[
+				SNew(SScrollBox)
+				+ SScrollBox::Slot()
+				[
+					SlotList
+				]
+			]
+			+ SVerticalBox::Slot()
+			.AutoHeight()
+			.Padding(16, 8)
+			[
+				SAssignNew(CreateRuntimeAssetsCheckBox, SCheckBox)
+				.IsChecked(bCreateRuntimeAssets ? ECheckBoxState::Checked : ECheckBoxState::Unchecked)
+				.OnCheckStateChanged_Lambda([&bCreateRuntimeAssets](ECheckBoxState NewState)
+				{
+					bCreateRuntimeAssets = NewState == ECheckBoxState::Checked;
+				})
+				[
+					SNew(STextBlock)
+					.Text(LOCTEXT("CreateRuntimeAssetsLabel", "Create or overwrite runtime Blueprint assets from templates"))
+				]
+			]
+			+ SVerticalBox::Slot()
+			.AutoHeight()
+			.Padding(16, 8)
+			[
 				MakeLabeledTextBox(
 					LOCTEXT("TemplatePostProcessLabel", "Template Post Process Anim Blueprint"),
 					SAssignNew(TemplatePostProcessTextBox, SEditableTextBox).Text(FText::FromString(TemplatePostProcess)))
@@ -283,16 +536,6 @@ bool ShowMeshToggleSetupDialog(USkeletalMesh& SkeletalMesh, FNteMeshToggleSetupO
 				MakeLabeledTextBox(
 					LOCTEXT("TemplateSaveGameLabel", "Template SaveGame Blueprint"),
 					SAssignNew(TemplateSaveGameTextBox, SEditableTextBox).Text(FText::FromString(TemplateSaveGame)))
-			]
-			+ SVerticalBox::Slot()
-			.FillHeight(1.0f)
-			.Padding(16, 8)
-			[
-				SNew(SScrollBox)
-				+ SScrollBox::Slot()
-				[
-					SlotList
-				]
 			]
 			+ SVerticalBox::Slot()
 			.AutoHeight()
@@ -328,6 +571,7 @@ bool ShowMeshToggleSetupDialog(USkeletalMesh& SkeletalMesh, FNteMeshToggleSetupO
 			]
 		];
 
+	RebuildGroupList();
 	FSlateApplication::Get().AddModalWindow(Window.ToSharedRef(), nullptr);
 	if (!bAccepted)
 	{
@@ -339,6 +583,7 @@ bool ShowMeshToggleSetupDialog(USkeletalMesh& SkeletalMesh, FNteMeshToggleSetupO
 	TemplatePostProcess = TemplatePostProcessTextBox->GetText().ToString();
 	TemplateWidget = TemplateWidgetTextBox->GetText().ToString();
 	TemplateSaveGame = TemplateSaveGameTextBox->GetText().ToString();
+	bCreateRuntimeAssets = CreateRuntimeAssetsCheckBox.IsValid() && CreateRuntimeAssetsCheckBox->IsChecked();
 
 	FString Error;
 	FInputChord UiChord;
@@ -358,20 +603,26 @@ bool ShowMeshToggleSetupDialog(USkeletalMesh& SkeletalMesh, FNteMeshToggleSetupO
 	OutOptions.TemplateWidgetBlueprintPath = NTEBuildTool::Editor::NormalizeAssetPathForText(TemplateWidget);
 	OutOptions.TemplateSaveGameBlueprintPath = NTEBuildTool::Editor::NormalizeAssetPathForText(TemplateSaveGame);
 	OutOptions.RuntimeMode = TEXT("StandardPostProcessTemplate");
-	OutOptions.bCreateBlueprintAssets = true;
+	OutOptions.bCreateBlueprintAssets = bCreateRuntimeAssets;
 	OutOptions.bAssignPostProcessAnimBlueprint = true;
 	OutOptions.bOverwriteExistingRuntimeAssets = true;
 
-	for (const TSharedPtr<FMeshToggleSlotRow>& Row : Rows)
+	for (const TSharedPtr<FMeshToggleGroupRow>& Row : GroupRows)
 	{
-		if (!Row->bEnabled)
-		{
-			continue;
-		}
-
+		Row->Label = Row->LabelTextBox.IsValid() ? Row->LabelTextBox->GetText().ToString() : Row->Label;
 		Row->KeyName = Row->KeyTextBox.IsValid() ? Row->KeyTextBox->GetText().ToString() : Row->KeyName;
+		Row->SlotsText = Row->SlotsTextBox.IsValid() ? Row->SlotsTextBox->GetText().ToString() : Row->SlotsText;
+		Row->bDefaultVisible = Row->DefaultVisibleCheckBox.IsValid() ? Row->DefaultVisibleCheckBox->IsChecked() : Row->bDefaultVisible;
+
 		FInputChord GroupChord;
 		if (!ParseChord(Row->KeyName, GroupChord, Error))
+		{
+			NTEBuildTool::Editor::ShowError(FText::FromString(Error));
+			return false;
+		}
+
+		TArray<int32> Slots;
+		if (!ParseSlotsText(Row->SlotsText, Rows.Num(), Slots, Error))
 		{
 			NTEBuildTool::Editor::ShowError(FText::FromString(Error));
 			return false;
@@ -380,17 +631,21 @@ bool ShowMeshToggleSetupDialog(USkeletalMesh& SkeletalMesh, FNteMeshToggleSetupO
 		FNteMeshToggleGroup Group;
 		const int32 GroupOrdinal = OutOptions.ToggleGroups.Num() + 1;
 		Group.GroupId = FString::Printf(TEXT("toggle_group_%d"), GroupOrdinal);
-		Group.Label = FString::Printf(TEXT("Slot %d"), Row->SlotIndex);
+		Group.Label = Row->Label.IsEmpty() ? FString::Printf(TEXT("Toggle %d"), GroupOrdinal) : Row->Label;
 		Group.Chord = GroupChord;
-		Group.Slots.Add(Row->SlotIndex);
-		Group.bDefaultVisible = true;
+		Group.Slots = Slots;
+		Group.bDefaultVisible = Row->bDefaultVisible;
 
-		FNteMeshToggleSlotBinding Binding;
-		Binding.SlotIndex = Row->SlotIndex;
-		Binding.SlotName = Row->SlotName;
-		Binding.ImportedSlotName = Row->ImportedSlotName;
-		Binding.MaterialPath = Row->MaterialPath;
-		Group.SlotBindings.Add(Binding);
+		for (const int32 SlotIndex : Slots)
+		{
+			const TSharedPtr<FMeshToggleSlotRow>& SlotRow = Rows[SlotIndex];
+			FNteMeshToggleSlotBinding Binding;
+			Binding.SlotIndex = SlotRow->SlotIndex;
+			Binding.SlotName = SlotRow->SlotName;
+			Binding.ImportedSlotName = SlotRow->ImportedSlotName;
+			Binding.MaterialPath = SlotRow->MaterialPath;
+			Group.SlotBindings.Add(Binding);
+		}
 		OutOptions.ToggleGroups.Add(Group);
 	}
 

@@ -8,7 +8,10 @@
 #include "Animation/AnimBlueprint.h"
 #include "Animation/AnimInstance.h"
 #include "AssetToolsModule.h"
+#include "Blueprint/WidgetTree.h"
 #include "Blueprint/UserWidget.h"
+#include "Components/Button.h"
+#include "Components/TextBlock.h"
 #include "EdGraph/EdGraph.h"
 #include "EdGraph/EdGraphNode.h"
 #include "EdGraph/EdGraphPin.h"
@@ -24,6 +27,7 @@
 #include "Misc/PackageName.h"
 #include "ObjectTools.h"
 #include "UObject/SavePackage.h"
+#include "WidgetBlueprint.h"
 
 namespace NTEBuildTool::Toggle
 {
@@ -41,6 +45,8 @@ struct FRuntimeBuildContext
 	UBlueprint* WidgetBlueprint = nullptr;
 	UBlueprint* SaveGameBlueprint = nullptr;
 	FNteMeshToggleBlueprintBuildResult* Result = nullptr;
+	TMap<int32, int32> NextShowMaterialSectionSlotOrdinalByGroup;
+	TMap<int32, int32> PatchedShowMaterialSectionNodeCountByGroup;
 };
 
 FString ToGeneratedClassObjectPath(const FString& BlueprintPackagePath)
@@ -260,7 +266,7 @@ FString GetTargetKeyForTemplateGroup(const FRuntimeBuildContext& Context, const 
 	}
 
 	const FInputChord& Chord = Context.Options.ToggleGroups[GroupIndex].Chord;
-	return Chord.Key.IsValid() ? Chord.Key.GetFName().ToString() : FString();
+	return Chord.Key.IsValid() ? Chord.Key.GetFName().ToString() : TEXT("None");
 }
 
 void PatchShowMaterialSectionNode(FRuntimeBuildContext& Context, UEdGraphNode& Node)
@@ -282,12 +288,21 @@ void PatchShowMaterialSectionNode(FRuntimeBuildContext& Context, UEdGraphNode& N
 	{
 		return;
 	}
-	if (Slots.Num() > 1 && Context.Result)
+
+	int32& NextSlotOrdinal = Context.NextShowMaterialSectionSlotOrdinalByGroup.FindOrAdd(TemplateGroupOrdinal);
+	const int32 SlotOrdinal = NextSlotOrdinal++;
+	Context.PatchedShowMaterialSectionNodeCountByGroup.FindOrAdd(TemplateGroupOrdinal)++;
+	const int32 SlotIndex = Slots[FMath::Min(SlotOrdinal, Slots.Num() - 1)];
+	if (SlotOrdinal >= Slots.Num() && Context.Result)
 	{
-		Context.Result->Warnings.Add(FString::Printf(TEXT("Template ShowMaterialSection node can only carry one slot for group %d; using slot %d."), TemplateGroupOrdinal, Slots[0]));
+		Context.Result->Warnings.Add(FString::Printf(
+			TEXT("Template has more ShowMaterialSection nodes than configured slots for group %d; reusing slot %d for node %s."),
+			TemplateGroupOrdinal,
+			SlotIndex,
+			*Node.GetName()));
 	}
 
-	const FString SlotText = FString::FromInt(Slots[0]);
+	const FString SlotText = FString::FromInt(SlotIndex);
 	if (UEdGraphPin* MaterialIdPin = FindPinByName(Node, TEXT("MaterialID")))
 	{
 		SetPinDefaultValue(Context, Node, *MaterialIdPin, SlotText);
@@ -295,6 +310,36 @@ void PatchShowMaterialSectionNode(FRuntimeBuildContext& Context, UEdGraphNode& N
 	if (UEdGraphPin* SectionIndexPin = FindPinByName(Node, TEXT("SectionIndex")))
 	{
 		SetPinDefaultValue(Context, Node, *SectionIndexPin, SlotText);
+	}
+}
+
+void WarnAboutUnpatchedMaterialSlots(FRuntimeBuildContext& Context)
+{
+	if (!Context.Result)
+	{
+		return;
+	}
+
+	for (int32 GroupIndex = 0; GroupIndex < Context.Options.ToggleGroups.Num(); ++GroupIndex)
+	{
+		const int32 TemplateGroupOrdinal = GroupIndex + 1;
+		const FNteMeshToggleGroup& Group = Context.Options.ToggleGroups[GroupIndex];
+		const int32 PatchedNodeCount = Context.PatchedShowMaterialSectionNodeCountByGroup.FindRef(TemplateGroupOrdinal);
+		if (PatchedNodeCount < Group.Slots.Num())
+		{
+			TArray<FString> UnpatchedSlots;
+			for (int32 SlotOrdinal = PatchedNodeCount; SlotOrdinal < Group.Slots.Num(); ++SlotOrdinal)
+			{
+				UnpatchedSlots.Add(FString::FromInt(Group.Slots[SlotOrdinal]));
+			}
+			Context.Result->Warnings.Add(FString::Printf(
+				TEXT("Template group %d has %d ShowMaterialSection node(s), but setup item '%s' binds %d slot(s). These slots will not be controlled: %s."),
+				TemplateGroupOrdinal,
+				PatchedNodeCount,
+				*Group.Label,
+				Group.Slots.Num(),
+				*FString::Join(UnpatchedSlots, TEXT(","))));
+		}
 	}
 }
 
@@ -353,7 +398,14 @@ void PatchInputKeyNode(FRuntimeBuildContext& Context, UEdGraphNode& Node)
 	const FString NewKey = GetTargetKeyForTemplateGroup(Context, TemplateGroupOrdinal);
 	if (!NewKey.IsEmpty())
 	{
-		SetPinDefaultValue(Context, Node, *KeyPin, NewKey);
+		if (IsModifierKey(KeyPin->DefaultValue))
+		{
+			SetPinDefaultValue(Context, Node, *KeyPin, GetModifierReplacementKey(Context.Options.ToggleGroups[TemplateGroupOrdinal - 1].Chord, KeyPin->DefaultValue));
+		}
+		else
+		{
+			SetPinDefaultValue(Context, Node, *KeyPin, NewKey);
+		}
 	}
 }
 
@@ -387,7 +439,7 @@ FString GetModifierReplacementKey(const FInputChord& Chord, const FString& OldKe
 	{
 		return OldKeyName.StartsWith(TEXT("Right")) ? TEXT("RightCommand") : TEXT("LeftCommand");
 	}
-	return Chord.Key.IsValid() ? Chord.Key.GetFName().ToString() : OldKeyName;
+	return Chord.Key.IsValid() ? Chord.Key.GetFName().ToString() : TEXT("None");
 }
 
 void PatchUiHotkeyNode(FRuntimeBuildContext& Context, UEdGraphNode& Node)
@@ -547,6 +599,81 @@ void PatchSaveGameBlueprintDefaults(FRuntimeBuildContext& Context)
 
 	FBlueprintEditorUtils::MarkBlueprintAsStructurallyModified(Context.SaveGameBlueprint);
 	FKismetEditorUtilities::CompileBlueprint(Context.SaveGameBlueprint, EBlueprintCompileOptions::SkipGarbageCollection);
+}
+
+FString MakeStandardButtonLabelWidgetName(const int32 TemplateGroupOrdinal)
+{
+	return FString::Printf(
+		TEXT("NTE_Toggle_Button_%02d_toggle_group_%d_Label"),
+		TemplateGroupOrdinal,
+		TemplateGroupOrdinal);
+}
+
+FString MakeStandardButtonWidgetName(const int32 TemplateGroupOrdinal)
+{
+	return FString::Printf(
+		TEXT("NTE_Toggle_Button_%02d_toggle_group_%d"),
+		TemplateGroupOrdinal,
+		TemplateGroupOrdinal);
+}
+
+bool PatchWidgetBlueprintLabels(FRuntimeBuildContext& Context, FString& OutError)
+{
+	UWidgetBlueprint* WidgetBlueprint = Cast<UWidgetBlueprint>(Context.WidgetBlueprint);
+	if (!WidgetBlueprint || !WidgetBlueprint->WidgetTree)
+	{
+		OutError = TEXT("TemplateWidgetBlueprint must be a UWidgetBlueprint with a WidgetTree.");
+		return false;
+	}
+
+	bool bChanged = false;
+	for (int32 GroupIndex = 0; GroupIndex < Context.Options.ToggleGroups.Num(); ++GroupIndex)
+	{
+		const int32 TemplateGroupOrdinal = GroupIndex + 1;
+		const FNteMeshToggleGroup& Group = Context.Options.ToggleGroups[GroupIndex];
+		const FString ButtonWidgetName = MakeStandardButtonWidgetName(TemplateGroupOrdinal);
+		UWidget* ButtonWidget = WidgetBlueprint->WidgetTree->FindWidget(FName(*ButtonWidgetName));
+		if (!Cast<UButton>(ButtonWidget))
+		{
+			OutError = FString::Printf(
+				TEXT("Widget template is missing Button '%s' required for toggle item '%s'."),
+				*ButtonWidgetName,
+				*Group.Label);
+			return false;
+		}
+
+		const FString LabelWidgetName = MakeStandardButtonLabelWidgetName(TemplateGroupOrdinal);
+		UWidget* Widget = WidgetBlueprint->WidgetTree->FindWidget(FName(*LabelWidgetName));
+		UTextBlock* LabelTextBlock = Cast<UTextBlock>(Widget);
+		if (!LabelTextBlock)
+		{
+			OutError = FString::Printf(
+				TEXT("Widget template is missing TextBlock '%s' required to label toggle item '%s'."),
+				*LabelWidgetName,
+				*Group.Label);
+			return false;
+		}
+
+		const FText NewLabel = FText::FromString(Group.Label);
+		if (!LabelTextBlock->GetText().EqualTo(NewLabel))
+		{
+			LabelTextBlock->Modify();
+			LabelTextBlock->SetText(NewLabel);
+			bChanged = true;
+		}
+
+		if (Context.Result)
+		{
+			Context.Result->Actions.Add(FString::Printf(TEXT("patched widget label %s=%s"), *LabelWidgetName, *Group.Label));
+		}
+	}
+
+	if (bChanged)
+	{
+		FBlueprintEditorUtils::MarkBlueprintAsStructurallyModified(WidgetBlueprint);
+		FKismetEditorUtilities::CompileBlueprint(WidgetBlueprint, EBlueprintCompileOptions::SkipGarbageCollection);
+	}
+	return true;
 }
 
 TSet<int32> CollectTemplateGroupOrdinals(const UBlueprint& Blueprint)
@@ -735,7 +862,12 @@ bool BuildMeshToggleRuntimeBlueprints(
 	}
 
 	PatchSaveGameBlueprintDefaults(Context);
+	if (!PatchWidgetBlueprintLabels(Context, OutError))
+	{
+		return false;
+	}
 	PatchPostProcessBlueprintGraph(Context);
+	WarnAboutUnpatchedMaterialSlots(Context);
 
 	InOutResult.PostProcessAnimBlueprint = Context.PostProcessAnimBlueprint;
 	InOutResult.WidgetBlueprint = Context.WidgetBlueprint;

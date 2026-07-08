@@ -28,7 +28,8 @@ public class NTEBuildTool : ModuleRules
 			"Slate",
 			"SlateCore",
 			"ToolMenus",
-			"UMG"
+			"UMG",
+			"UMGEditor"
 		});
 	}
 }
