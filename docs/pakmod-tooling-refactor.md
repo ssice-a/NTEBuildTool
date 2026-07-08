@@ -183,14 +183,15 @@ Responsibilities:
 - read/write `NTE.ModToggleSetup` JSON;
 - gather and validate material-slot groups;
 - generate or update runtime assets:
-  - thin Post Process Anim Blueprint;
-  - runtime controller Blueprint;
+  - Standard PostProcess Template Runtime assets;
   - widget Blueprint;
   - save-game Blueprint;
 - assign the generated Post Process Anim Blueprint to the target `SkeletalMesh` only when requested;
 - inspect generated assets for expected graph/variable/widget structure.
 
-The key change is separating the runtime controller from the post-process animation instance. The Post Process Anim Blueprint should become a thin anchor that ensures a controller exists and has the target `SkinnedMeshComponent`. The controller owns:
+The current core path is deliberately narrow: select one `SkeletalMesh`, enter a UI hotkey and one hotkey per material-slot group, then generate runtime assets from a standard template contract. The generator should not adapt arbitrary old project assets or infer behaviour from the current five mods.
+
+The future deeper runtime target is separating the runtime controller from the post-process animation instance. In that mode, the Post Process Anim Blueprint becomes a thin anchor that ensures a controller exists and has the target `SkinnedMeshComponent`. The controller owns:
 
 - hotkey polling;
 - UI show/hide state;
@@ -200,6 +201,8 @@ The key change is separating the runtime controller from the post-process animat
 - debug/instrumentation counters.
 
 The UI must also include a close control and not depend solely on the hotkey path to recover.
+
+Legacy runtime migration is not part of the core module. If old generated assets need migration, it should be a separate commandlet with its own contract and tests, not a compatibility layer inside `NteMeshToggleBlueprintBuilder`.
 
 ### Package Pipeline Module
 
@@ -245,11 +248,39 @@ Responsibilities:
 
 ## Toggle Runtime Design
 
-### Initial Pure-Pak Runtime Chain
+### Current Pure-Pak Runtime Chain
 
 ```text
-Target SkeletalMesh
+Runtime Anchor SkeletalMesh
   -> PostProcessAnimBlueprint = ABP_NTE_ModToggle_PostProcess
+      -> standard template EventGraph polls UI and group hotkeys
+      -> widget/save-game template classes are patched to generated copies
+      -> ShowMaterialSection applies configured material-slot visibility
+```
+
+This still needs the Post Process Anim Blueprint to run. If evidence later proves a target scene never runs the post-process anchor, the next fallback is to find another replaced asset anchor in that scene. DLL/hook work is the last resort.
+
+### Standard Runtime Template Contract
+
+The core generator duplicates three user-supplied template assets and patches only this contract:
+
+- `TemplatePostProcessAnimBlueprint` is an `AnimBlueprint` with standard input polling and `ShowMaterialSection` nodes.
+- `TemplateWidgetBlueprint` is a `UserWidget` template used by the standard post-process runtime.
+- `TemplateSaveGameBlueprint` stores one visible-state variable per toggle group.
+- Visible-state variables use `NTE_Toggle_XX_toggle_group_N_Visible`, where `N` is the 1-based setup group ordinal.
+- Group input marker variables use `NTE_Toggle_Input_N_...`, where `N` is the 1-based setup group ordinal.
+- The template group count must match `Groups.Num()` in the setup JSON.
+- UI hotkey placeholder nodes use `Slash` and modifier-key pins; those pins are patched from `UIInputChord`.
+
+Anything outside this contract is a different runtime mode, not something the core generator should guess.
+
+### Future Thin-Controller Runtime
+
+The next deepening target is:
+
+```text
+Runtime Anchor SkeletalMesh
+  -> thin PostProcessAnimBlueprint
       -> pass-through AnimGraph
       -> Initialize/Update ensures BP_NTE_ModToggleController exists
           -> controller stores TargetComponent
@@ -257,7 +288,7 @@ Target SkeletalMesh
           -> controller owns hotkeys, UI, save state, visibility
 ```
 
-This still needs the Post Process Anim Blueprint to run at least once. It reduces damage when the UI changes input mode or when the animation update graph is not a good place for UI state. If evidence later proves a target scene never runs the post-process anchor, the next fallback is to find another replaced asset anchor in that scene. DLL/hook work is the last resort.
+That mode should be implemented as `RuntimeMode=ThinAnchorController` with its own generator and inspector. It should not be faked by requiring `BP_NTE_ModToggleController` in Standard PostProcess Template setups.
 
 ### Input Rules
 
@@ -481,7 +512,7 @@ This refactor checkpoint has been built and exercised through the `PhyLab` mirro
 - `PhyLabEditor` builds successfully after syncing the standalone plugin into `F:\NTE\PhyLab\Plugins\NTEBuildTool`.
 - `NteMaterialConfig` recreated/updated `player_075_oneir_rpg_level2` slot 2 and slot 3 bindings to `/Game/.../player_075_oneir_rpg_level2_cloth/mod/Materials/MI_mod_body`.
 - `NteAssetInspection` confirms level2 `cloth` is still a `StaticMesh`, slots 2 and 3 both use `MI_mod_body`, and the level2 pants texture package loads.
-- Existing 004/level1/level3 toggle setups validate and reassign their Post Process Anim Blueprint. They still warn that `BP_NTE_ModToggleController` is absent, which matches the old hardcoded Post Process runtime rather than the planned thin-anchor/controller model.
+- Existing 004/level1/level3 toggle setups validate and reassign their Post Process Anim Blueprint. They are legacy generated runtime assets and should not define the new core generator contract.
 - Level2 toggle setup fails intentionally with a StaticMesh Runtime Anchor error. This is the current blocker for pure-pak hotkey/UI toggles on level2.
 - Five package jobs complete through `NteModPackage` and copy verified `.pak/.utoc/.ucas` outputs into the final Mods subfolders.
 - `BuildNteMod.ps1` reads package jobs as UTF-8 and shared JSON writes now include a UTF-8 BOM, preventing Windows PowerShell from corrupting non-ASCII paths such as `Mods\安魂曲`.
@@ -506,7 +537,23 @@ This checkpoint deepens two modules without coupling the current five mod target
 - `ValidateOnly` was added for `NTE.ModToggleSetup` so StaticMesh target/RuntimeAnchorMesh combinations can be checked without saving setup JSON, assigning a Post Process Anim Blueprint, or requiring generated runtime assets to exist.
 - The editor menu entry `Build Mod Package` now creates a package job from selected Content Browser assets or folders, asks for the Mods output directory and job JSON path, saves the normalized job, and launches the existing cook/package pipeline.
 - `F:\NTE\NTEBuildTool\.scratch\level2_static_target_anchor_validate.json` validates the level2 StaticMesh target with a sample SkeletalMesh runtime anchor and exits with 0 errors. It still warns that `MaterialSwap` needs a `HiddenMaterial` and controller support before the setup is runtime-complete.
-- The remaining runtime work is still to generate or migrate the thin Post Process Anim Blueprint plus controller blueprint. Existing 004/level1/level3 assets remain old hardcoded Post Process runtimes until that controller module is implemented.
+- The remaining runtime work is to create standard template assets for normal generation, then later implement `RuntimeMode=ThinAnchorController` as a separate generator/inspector. Existing 004/level1/level3 assets remain legacy generated runtimes until an explicit migration task handles them.
+
+## 2026-07-08 Core Toggle Refactor Constraint
+
+The core toggle workflow is now intentionally scoped to a standard interface:
+
+```text
+select SkeletalMesh
+  -> enter UI hotkey
+  -> enable material slots and enter each slot/group hotkey
+  -> choose standard PostProcess, Widget, and SaveGame templates
+  -> generate setup JSON and runtime assets
+```
+
+`StandardPostProcessTemplate` is the current default `RuntimeMode`. The generator no longer grows compatibility logic for arbitrary old blueprint names such as `ui_only` or `cycle_a`. A template that does not expose the Standard Runtime Template Contract should fail with a clear message.
+
+Hardcoded package targets, the five current mod paths, and one-off asset-repair rules must stay out of plugin source. They belong in setup JSON, material recipes, package jobs, audit configs, or a future migration commandlet.
 
 ## Git Strategy
 

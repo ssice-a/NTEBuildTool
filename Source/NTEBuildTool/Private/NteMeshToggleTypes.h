@@ -40,11 +40,14 @@ struct FNteMeshToggleSetupOptions
 	FString OutputFolder;
 	FString ConfigAssetName = TEXT("NTE_ModToggleSetup");
 	FString PostProcessAnimBlueprintName = TEXT("ABP_NTE_ModToggle_PostProcess");
-	FString ControllerBlueprintName = TEXT("BP_NTE_ModToggleController");
+	FString ControllerBlueprintName;
 	FString WidgetBlueprintName = TEXT("WBP_NTE_ModToggleMenu");
 	FString SaveGameBlueprintName = TEXT("BP_NTE_ModToggleSaveGame");
+	FString TemplatePostProcessAnimBlueprintPath;
+	FString TemplateWidgetBlueprintPath;
+	FString TemplateSaveGameBlueprintPath;
 	FString SaveSlotName;
-	FString RuntimeMode = TEXT("ThinAnchorController");
+	FString RuntimeMode = TEXT("StandardPostProcessTemplate");
 	FString StaticMeshVisibilityAdapter = TEXT("MaterialSwap");
 	FString HiddenMaterialPath;
 	FInputChord UiChord = FInputChord(EKeys::Slash, false, true, false, false);
@@ -52,6 +55,7 @@ struct FNteMeshToggleSetupOptions
 	bool bAssignPostProcessAnimBlueprint = true;
 	bool bCreateBlueprintAssets = true;
 	bool bSaveDirtyAssetsAfterCreate = true;
+	bool bOverwriteExistingRuntimeAssets = true;
 	bool bValidateOnly = false;
 };
 

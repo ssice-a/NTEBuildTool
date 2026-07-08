@@ -4,6 +4,7 @@
 
 #include "NteEditorAssetUtils.h"
 #include "NteJsonFileUtils.h"
+#include "NteMeshToggleBlueprintBuilder.h"
 
 #include "Animation/AnimBlueprint.h"
 #include "Animation/AnimInstance.h"
@@ -246,7 +247,7 @@ bool LoadRequiredAsset(UObject*& OutAsset, const FString& AssetPath, const TCHAR
 	return true;
 }
 
-bool BlueprintLooksLikeGeneratedHardcodedRuntime(const UAnimBlueprint& AnimBlueprint)
+bool BlueprintLooksLikeStandardPostProcessTemplateRuntime(const UAnimBlueprint& AnimBlueprint)
 {
 	FString PackageFilename;
 	if (!FPackageName::TryConvertLongPackageNameToFilename(AnimBlueprint.GetPackage()->GetName(), PackageFilename, FPackageName::GetAssetPackageExtension()))
@@ -306,11 +307,19 @@ bool LoadMeshToggleSetupOptionsFromJsonFile(const FString& ConfigFilename, FNteM
 	const FString ControllerBlueprintPath = NormalizeAssetPathForText(GetStringAny(*Root, TEXT("ControllerBlueprint")));
 	const FString WidgetBlueprintPath = NormalizeAssetPathForText(GetStringAny(*Root, TEXT("WidgetBlueprint")));
 	const FString SaveGameBlueprintPath = NormalizeAssetPathForText(GetStringAny(*Root, TEXT("SaveGameBlueprint")));
+	OutOptions.TemplatePostProcessAnimBlueprintPath = NormalizeAssetPathForText(GetStringAny(*Root, TEXT("TemplatePostProcessAnimBlueprint"), TEXT("TemplatePostProcess")));
+	OutOptions.TemplateWidgetBlueprintPath = NormalizeAssetPathForText(GetStringAny(*Root, TEXT("TemplateWidgetBlueprint"), TEXT("TemplateWidget")));
+	OutOptions.TemplateSaveGameBlueprintPath = NormalizeAssetPathForText(GetStringAny(*Root, TEXT("TemplateSaveGameBlueprint"), TEXT("TemplateSaveGame")));
 	OutOptions.SaveSlotName = GetStringAny(*Root, TEXT("SaveSlot"), TEXT("saveSlot"));
 	OutOptions.RuntimeMode = GetStringAny(*Root, TEXT("RuntimeMode"), TEXT("runtimeMode"));
 	OutOptions.StaticMeshVisibilityAdapter = GetStringAny(*Root, TEXT("StaticMeshVisibilityAdapter"), TEXT("staticMeshVisibilityAdapter"));
 	OutOptions.HiddenMaterialPath = NormalizeAssetPathForText(GetStringAny(*Root, TEXT("HiddenMaterial"), TEXT("hiddenMaterial")));
 	GetBoolAny(*Root, OutOptions.bValidateOnly, TEXT("ValidateOnly"), TEXT("validateOnly"));
+	GetBoolAny(*Root, OutOptions.bAssignPostProcessAnimBlueprint, TEXT("AssignPostProcess"), TEXT("AssignPostProcessAnimBlueprint"));
+	GetBoolAny(*Root, OutOptions.bAssignPostProcessAnimBlueprint, TEXT("assignPostProcess"));
+	GetBoolAny(*Root, OutOptions.bCreateBlueprintAssets, TEXT("CreateBlueprintAssets"), TEXT("createBlueprintAssets"));
+	GetBoolAny(*Root, OutOptions.bSaveDirtyAssetsAfterCreate, TEXT("SaveDirtyAssetsAfterCreate"), TEXT("saveDirtyAssetsAfterCreate"));
+	GetBoolAny(*Root, OutOptions.bOverwriteExistingRuntimeAssets, TEXT("OverwriteExistingRuntimeAssets"), TEXT("overwriteExistingRuntimeAssets"));
 
 	if (OutOptions.TargetMeshPath.IsEmpty())
 	{
@@ -322,7 +331,7 @@ bool LoadMeshToggleSetupOptionsFromJsonFile(const FString& ConfigFilename, FNteM
 	}
 	if (OutOptions.RuntimeMode.IsEmpty())
 	{
-		OutOptions.RuntimeMode = TEXT("ThinAnchorController");
+		OutOptions.RuntimeMode = TEXT("StandardPostProcessTemplate");
 	}
 	if (OutOptions.StaticMeshVisibilityAdapter.IsEmpty())
 	{
@@ -425,13 +434,20 @@ bool SaveMeshToggleSetupOptionsToJsonFile(const FNteMeshToggleSetupOptions& Opti
 	Root->SetStringField(TEXT("TargetMesh"), TargetMeshPath);
 	Root->SetStringField(TEXT("RuntimeAnchorMesh"), RuntimeAnchorMeshPath);
 	Root->SetStringField(TEXT("PostProcessAnimBlueprint"), JoinAssetPath(Options.OutputFolder, Options.PostProcessAnimBlueprintName));
-	Root->SetStringField(TEXT("ControllerBlueprint"), JoinAssetPath(Options.OutputFolder, Options.ControllerBlueprintName));
+	Root->SetStringField(TEXT("ControllerBlueprint"), Options.ControllerBlueprintName.IsEmpty() ? FString() : JoinAssetPath(Options.OutputFolder, Options.ControllerBlueprintName));
 	Root->SetStringField(TEXT("WidgetBlueprint"), JoinAssetPath(Options.OutputFolder, Options.WidgetBlueprintName));
 	Root->SetStringField(TEXT("SaveGameBlueprint"), JoinAssetPath(Options.OutputFolder, Options.SaveGameBlueprintName));
+	Root->SetStringField(TEXT("TemplatePostProcessAnimBlueprint"), Options.TemplatePostProcessAnimBlueprintPath);
+	Root->SetStringField(TEXT("TemplateWidgetBlueprint"), Options.TemplateWidgetBlueprintPath);
+	Root->SetStringField(TEXT("TemplateSaveGameBlueprint"), Options.TemplateSaveGameBlueprintPath);
 	Root->SetStringField(TEXT("SaveSlot"), Options.SaveSlotName);
 	Root->SetStringField(TEXT("RuntimeMode"), Options.RuntimeMode);
 	Root->SetStringField(TEXT("StaticMeshVisibilityAdapter"), Options.StaticMeshVisibilityAdapter);
 	Root->SetStringField(TEXT("HiddenMaterial"), Options.HiddenMaterialPath);
+	Root->SetBoolField(TEXT("AssignPostProcess"), Options.bAssignPostProcessAnimBlueprint);
+	Root->SetBoolField(TEXT("CreateBlueprintAssets"), Options.bCreateBlueprintAssets);
+	Root->SetBoolField(TEXT("SaveDirtyAssetsAfterCreate"), Options.bSaveDirtyAssetsAfterCreate);
+	Root->SetBoolField(TEXT("OverwriteExistingRuntimeAssets"), Options.bOverwriteExistingRuntimeAssets);
 	Root->SetBoolField(TEXT("ValidateOnly"), Options.bValidateOnly);
 	Root->SetObjectField(TEXT("UIInputChord"), InputChordToJsonObject(Options.UiChord));
 
@@ -495,7 +511,7 @@ bool RunMeshToggleUiSetup(FNteMeshToggleSetupOptions Options, FNteMeshToggleSetu
 	}
 	if (Options.RuntimeMode.IsEmpty())
 	{
-		Options.RuntimeMode = TEXT("ThinAnchorController");
+		Options.RuntimeMode = TEXT("StandardPostProcessTemplate");
 	}
 	if (Options.StaticMeshVisibilityAdapter.IsEmpty())
 	{
@@ -560,6 +576,15 @@ bool RunMeshToggleUiSetup(FNteMeshToggleSetupOptions Options, FNteMeshToggleSetu
 	OutResult.WidgetBlueprintPath = JoinAssetPath(Options.OutputFolder, Options.WidgetBlueprintName);
 	OutResult.SaveGameBlueprintPath = JoinAssetPath(Options.OutputFolder, Options.SaveGameBlueprintName);
 
+	const bool bHasAllTemplatePaths = !Options.TemplatePostProcessAnimBlueprintPath.IsEmpty()
+		&& !Options.TemplateWidgetBlueprintPath.IsEmpty()
+		&& !Options.TemplateSaveGameBlueprintPath.IsEmpty();
+	if (Options.bCreateBlueprintAssets && !bHasAllTemplatePaths)
+	{
+		OutError = TEXT("CreateBlueprintAssets=true requires TemplatePostProcessAnimBlueprint, TemplateWidgetBlueprint, and TemplateSaveGameBlueprint. Set CreateBlueprintAssets=false only when reusing existing runtime assets.");
+		return false;
+	}
+
 	if (!OutResult.ConfigFilename.IsEmpty())
 	{
 		if (!SaveMeshToggleSetupOptionsToJsonFile(Options, OutResult.ConfigFilename, OutError))
@@ -568,17 +593,31 @@ bool RunMeshToggleUiSetup(FNteMeshToggleSetupOptions Options, FNteMeshToggleSetu
 		}
 	}
 
-	UObject* LoadedAsset = nullptr;
-	if (!LoadRequiredAsset(LoadedAsset, OutResult.PostProcessAnimBlueprintPath, TEXT("PostProcessAnimBlueprint"), OutError))
+	if (Options.bCreateBlueprintAssets)
 	{
-		if (Options.bCreateBlueprintAssets)
+		FNteMeshToggleBlueprintBuildResult BuildResult;
+		if (!BuildMeshToggleRuntimeBlueprints(Options, OutResult, BuildResult, OutError))
 		{
-			OutError += LINE_TERMINATOR TEXT("Runtime Blueprint graph generation has not been migrated yet. Existing target-specific runtime assets are required for now.");
+			return false;
 		}
-		return false;
+		OutResult.Warnings.Append(BuildResult.Warnings);
 	}
 
-	UAnimBlueprint* PostProcessAnimBlueprint = Cast<UAnimBlueprint>(LoadedAsset);
+	UObject* LoadedAsset = nullptr;
+	if (!OutResult.PostProcessAnimBlueprint)
+	{
+		if (!LoadRequiredAsset(LoadedAsset, OutResult.PostProcessAnimBlueprintPath, TEXT("PostProcessAnimBlueprint"), OutError))
+		{
+			if (Options.bCreateBlueprintAssets)
+			{
+				OutError += LINE_TERMINATOR TEXT("Add TemplatePostProcessAnimBlueprint, TemplateWidgetBlueprint, and TemplateSaveGameBlueprint to generate runtime assets from a template.");
+			}
+			return false;
+		}
+		OutResult.PostProcessAnimBlueprint = Cast<UAnimBlueprint>(LoadedAsset);
+	}
+
+	UAnimBlueprint* PostProcessAnimBlueprint = OutResult.PostProcessAnimBlueprint;
 	if (!PostProcessAnimBlueprint || !PostProcessAnimBlueprint->GeneratedClass)
 	{
 		OutError = FString::Printf(TEXT("PostProcessAnimBlueprint is not a compiled AnimBlueprint: %s"), *OutResult.PostProcessAnimBlueprintPath);
@@ -589,14 +628,13 @@ bool RunMeshToggleUiSetup(FNteMeshToggleSetupOptions Options, FNteMeshToggleSetu
 		OutError = FString::Printf(TEXT("PostProcessAnimBlueprint generated class is not an AnimInstance: %s"), *OutResult.PostProcessAnimBlueprintPath);
 		return false;
 	}
-	OutResult.PostProcessAnimBlueprint = PostProcessAnimBlueprint;
 
-	if (!BlueprintLooksLikeGeneratedHardcodedRuntime(*PostProcessAnimBlueprint))
+	if (!BlueprintLooksLikeStandardPostProcessTemplateRuntime(*PostProcessAnimBlueprint))
 	{
-		OutResult.Warnings.Add(TEXT("PostProcessAnimBlueprint does not contain the old hardcoded IsInputKeyDown/ShowMaterialSection runtime pattern. If this is a new thin-anchor controller asset, add a dedicated inspector before treating it as runtime-ready."));
+		OutResult.Warnings.Add(TEXT("PostProcessAnimBlueprint does not contain the standard template IsInputKeyDown/ShowMaterialSection runtime markers. Add a dedicated inspector before treating a different runtime contract as ready."));
 	}
 
-	if (!OutResult.WidgetBlueprintPath.IsEmpty())
+	if (!OutResult.WidgetBlueprint && !OutResult.WidgetBlueprintPath.IsEmpty())
 	{
 		UObject* WidgetAsset = LoadAnyAssetByPath(OutResult.WidgetBlueprintPath);
 		OutResult.WidgetBlueprint = Cast<UBlueprint>(WidgetAsset);
@@ -607,7 +645,7 @@ bool RunMeshToggleUiSetup(FNteMeshToggleSetupOptions Options, FNteMeshToggleSetu
 		}
 	}
 
-	if (!OutResult.SaveGameBlueprintPath.IsEmpty())
+	if (!OutResult.SaveGameBlueprint && !OutResult.SaveGameBlueprintPath.IsEmpty())
 	{
 		UObject* SaveGameAsset = LoadAnyAssetByPath(OutResult.SaveGameBlueprintPath);
 		OutResult.SaveGameBlueprint = Cast<UBlueprint>(SaveGameAsset);
@@ -624,7 +662,7 @@ bool RunMeshToggleUiSetup(FNteMeshToggleSetupOptions Options, FNteMeshToggleSetu
 		OutResult.ControllerBlueprint = Cast<UBlueprint>(ControllerAsset);
 		if (!OutResult.ControllerBlueprint)
 		{
-			OutResult.Warnings.Add(TEXT("ControllerBlueprint is not present. This matches the old hardcoded PostProcess runtime, but the planned thin-anchor/controller model is not implemented for this asset yet."));
+			OutResult.Warnings.Add(TEXT("ControllerBlueprint is not present. This is expected for StandardPostProcessTemplate runtime; ThinAnchorController generation is a separate future runtime contract."));
 		}
 	}
 

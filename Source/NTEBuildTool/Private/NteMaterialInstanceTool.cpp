@@ -16,6 +16,7 @@
 #include "Materials/MaterialInstanceConstant.h"
 #include "Misc/FileHelper.h"
 #include "Misc/PackageName.h"
+#include "StaticParameterSet.h"
 #include "UObject/SavePackage.h"
 
 namespace NTEBuildTool::Material
@@ -103,8 +104,70 @@ UMaterial* CreatePlaceholderParentMaterial(const FString& ParentMaterialPath, FS
 	}
 
 	Material->MarkPackageDirty();
-	SaveAssetPackage(*Material, OutError);
+	if (!SaveAssetPackage(*Material, OutError))
+	{
+		return nullptr;
+	}
 	return Material;
+}
+
+UMaterialInstanceConstant* CreatePlaceholderParentMaterialInstance(const FString& ParentMaterialPath, FString& OutError)
+{
+	if (!IsGamePackageName(ParentMaterialPath))
+	{
+		OutError = FString::Printf(TEXT("Cannot create placeholder parent outside /Game: %s"), *ParentMaterialPath);
+		return nullptr;
+	}
+
+	UMaterial* DefaultParent = GetDefaultParentMaterial();
+	if (!DefaultParent)
+	{
+		OutError = TEXT("/Engine/EngineMaterials/DefaultMaterial could not be loaded for a placeholder material instance parent.");
+		return nullptr;
+	}
+
+	const FString ParentFolder = FPackageName::GetLongPackagePath(ParentMaterialPath);
+	if (!EnsureAssetFolder(ParentFolder, OutError))
+	{
+		return nullptr;
+	}
+
+	FAssetToolsModule& AssetToolsModule = FModuleManager::LoadModuleChecked<FAssetToolsModule>(TEXT("AssetTools"));
+	UMaterialInstanceConstantFactoryNew* Factory = NewObject<UMaterialInstanceConstantFactoryNew>();
+	Factory->InitialParent = DefaultParent;
+
+	UObject* CreatedAsset = AssetToolsModule.Get().CreateAsset(
+		FPackageName::GetShortName(ParentMaterialPath),
+		ParentFolder,
+		UMaterialInstanceConstant::StaticClass(),
+		Factory);
+
+	UMaterialInstanceConstant* MaterialInstance = Cast<UMaterialInstanceConstant>(CreatedAsset);
+	if (!MaterialInstance)
+	{
+		OutError = FString::Printf(TEXT("Could not create placeholder material instance parent: %s"), *ParentMaterialPath);
+		return nullptr;
+	}
+
+	FAssetRegistryModule::AssetCreated(MaterialInstance);
+	MaterialInstance->MarkPackageDirty();
+	if (!SaveAssetPackage(*MaterialInstance, OutError))
+	{
+		return nullptr;
+	}
+	return MaterialInstance;
+}
+
+bool ShouldCreatePlaceholderParentAsMaterialInstance(const FString& ParentMaterialPath, const FNteMaterialInstanceOptions& Options)
+{
+	const FString ParentAssetName = FPackageName::GetShortName(ParentMaterialPath);
+	if (ParentAssetName.StartsWith(TEXT("MI_"), ESearchCase::IgnoreCase))
+	{
+		return true;
+	}
+
+	const FString SourceAssetName = FPaths::GetBaseFilename(Options.SourceMaterialJson);
+	return SourceAssetName.StartsWith(TEXT("MI_"), ESearchCase::IgnoreCase);
 }
 
 UMaterialInterface* LoadOrCreateParentMaterial(const FString& ParentMaterialPath, const FNteMaterialInstanceOptions& Options, FNteMaterialInstanceCreateResult& OutResult, FString& OutError)
@@ -118,7 +181,15 @@ UMaterialInterface* LoadOrCreateParentMaterial(const FString& ParentMaterialPath
 
 		if (Options.bEnsureParentPlaceholder)
 		{
-			if (UMaterial* Placeholder = CreatePlaceholderParentMaterial(ParentMaterialPath, OutError))
+			if (ShouldCreatePlaceholderParentAsMaterialInstance(ParentMaterialPath, Options))
+			{
+				if (UMaterialInstanceConstant* Placeholder = CreatePlaceholderParentMaterialInstance(ParentMaterialPath, OutError))
+				{
+					OutResult.bCreatedParentPlaceholder = true;
+					return Placeholder;
+				}
+			}
+			else if (UMaterial* Placeholder = CreatePlaceholderParentMaterial(ParentMaterialPath, OutError))
 			{
 				OutResult.bCreatedParentPlaceholder = true;
 				return Placeholder;
@@ -632,6 +703,15 @@ bool SaveMaterialInstanceOverrideReport(UMaterialInstanceConstant& MaterialInsta
 			TEXT("Vector"),
 			VectorParameter.ParameterInfo.Name.ToString(),
 			VectorParameter.ParameterValue.ToString());
+	}
+	const FStaticParameterSet StaticParameters = MaterialInstance.GetStaticParameters();
+	for (const FStaticSwitchParameter& StaticSwitchParameter : StaticParameters.StaticSwitchParameters)
+	{
+		AddOverrideReportEntry(
+			Overrides,
+			TEXT("StaticSwitch"),
+			StaticSwitchParameter.ParameterInfo.Name.ToString(),
+			StaticSwitchParameter.Value ? TEXT("true") : TEXT("false"));
 	}
 	Root->SetArrayField(TEXT("Overrides"), Overrides);
 	IFileManager::Get().MakeDirectory(*FPaths::GetPath(OutFilename), true);

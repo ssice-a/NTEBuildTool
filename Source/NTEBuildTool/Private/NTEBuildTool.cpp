@@ -6,6 +6,7 @@
 #include "NteEditorAssetUtils.h"
 #include "NteMaterialInstanceTool.h"
 #include "NteMeshToggleConfig.h"
+#include "NteMeshToggleDialog.h"
 #include "NteModPackageJob.h"
 #include "NteNotificationUtils.h"
 
@@ -155,11 +156,17 @@ void FNTEBuildToolModule::CreateModMaterialInstanceFromConfig()
 
 void FNTEBuildToolModule::CreateMeshToggleUiSetup()
 {
-	NTEBuildTool::Toggle::FNteMeshToggleSetupOptions Options;
-	if (USkeletalMesh* SelectedSkeletalMesh = NTEBuildTool::Editor::GetSingleSelectedSkeletalMesh())
+	USkeletalMesh* SelectedSkeletalMesh = NTEBuildTool::Editor::GetSingleSelectedSkeletalMesh();
+	if (!SelectedSkeletalMesh)
 	{
-		Options.MeshPath = SelectedSkeletalMesh->GetPackage()->GetName();
-		Options.OutputFolder = FPackageName::GetLongPackagePath(Options.MeshPath) / TEXT("mod/Runtime");
+		NTEBuildTool::Editor::ShowError(LOCTEXT("NoToggleSkeletalMeshSelected", "Select exactly one SkeletalMesh in the Content Browser before generating toggle runtime assets."));
+		return;
+	}
+
+	NTEBuildTool::Toggle::FNteMeshToggleSetupOptions Options;
+	if (!NTEBuildTool::Toggle::ShowMeshToggleSetupDialog(*SelectedSkeletalMesh, Options))
+	{
+		return;
 	}
 
 	NTEBuildTool::Toggle::FNteMeshToggleSetupResult Result;
@@ -172,8 +179,8 @@ void FNTEBuildToolModule::CreateMeshToggleUiSetup()
 	}
 
 	NTEBuildTool::Editor::ShowSuccessNotification(FText::Format(
-		LOCTEXT("CreatedMeshToggleUiSetup", "Updated mesh toggle setup for {0}."),
-		FText::FromString(Options.MeshPath)));
+		LOCTEXT("CreatedMeshToggleUiSetup", "Generated toggle runtime for {0}."),
+		FText::FromString(Options.TargetMeshPath)));
 }
 
 void FNTEBuildToolModule::BuildSelectedAssetsModPackage()

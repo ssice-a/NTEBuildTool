@@ -17,6 +17,7 @@ public class NTEBuildTool : ModuleRules
 			"UnrealEd",
 			"AssetTools",
 			"AssetRegistry",
+			"BlueprintGraph",
 			"ContentBrowser",
 			"DesktopPlatform",
 			"LevelEditor",
@@ -26,7 +27,8 @@ public class NTEBuildTool : ModuleRules
 			"JsonUtilities",
 			"Slate",
 			"SlateCore",
-			"ToolMenus"
+			"ToolMenus",
+			"UMG"
 		});
 	}
 }

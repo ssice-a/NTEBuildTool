@@ -7,15 +7,28 @@
 #include "NteJsonFileUtils.h"
 
 #include "Animation/AnimBlueprint.h"
+#include "Animation/AnimInstance.h"
 #include "Blueprint/UserWidget.h"
 #include "Dom/JsonObject.h"
 #include "Engine/Blueprint.h"
 #include "Engine/SkeletalMesh.h"
 #include "Engine/StaticMesh.h"
+#include "EdGraph/EdGraph.h"
+#include "EdGraph/EdGraphNode.h"
+#include "EdGraph/EdGraphPin.h"
+#include "Materials/MaterialInstance.h"
 #include "Materials/MaterialInstanceConstant.h"
+#include "Misc/FileHelper.h"
 #include "Misc/PackageName.h"
 #include "Misc/Parse.h"
 #include "Misc/Paths.h"
+#include "Serialization/JsonReader.h"
+#include "Serialization/JsonSerializer.h"
+#include "Rendering/SkeletalMeshLODRenderData.h"
+#include "Rendering/SkeletalMeshRenderData.h"
+#include "StaticMeshResources.h"
+#include "StaticParameterSet.h"
+#include "Engine/Texture.h"
 
 namespace
 {
@@ -83,6 +96,8 @@ void AddMaterialInstanceInfo(const UMaterialInstanceConstant& MaterialInstance, 
 {
 	Object.SetStringField(TEXT("Parent"), MaterialInstance.Parent ? MaterialInstance.Parent->GetPackage()->GetName() : FString());
 	Object.SetStringField(TEXT("ParentObjectPath"), MaterialInstance.Parent ? MaterialInstance.Parent->GetPathName() : FString());
+	Object.SetStringField(TEXT("ParentClass"), MaterialInstance.Parent ? MaterialInstance.Parent->GetClass()->GetName() : FString());
+	Object.SetBoolField(TEXT("ParentLoads"), MaterialInstance.Parent != nullptr);
 
 	TArray<TSharedPtr<FJsonValue>> Textures;
 	for (const FTextureParameterValue& TextureParameter : MaterialInstance.TextureParameterValues)
@@ -96,6 +111,208 @@ void AddMaterialInstanceInfo(const UMaterialInstanceConstant& MaterialInstance, 
 	Object.SetArrayField(TEXT("TextureOverrides"), Textures);
 	Object.SetNumberField(TEXT("ScalarOverrideCount"), MaterialInstance.ScalarParameterValues.Num());
 	Object.SetNumberField(TEXT("VectorOverrideCount"), MaterialInstance.VectorParameterValues.Num());
+
+	TArray<TSharedPtr<FJsonValue>> Scalars;
+	for (const FScalarParameterValue& ScalarParameter : MaterialInstance.ScalarParameterValues)
+	{
+		const TSharedRef<FJsonObject> Entry = MakeShared<FJsonObject>();
+		Entry->SetObjectField(TEXT("Parameter"), MakeParameterInfoObject(ScalarParameter.ParameterInfo));
+		Entry->SetNumberField(TEXT("Value"), ScalarParameter.ParameterValue);
+		Scalars.Add(MakeShared<FJsonValueObject>(Entry));
+	}
+	Object.SetArrayField(TEXT("ScalarOverrides"), Scalars);
+
+	TArray<TSharedPtr<FJsonValue>> Vectors;
+	for (const FVectorParameterValue& VectorParameter : MaterialInstance.VectorParameterValues)
+	{
+		const TSharedRef<FJsonObject> Entry = MakeShared<FJsonObject>();
+		Entry->SetObjectField(TEXT("Parameter"), MakeParameterInfoObject(VectorParameter.ParameterInfo));
+		const FLinearColor& Value = VectorParameter.ParameterValue;
+		Entry->SetStringField(TEXT("Value"), Value.ToString());
+		Entry->SetNumberField(TEXT("R"), Value.R);
+		Entry->SetNumberField(TEXT("G"), Value.G);
+		Entry->SetNumberField(TEXT("B"), Value.B);
+		Entry->SetNumberField(TEXT("A"), Value.A);
+		Vectors.Add(MakeShared<FJsonValueObject>(Entry));
+	}
+	Object.SetArrayField(TEXT("VectorOverrides"), Vectors);
+
+	const FStaticParameterSet StaticParameters = MaterialInstance.GetStaticParameters();
+	TArray<TSharedPtr<FJsonValue>> StaticSwitches;
+	for (const FStaticSwitchParameter& StaticSwitchParameter : StaticParameters.StaticSwitchParameters)
+	{
+		const TSharedRef<FJsonObject> Entry = MakeShared<FJsonObject>();
+		Entry->SetObjectField(TEXT("Parameter"), MakeParameterInfoObject(StaticSwitchParameter.ParameterInfo));
+		Entry->SetBoolField(TEXT("Value"), StaticSwitchParameter.Value);
+		Entry->SetBoolField(TEXT("Override"), StaticSwitchParameter.bOverride);
+		Entry->SetStringField(TEXT("ExpressionGuid"), StaticSwitchParameter.ExpressionGUID.ToString(EGuidFormats::DigitsWithHyphens));
+		StaticSwitches.Add(MakeShared<FJsonValueObject>(Entry));
+	}
+	Object.SetNumberField(TEXT("StaticSwitchOverrideCount"), StaticSwitches.Num());
+	Object.SetArrayField(TEXT("StaticSwitchOverrides"), StaticSwitches);
+}
+
+void AddBlueprintBinaryPatternInfo(const UBlueprint& Blueprint, FJsonObject& Object)
+{
+	FString PackageFilename;
+	if (!FPackageName::TryConvertLongPackageNameToFilename(Blueprint.GetPackage()->GetName(), PackageFilename, FPackageName::GetAssetPackageExtension()))
+	{
+		Object.SetBoolField(TEXT("BinaryPatternReadable"), false);
+		return;
+	}
+
+	TArray<uint8> Bytes;
+	if (!FFileHelper::LoadFileToArray(Bytes, *PackageFilename))
+	{
+		Object.SetBoolField(TEXT("BinaryPatternReadable"), false);
+		return;
+	}
+
+	Object.SetBoolField(TEXT("BinaryPatternReadable"), true);
+	const auto ContainsAscii = [&Bytes](const ANSICHAR* Needle)
+	{
+		const int32 NeedleLen = FCStringAnsi::Strlen(Needle);
+		if (NeedleLen <= 0 || Bytes.Num() < NeedleLen)
+		{
+			return false;
+		}
+
+		for (int32 Index = 0; Index <= Bytes.Num() - NeedleLen; ++Index)
+		{
+			if (FMemory::Memcmp(Bytes.GetData() + Index, Needle, NeedleLen) == 0)
+			{
+				return true;
+			}
+		}
+
+		return false;
+	};
+
+	const TArray<const ANSICHAR*> Patterns = {
+		"IsInputKeyDown",
+		"ShowMaterialSection",
+		"AddToViewport",
+		"RemoveFromParent",
+		"SetInputMode_GameAndUIEx",
+		"SetInputMode_GameOnly",
+		"BP_NTE_ModToggleController",
+		"Slash",
+		"LeftControl",
+		"RightControl",
+		"Up",
+		"Down",
+		"NumPadEight",
+		"NumPadTwo"
+	};
+
+	TArray<TSharedPtr<FJsonValue>> FoundPatterns;
+	for (const ANSICHAR* Pattern : Patterns)
+	{
+		if (ContainsAscii(Pattern))
+		{
+			FoundPatterns.Add(MakeShared<FJsonValueString>(ANSI_TO_TCHAR(Pattern)));
+		}
+	}
+	Object.SetArrayField(TEXT("BinaryPatterns"), FoundPatterns);
+	Object.SetBoolField(TEXT("LooksLikeStandardPostProcessTemplateRuntime"), ContainsAscii("IsInputKeyDown") && ContainsAscii("ShowMaterialSection"));
+}
+
+void AddGraphPinInfo(const UEdGraphPin& Pin, FJsonObject& Object)
+{
+	Object.SetStringField(TEXT("Name"), Pin.PinName.ToString());
+	Object.SetStringField(TEXT("Direction"), Pin.Direction == EGPD_Input ? TEXT("Input") : TEXT("Output"));
+	Object.SetStringField(TEXT("Category"), Pin.PinType.PinCategory.ToString());
+	Object.SetStringField(TEXT("SubCategory"), Pin.PinType.PinSubCategory.ToString());
+	Object.SetStringField(TEXT("DefaultValue"), Pin.DefaultValue);
+	Object.SetStringField(TEXT("DefaultTextValue"), Pin.DefaultTextValue.ToString());
+	Object.SetStringField(TEXT("DefaultObject"), Pin.DefaultObject ? Pin.DefaultObject->GetPathName() : FString());
+	Object.SetNumberField(TEXT("LinkedToCount"), Pin.LinkedTo.Num());
+
+	TArray<TSharedPtr<FJsonValue>> LinkedPins;
+	for (const UEdGraphPin* LinkedPin : Pin.LinkedTo)
+	{
+		if (!LinkedPin)
+		{
+			continue;
+		}
+
+		const UEdGraphNode* LinkedNode = LinkedPin->GetOwningNode();
+		const TSharedRef<FJsonObject> LinkObject = MakeShared<FJsonObject>();
+		LinkObject->SetStringField(TEXT("NodeName"), LinkedNode ? LinkedNode->GetName() : FString());
+		LinkObject->SetStringField(TEXT("NodeClass"), LinkedNode ? LinkedNode->GetClass()->GetName() : FString());
+		LinkObject->SetStringField(TEXT("NodeTitle"), LinkedNode ? LinkedNode->GetNodeTitle(ENodeTitleType::FullTitle).ToString() : FString());
+		LinkObject->SetStringField(TEXT("PinName"), LinkedPin->PinName.ToString());
+		LinkedPins.Add(MakeShared<FJsonValueObject>(LinkObject));
+	}
+	Object.SetArrayField(TEXT("LinkedTo"), LinkedPins);
+}
+
+void AddGraphNodeInfo(const UEdGraphNode& Node, FJsonObject& Object)
+{
+	Object.SetStringField(TEXT("Name"), Node.GetName());
+	Object.SetStringField(TEXT("Class"), Node.GetClass()->GetName());
+	Object.SetStringField(TEXT("Title"), Node.GetNodeTitle(ENodeTitleType::FullTitle).ToString());
+
+	TArray<TSharedPtr<FJsonValue>> Pins;
+	for (const UEdGraphPin* Pin : Node.Pins)
+	{
+		if (!Pin)
+		{
+			continue;
+		}
+
+		const TSharedRef<FJsonObject> PinObject = MakeShared<FJsonObject>();
+		AddGraphPinInfo(*Pin, *PinObject);
+		Pins.Add(MakeShared<FJsonValueObject>(PinObject));
+	}
+	Object.SetArrayField(TEXT("Pins"), Pins);
+}
+
+void AddGraphInfo(const UEdGraph& Graph, FJsonObject& Object)
+{
+	Object.SetStringField(TEXT("Name"), Graph.GetName());
+	Object.SetStringField(TEXT("Class"), Graph.GetClass()->GetName());
+	Object.SetNumberField(TEXT("NodeCount"), Graph.Nodes.Num());
+
+	TArray<TSharedPtr<FJsonValue>> Nodes;
+	for (const UEdGraphNode* Node : Graph.Nodes)
+	{
+		if (!Node)
+		{
+			continue;
+		}
+
+		const TSharedRef<FJsonObject> NodeObject = MakeShared<FJsonObject>();
+		AddGraphNodeInfo(*Node, *NodeObject);
+		Nodes.Add(MakeShared<FJsonValueObject>(NodeObject));
+	}
+	Object.SetArrayField(TEXT("Nodes"), Nodes);
+}
+
+void AddBlueprintGraphInfo(const UBlueprint& Blueprint, FJsonObject& Object)
+{
+	TArray<TSharedPtr<FJsonValue>> Graphs;
+	const auto AddGraphArray = [&Graphs](const FString& GraphType, const TArray<TObjectPtr<UEdGraph>>& SourceGraphs)
+	{
+		for (const UEdGraph* Graph : SourceGraphs)
+		{
+			if (!Graph)
+			{
+				continue;
+			}
+
+			const TSharedRef<FJsonObject> GraphObject = MakeShared<FJsonObject>();
+			GraphObject->SetStringField(TEXT("GraphType"), GraphType);
+			AddGraphInfo(*Graph, *GraphObject);
+			Graphs.Add(MakeShared<FJsonValueObject>(GraphObject));
+		}
+	};
+
+	AddGraphArray(TEXT("Ubergraph"), Blueprint.UbergraphPages);
+	AddGraphArray(TEXT("Function"), Blueprint.FunctionGraphs);
+	AddGraphArray(TEXT("Macro"), Blueprint.MacroGraphs);
+	AddGraphArray(TEXT("DelegateSignature"), Blueprint.DelegateSignatureGraphs);
+	Object.SetArrayField(TEXT("Graphs"), Graphs);
 }
 
 void AddSkeletalMeshInfo(const USkeletalMesh& SkeletalMesh, FJsonObject& Object)
@@ -120,6 +337,26 @@ void AddSkeletalMeshInfo(const USkeletalMesh& SkeletalMesh, FJsonObject& Object)
 
 	const UClass* PostProcessClass = SkeletalMesh.GetPostProcessAnimBlueprint();
 	Object.SetStringField(TEXT("PostProcessAnimBlueprintClass"), PostProcessClass ? PostProcessClass->GetPathName() : FString());
+
+	TArray<TSharedPtr<FJsonValue>> LodSections;
+	if (const FSkeletalMeshRenderData* RenderData = SkeletalMesh.GetResourceForRendering())
+	{
+		for (int32 LodIndex = 0; LodIndex < RenderData->LODRenderData.Num(); ++LodIndex)
+		{
+			const FSkeletalMeshLODRenderData& LodData = RenderData->LODRenderData[LodIndex];
+			for (int32 SectionIndex = 0; SectionIndex < LodData.RenderSections.Num(); ++SectionIndex)
+			{
+				const FSkelMeshRenderSection& Section = LodData.RenderSections[SectionIndex];
+				const TSharedRef<FJsonObject> Entry = MakeShared<FJsonObject>();
+				Entry->SetNumberField(TEXT("LodIndex"), LodIndex);
+				Entry->SetNumberField(TEXT("SectionIndex"), SectionIndex);
+				Entry->SetNumberField(TEXT("MaterialIndex"), Section.MaterialIndex);
+				Entry->SetNumberField(TEXT("NumTriangles"), Section.NumTriangles);
+				LodSections.Add(MakeShared<FJsonValueObject>(Entry));
+			}
+		}
+	}
+	Object.SetArrayField(TEXT("LodSections"), LodSections);
 }
 
 void AddStaticMeshInfo(const UStaticMesh& StaticMesh, FJsonObject& Object)
@@ -141,6 +378,29 @@ void AddStaticMeshInfo(const UStaticMesh& StaticMesh, FJsonObject& Object)
 		Materials.Add(MakeShared<FJsonValueObject>(Entry));
 	}
 	Object.SetArrayField(TEXT("Materials"), Materials);
+
+	TArray<TSharedPtr<FJsonValue>> LodSections;
+	if (const FStaticMeshRenderData* RenderData = StaticMesh.GetRenderData())
+	{
+		for (int32 LodIndex = 0; LodIndex < RenderData->LODResources.Num(); ++LodIndex)
+		{
+			const FStaticMeshLODResources& LodResources = RenderData->LODResources[LodIndex];
+			for (int32 SectionIndex = 0; SectionIndex < LodResources.Sections.Num(); ++SectionIndex)
+			{
+				const FStaticMeshSection& Section = LodResources.Sections[SectionIndex];
+				const TSharedRef<FJsonObject> Entry = MakeShared<FJsonObject>();
+				Entry->SetNumberField(TEXT("LodIndex"), LodIndex);
+				Entry->SetNumberField(TEXT("SectionIndex"), SectionIndex);
+				Entry->SetNumberField(TEXT("MaterialIndex"), Section.MaterialIndex);
+				Entry->SetNumberField(TEXT("FirstIndex"), Section.FirstIndex);
+				Entry->SetNumberField(TEXT("NumTriangles"), Section.NumTriangles);
+				Entry->SetNumberField(TEXT("MinVertexIndex"), Section.MinVertexIndex);
+				Entry->SetNumberField(TEXT("MaxVertexIndex"), Section.MaxVertexIndex);
+				LodSections.Add(MakeShared<FJsonValueObject>(Entry));
+			}
+		}
+	}
+	Object.SetArrayField(TEXT("LodSections"), LodSections);
 }
 
 TSharedRef<FJsonObject> InspectAsset(const FString& AssetPath)
@@ -169,15 +429,19 @@ TSharedRef<FJsonObject> InspectAsset(const FString& AssetPath)
 	{
 		AddMaterialInstanceInfo(*MaterialInstance, *Object);
 	}
-	else if (const UBlueprint* Blueprint = Cast<UBlueprint>(Asset))
-	{
-		Object->SetStringField(TEXT("GeneratedClass"), Blueprint->GeneratedClass ? Blueprint->GeneratedClass->GetPathName() : FString());
-		Object->SetStringField(TEXT("ParentClass"), Blueprint->ParentClass ? Blueprint->ParentClass->GetPathName() : FString());
-	}
 	else if (const UAnimBlueprint* AnimBlueprint = Cast<UAnimBlueprint>(Asset))
 	{
 		Object->SetStringField(TEXT("GeneratedClass"), AnimBlueprint->GeneratedClass ? AnimBlueprint->GeneratedClass->GetPathName() : FString());
 		Object->SetStringField(TEXT("ParentClass"), AnimBlueprint->ParentClass ? AnimBlueprint->ParentClass->GetPathName() : FString());
+		AddBlueprintBinaryPatternInfo(*AnimBlueprint, *Object);
+		AddBlueprintGraphInfo(*AnimBlueprint, *Object);
+	}
+	else if (const UBlueprint* Blueprint = Cast<UBlueprint>(Asset))
+	{
+		Object->SetStringField(TEXT("GeneratedClass"), Blueprint->GeneratedClass ? Blueprint->GeneratedClass->GetPathName() : FString());
+		Object->SetStringField(TEXT("ParentClass"), Blueprint->ParentClass ? Blueprint->ParentClass->GetPathName() : FString());
+		AddBlueprintBinaryPatternInfo(*Blueprint, *Object);
+		AddBlueprintGraphInfo(*Blueprint, *Object);
 	}
 
 	return Object;
