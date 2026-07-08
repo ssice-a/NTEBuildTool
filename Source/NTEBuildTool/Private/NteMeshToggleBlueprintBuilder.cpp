@@ -349,7 +349,7 @@ FString GetTargetKeyForTemplateGroup(const FRuntimeBuildContext& Context, const 
 	const int32 GroupIndex = TemplateGroupOrdinal - 1;
 	if (!Context.Options.ToggleGroups.IsValidIndex(GroupIndex))
 	{
-		return FString();
+		return TEXT("None");
 	}
 
 	const FInputChord& Chord = Context.Options.ToggleGroups[GroupIndex].Chord;
@@ -488,7 +488,14 @@ void PatchInputKeyNode(FRuntimeBuildContext& Context, UEdGraphNode& Node)
 	{
 		if (IsModifierKey(KeyPin->DefaultValue))
 		{
-			SetPinDefaultValue(Context, Node, *KeyPin, GetModifierReplacementKey(Context.Options.ToggleGroups[TemplateGroupOrdinal - 1].Chord, KeyPin->DefaultValue));
+			if (Context.Options.ToggleGroups.IsValidIndex(TemplateGroupOrdinal - 1))
+			{
+				SetPinDefaultValue(Context, Node, *KeyPin, GetModifierReplacementKey(Context.Options.ToggleGroups[TemplateGroupOrdinal - 1].Chord, KeyPin->DefaultValue));
+			}
+			else
+			{
+				SetPinDefaultValue(Context, Node, *KeyPin, TEXT("None"));
+			}
 		}
 		else
 		{
@@ -677,12 +684,7 @@ void PatchSaveGameBlueprintDefaults(FRuntimeBuildContext& Context)
 		}
 
 		const int32 GroupIndex = TemplateGroupOrdinal - 1;
-		if (!Context.Options.ToggleGroups.IsValidIndex(GroupIndex))
-		{
-			continue;
-		}
-
-		Variable.DefaultValue = Context.Options.ToggleGroups[GroupIndex].bDefaultVisible ? TEXT("true") : TEXT("false");
+		Variable.DefaultValue = Context.Options.ToggleGroups.IsValidIndex(GroupIndex) && Context.Options.ToggleGroups[GroupIndex].bDefaultVisible ? TEXT("true") : TEXT("false");
 	}
 
 	FBlueprintEditorUtils::MarkBlueprintAsStructurallyModified(Context.SaveGameBlueprint);
@@ -1220,6 +1222,28 @@ bool ApplyFontToTextBlock(UTextBlock& TextBlock, const UFont* Font)
 	return true;
 }
 
+TSet<int32> CollectTemplateGroupOrdinals(const UBlueprint& Blueprint);
+
+int32 GetTemplateGroupCapacity(const FRuntimeBuildContext& Context)
+{
+	TSet<int32> Ordinals;
+	if (Context.SaveGameBlueprint)
+	{
+		Ordinals.Append(CollectTemplateGroupOrdinals(*Context.SaveGameBlueprint));
+	}
+	if (Context.PostProcessAnimBlueprint)
+	{
+		Ordinals.Append(CollectTemplateGroupOrdinals(*Context.PostProcessAnimBlueprint));
+	}
+
+	int32 MaxOrdinal = 0;
+	for (const int32 Ordinal : Ordinals)
+	{
+		MaxOrdinal = FMath::Max(MaxOrdinal, Ordinal);
+	}
+	return MaxOrdinal;
+}
+
 bool PatchWidgetBlueprintLabels(FRuntimeBuildContext& Context, FString& OutError)
 {
 	UWidgetBlueprint* WidgetBlueprint = Cast<UWidgetBlueprint>(Context.WidgetBlueprint);
@@ -1271,19 +1295,19 @@ bool PatchWidgetBlueprintLabels(FRuntimeBuildContext& Context, FString& OutError
 		}
 	}
 
-	for (int32 GroupIndex = 0; GroupIndex < Context.Options.ToggleGroups.Num(); ++GroupIndex)
+	const int32 TemplateGroupCount = GetTemplateGroupCapacity(Context);
+	for (int32 GroupIndex = 0; GroupIndex < TemplateGroupCount; ++GroupIndex)
 	{
 		const int32 TemplateGroupOrdinal = GroupIndex + 1;
-		const FNteMeshToggleGroup& Group = Context.Options.ToggleGroups[GroupIndex];
 		const FString ButtonWidgetName = MakeStandardButtonWidgetName(TemplateGroupOrdinal);
 		UWidget* ButtonWidget = WidgetBlueprint->WidgetTree->FindWidget(FName(*ButtonWidgetName));
 		UButton* Button = Cast<UButton>(ButtonWidget);
 		if (!Button)
 		{
 			OutError = FString::Printf(
-				TEXT("Widget template is missing Button '%s' required for toggle item '%s'."),
+				TEXT("Widget template is missing Button '%s' required for standard toggle group %d."),
 				*ButtonWidgetName,
-				*Group.Label);
+				TemplateGroupOrdinal);
 			return false;
 		}
 
@@ -1293,9 +1317,9 @@ bool PatchWidgetBlueprintLabels(FRuntimeBuildContext& Context, FString& OutError
 		if (!LabelTextBlock)
 		{
 			OutError = FString::Printf(
-				TEXT("Widget template is missing TextBlock '%s' required to label toggle item '%s'."),
+				TEXT("Widget template is missing TextBlock '%s' required for standard toggle group %d."),
 				*LabelWidgetName,
-				*Group.Label);
+				TemplateGroupOrdinal);
 			return false;
 		}
 		if (!IsDescendantOfWidget(*WidgetBlueprint->WidgetTree, *LabelTextBlock, *Button))
@@ -1307,6 +1331,22 @@ bool PatchWidgetBlueprintLabels(FRuntimeBuildContext& Context, FString& OutError
 			return false;
 		}
 
+		if (!Context.Options.ToggleGroups.IsValidIndex(GroupIndex))
+		{
+			bChanged |= SetWidgetVisibilityIfDifferent(*Button, ESlateVisibility::Collapsed);
+			bChanged |= SetWidgetEnabledIfDifferent(*Button, false);
+			bChanged |= SetWidgetVisibilityIfDifferent(*LabelTextBlock, ESlateVisibility::Collapsed);
+			if (Context.Result)
+			{
+				Context.Result->Actions.Add(FString::Printf(TEXT("hid unused widget group %d"), TemplateGroupOrdinal));
+			}
+			continue;
+		}
+
+		const FNteMeshToggleGroup& Group = Context.Options.ToggleGroups[GroupIndex];
+		bChanged |= SetWidgetVisibilityIfDifferent(*Button, ESlateVisibility::Visible);
+		bChanged |= SetWidgetEnabledIfDifferent(*Button, true);
+		bChanged |= SetWidgetVisibilityIfDifferent(*LabelTextBlock, ESlateVisibility::HitTestInvisible);
 		const FText NewLabel = FText::FromString(Group.Label);
 		if (!LabelTextBlock->GetText().EqualTo(NewLabel))
 		{
@@ -1379,25 +1419,27 @@ TSet<int32> CollectTemplateGroupOrdinals(const UBlueprint& Blueprint)
 
 bool ValidateTemplateCompatibility(const FRuntimeBuildContext& Context, FString& OutError)
 {
-	TSet<int32> Ordinals = CollectTemplateGroupOrdinals(*Context.SaveGameBlueprint);
-	for (const int32 Ordinal : CollectTemplateGroupOrdinals(*Context.PostProcessAnimBlueprint))
+	const int32 MaxOrdinal = GetTemplateGroupCapacity(Context);
+	if (MaxOrdinal <= 0)
 	{
-		Ordinals.Add(Ordinal);
+		OutError = TEXT("Standard runtime template does not expose any NTE_Toggle_*_Visible groups.");
+		return false;
 	}
 
-	int32 MaxOrdinal = 0;
-	for (const int32 Ordinal : Ordinals)
-	{
-		MaxOrdinal = FMath::Max(MaxOrdinal, Ordinal);
-	}
-
-	if (MaxOrdinal != Context.Options.ToggleGroups.Num())
+	if (MaxOrdinal < Context.Options.ToggleGroups.Num())
 	{
 		OutError = FString::Printf(
-			TEXT("Standard runtime template group count (%d) does not match setup group count (%d). Choose a matching standard template or adjust the setup before generating runtime blueprints."),
+			TEXT("Standard runtime template capacity (%d) is smaller than setup group count (%d). Choose a template with enough standard groups or reduce the setup before generating runtime blueprints."),
 			MaxOrdinal,
 			Context.Options.ToggleGroups.Num());
 		return false;
+	}
+	if (MaxOrdinal > Context.Options.ToggleGroups.Num() && Context.Result)
+	{
+		Context.Result->Warnings.Add(FString::Printf(
+			TEXT("Standard runtime template has %d group(s) and setup uses %d. Extra template groups will be disabled and hidden in the generated runtime."),
+			MaxOrdinal,
+			Context.Options.ToggleGroups.Num()));
 	}
 	return true;
 }

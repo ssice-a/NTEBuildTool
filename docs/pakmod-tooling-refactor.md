@@ -225,7 +225,7 @@ The current core path is deliberately narrow: select one `SkeletalMesh`, enter a
 
 Runtime Blueprint generation is not optional in the editor workflow: hotkey bindings, UI button labels, save defaults, and material slot mapping are all patched into generated Blueprint assets. The tool supplies default generated names (`ABP_NTE_ModToggle_PostProcess`, `WBP_NTE_ModToggleMenu`, `BP_NTE_ModToggleSaveGame`) and preserves existing setup names when regenerating.
 
-The deeper target is configuration-driven generation: the user decides the toggle items, labels, hotkeys, and material slots, and the generator creates the required UI entries, variables, save state, and graph logic. Hardcoded group counts in templates are transitional. A template may define window chrome, visual style, and runtime anchor shape, but it should not decide how many toggle items a mod can have.
+The deeper target is configuration-driven generation: the user decides the toggle items, labels, hotkeys, and material slots, and the generator creates the required UI entries, variables, save state, and graph logic. Hardcoded group counts in templates are transitional. A standard template may currently define a maximum group capacity, but it should not force the user's setup to use every group. The generator disables unused template groups, and the next deeper target is generating group UI/state/graph entries from config without requiring pre-authored group widgets.
 
 The future deeper runtime target is separating the runtime controller from the post-process animation instance. In that mode, the Post Process Anim Blueprint becomes a thin anchor that ensures a controller exists and has the target `SkinnedMeshComponent`. The controller owns:
 
@@ -323,7 +323,7 @@ The core generator duplicates three user-supplied template assets and patches on
 - Title-bar descendant text should be hit-test invisible, generated toggle button labels should be hit-test invisible, and generated buttons should be non-focusable so text and focus state do not block button clicks, hotkeys, or title-bar dragging.
 - UI button click handlers in the template must toggle the same visible-state variable used by the group hotkey and save-game state.
 - A toggle item may bind multiple material slots. The Post Process template must contain enough `ShowMaterialSection` nodes linked to that group's visible-state variable to cover all configured slots. The generator assigns slot indices to those nodes in graph traversal order, cycling through the configured slots when the same group logic appears more than once, and warns if a configured slot has no node to control it.
-- The template group count must match `Groups.Num()` in the setup JSON.
+- The template group capacity must be greater than or equal to `Groups.Num()` in the setup JSON. Extra template groups are patched to `None` hotkeys, false save defaults, and hidden/disabled Widget Blueprint buttons so a single larger standard template can serve smaller setups.
 - UI hotkey placeholder nodes use `Slash` and modifier-key pins; those pins are patched from `UIInputChord`.
 - The generated runtime asset names default to `ABP_NTE_ModToggle_PostProcess`, `WBP_NTE_ModToggleMenu`, and `BP_NTE_ModToggleSaveGame`; users normally configure templates and toggle items, not output asset names.
 
