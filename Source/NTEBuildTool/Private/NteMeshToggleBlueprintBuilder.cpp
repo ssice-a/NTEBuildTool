@@ -20,11 +20,20 @@
 #include "Engine/FontFace.h"
 #include "Engine/Blueprint.h"
 #include "Engine/SkeletalMesh.h"
+#include "GameFramework/PlayerController.h"
 #include "Fonts/CompositeFont.h"
 #include "IAssetTools.h"
+#include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetInputLibrary.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "K2Node_CallFunction.h"
 #include "K2Node_DynamicCast.h"
+#include "K2Node_Event.h"
+#include "K2Node_ExecutionSequence.h"
+#include "K2Node_IfThenElse.h"
 #include "K2Node_Variable.h"
+#include "K2Node_VariableGet.h"
+#include "K2Node_VariableSet.h"
 #include "Kismet2/BlueprintEditorUtils.h"
 #include "Kismet2/KismetEditorUtilities.h"
 #include "Misc/FileHelper.h"
@@ -32,6 +41,7 @@
 #include "Misc/Paths.h"
 #include "ObjectTools.h"
 #include "UObject/SavePackage.h"
+#include "Blueprint/WidgetLayoutLibrary.h"
 #include "WidgetBlueprint.h"
 
 namespace NTEBuildTool::Toggle
@@ -160,6 +170,80 @@ UEdGraphPin* FindPinByName(UEdGraphNode& Node, const TCHAR* PinName)
 		}
 	}
 	return nullptr;
+}
+
+UEdGraphPin* FindExecPin(UEdGraphNode& Node, const TCHAR* PinName = TEXT("execute"))
+{
+	return FindPinByName(Node, PinName);
+}
+
+UEdGraphPin* FindThenPin(UEdGraphNode& Node)
+{
+	return FindPinByName(Node, TEXT("then"));
+}
+
+bool TryLinkPins(UEdGraphPin* FromPin, UEdGraphPin* ToPin)
+{
+	if (!FromPin || !ToPin)
+	{
+		return false;
+	}
+
+	const UEdGraphSchema_K2* K2Schema = GetDefault<UEdGraphSchema_K2>();
+	return K2Schema && K2Schema->TryCreateConnection(FromPin, ToPin);
+}
+
+template <typename NodeType>
+NodeType* AddK2Node(UEdGraph& Graph, const int32 NodePosX, const int32 NodePosY)
+{
+	NodeType* Node = NewObject<NodeType>(&Graph);
+	Node->CreateNewGuid();
+	Graph.AddNode(Node, false, false);
+	Node->NodePosX = NodePosX;
+	Node->NodePosY = NodePosY;
+	Node->AllocateDefaultPins();
+	return Node;
+}
+
+UK2Node_CallFunction* AddFunctionCallNode(UEdGraph& Graph, UFunction* Function, const int32 NodePosX, const int32 NodePosY)
+{
+	if (!Function)
+	{
+		return nullptr;
+	}
+
+	UK2Node_CallFunction* Node = NewObject<UK2Node_CallFunction>(&Graph);
+	Node->CreateNewGuid();
+	Graph.AddNode(Node, false, false);
+	Node->NodePosX = NodePosX;
+	Node->NodePosY = NodePosY;
+	Node->SetFromFunction(Function);
+	Node->AllocateDefaultPins();
+	return Node;
+}
+
+UK2Node_VariableGet* AddVariableGetNode(UEdGraph& Graph, const FName VariableName, const int32 NodePosX, const int32 NodePosY)
+{
+	UK2Node_VariableGet* Node = NewObject<UK2Node_VariableGet>(&Graph);
+	Node->CreateNewGuid();
+	Graph.AddNode(Node, false, false);
+	Node->NodePosX = NodePosX;
+	Node->NodePosY = NodePosY;
+	Node->VariableReference.SetSelfMember(VariableName);
+	Node->AllocateDefaultPins();
+	return Node;
+}
+
+UK2Node_VariableSet* AddVariableSetNode(UEdGraph& Graph, const FName VariableName, const int32 NodePosX, const int32 NodePosY)
+{
+	UK2Node_VariableSet* Node = NewObject<UK2Node_VariableSet>(&Graph);
+	Node->CreateNewGuid();
+	Graph.AddNode(Node, false, false);
+	Node->NodePosX = NodePosX;
+	Node->NodePosY = NodePosY;
+	Node->VariableReference.SetSelfMember(VariableName);
+	Node->AllocateDefaultPins();
+	return Node;
 }
 
 FString GetLinkedVariableName(const UEdGraphPin& Pin)
@@ -759,6 +843,379 @@ bool ValidateWidgetTemplateChrome(const UWidgetBlueprint& WidgetBlueprint, FStri
 	return true;
 }
 
+bool SetWidgetVisibilityIfDifferent(UWidget& Widget, const ESlateVisibility Visibility)
+{
+	if (Widget.GetVisibility() == Visibility)
+	{
+		return false;
+	}
+
+	Widget.Modify();
+	Widget.SetVisibility(Visibility);
+	return true;
+}
+
+bool SetWidgetEnabledIfDifferent(UWidget& Widget, const bool bEnabled)
+{
+	if (Widget.GetIsEnabled() == bEnabled)
+	{
+		return false;
+	}
+
+	Widget.Modify();
+	Widget.SetIsEnabled(bEnabled);
+	return true;
+}
+
+bool PatchButtonFocusableIfDifferent(UButton& Button, const bool bFocusable)
+{
+PRAGMA_DISABLE_DEPRECATION_WARNINGS
+	if (Button.IsFocusable == bFocusable)
+	{
+		return false;
+	}
+
+	Button.Modify();
+	Button.IsFocusable = bFocusable;
+	return true;
+PRAGMA_ENABLE_DEPRECATION_WARNINGS
+}
+
+FEdGraphPinType MakeBoolPinType()
+{
+	FEdGraphPinType PinType;
+	PinType.PinCategory = UEdGraphSchema_K2::PC_Boolean;
+	return PinType;
+}
+
+FEdGraphPinType MakeVector2DPinType()
+{
+	FEdGraphPinType PinType;
+	PinType.PinCategory = UEdGraphSchema_K2::PC_Struct;
+	PinType.PinSubCategoryObject = TBaseStructure<FVector2D>::Get();
+	return PinType;
+}
+
+bool EnsureWidgetMemberVariable(UWidgetBlueprint& WidgetBlueprint, const FName VariableName, const FEdGraphPinType& PinType, const FString& DefaultValue = FString())
+{
+	if (FBlueprintEditorUtils::FindNewVariableIndex(&WidgetBlueprint, VariableName) != INDEX_NONE)
+	{
+		return false;
+	}
+
+	FBlueprintEditorUtils::AddMemberVariable(&WidgetBlueprint, VariableName, PinType, DefaultValue);
+	FBlueprintEditorUtils::SetBlueprintVariableCategory(&WidgetBlueprint, VariableName, nullptr, FText::FromString(TEXT("NTE Toggle Runtime")), true);
+	return true;
+}
+
+void RemoveGeneratedWidgetDragNodes(UWidgetBlueprint& WidgetBlueprint)
+{
+	static const FString GeneratedPrefix = TEXT("NTE_Toggle_WBP_Drag");
+
+	for (UEdGraph* Graph : WidgetBlueprint.UbergraphPages)
+	{
+		if (!Graph)
+		{
+			continue;
+		}
+
+		for (int32 NodeIndex = Graph->Nodes.Num() - 1; NodeIndex >= 0; --NodeIndex)
+		{
+			UEdGraphNode* Node = Graph->Nodes[NodeIndex];
+			if (!Node)
+			{
+				continue;
+			}
+
+			if (Node->NodeComment.StartsWith(GeneratedPrefix))
+			{
+				Graph->RemoveNode(Node);
+			}
+		}
+	}
+}
+
+void MarkGeneratedWidgetDragNode(UEdGraphNode& Node)
+{
+	if (!Node.NodeGuid.IsValid())
+	{
+		Node.CreateNewGuid();
+	}
+	Node.NodeComment = TEXT("NTE_Toggle_WBP_Drag");
+	Node.bCommentBubblePinned = false;
+	Node.bCommentBubbleVisible = false;
+}
+
+template <typename NodeType>
+NodeType* AddGeneratedWidgetDragNode(UEdGraph& Graph, const int32 NodePosX, const int32 NodePosY)
+{
+	NodeType* Node = AddK2Node<NodeType>(Graph, NodePosX, NodePosY);
+	MarkGeneratedWidgetDragNode(*Node);
+	return Node;
+}
+
+UK2Node_CallFunction* AddGeneratedWidgetDragFunctionCall(UEdGraph& Graph, UFunction* Function, const int32 NodePosX, const int32 NodePosY)
+{
+	UK2Node_CallFunction* Node = AddFunctionCallNode(Graph, Function, NodePosX, NodePosY);
+	if (Node)
+	{
+		MarkGeneratedWidgetDragNode(*Node);
+	}
+	return Node;
+}
+
+UK2Node_VariableGet* AddGeneratedWidgetDragVariableGet(UEdGraph& Graph, const FName VariableName, const int32 NodePosX, const int32 NodePosY)
+{
+	UK2Node_VariableGet* Node = AddVariableGetNode(Graph, VariableName, NodePosX, NodePosY);
+	MarkGeneratedWidgetDragNode(*Node);
+	return Node;
+}
+
+UK2Node_VariableSet* AddGeneratedWidgetDragVariableSet(UEdGraph& Graph, const FName VariableName, const int32 NodePosX, const int32 NodePosY)
+{
+	UK2Node_VariableSet* Node = AddVariableSetNode(Graph, VariableName, NodePosX, NodePosY);
+	MarkGeneratedWidgetDragNode(*Node);
+	return Node;
+}
+
+UK2Node_Event* FindOrAddWidgetTickEvent(UWidgetBlueprint& WidgetBlueprint, UEdGraph& Graph)
+{
+	if (UK2Node_Event* ExistingTick = FBlueprintEditorUtils::FindOverrideForFunction(&WidgetBlueprint, UUserWidget::StaticClass(), TEXT("Tick")))
+	{
+		return ExistingTick;
+	}
+
+	int32 NodePosY = 0;
+	UK2Node_Event* TickEvent = FKismetEditorUtilities::AddDefaultEventNode(&WidgetBlueprint, &Graph, TEXT("Tick"), UUserWidget::StaticClass(), NodePosY);
+	if (TickEvent)
+	{
+		MarkGeneratedWidgetDragNode(*TickEvent);
+	}
+	return TickEvent;
+}
+
+bool PatchWidgetBlueprintSelfDragGraph(FRuntimeBuildContext& Context, UWidgetBlueprint& WidgetBlueprint, bool& bOutChanged, FString& OutError)
+{
+	bOutChanged = false;
+	if (!WidgetBlueprint.WidgetTree)
+	{
+		OutError = TEXT("TemplateWidgetBlueprint must be a UWidgetBlueprint with a WidgetTree.");
+		return false;
+	}
+
+	if (!Cast<UButton>(WidgetBlueprint.WidgetTree->FindWidget(FName(TEXT("NTE_Toggle_TitleBarButton")))))
+	{
+		OutError = TEXT("Widget template is missing Button 'NTE_Toggle_TitleBarButton' required for generated widget-owned dragging.");
+		return false;
+	}
+
+	if (!WidgetBlueprint.WidgetTree->FindWidget(FName(TEXT("NTE_Toggle_WindowPanel"))))
+	{
+		OutError = TEXT("Widget template is missing widget 'NTE_Toggle_WindowPanel' required for generated widget-owned dragging.");
+		return false;
+	}
+
+	EnsureWidgetMemberVariable(WidgetBlueprint, TEXT("NTE_Toggle_WBP_UIDragging"), MakeBoolPinType(), TEXT("false"));
+	EnsureWidgetMemberVariable(WidgetBlueprint, TEXT("NTE_Toggle_WBP_PreviousLeftMouseDown"), MakeBoolPinType(), TEXT("false"));
+	EnsureWidgetMemberVariable(WidgetBlueprint, TEXT("NTE_Toggle_WBP_DragLastMousePosition"), MakeVector2DPinType());
+	EnsureWidgetMemberVariable(WidgetBlueprint, TEXT("NTE_Toggle_WBP_DragOffset"), MakeVector2DPinType());
+
+	if (WidgetBlueprint.UbergraphPages.IsEmpty() || !WidgetBlueprint.UbergraphPages[0])
+	{
+		UEdGraph* EventGraph = FBlueprintEditorUtils::CreateNewGraph(&WidgetBlueprint, UEdGraphSchema_K2::GN_EventGraph, UEdGraph::StaticClass(), UEdGraphSchema_K2::StaticClass());
+		FBlueprintEditorUtils::AddUbergraphPage(&WidgetBlueprint, EventGraph);
+	}
+
+	UEdGraph* EventGraph = WidgetBlueprint.UbergraphPages[0];
+	if (!EventGraph)
+	{
+		OutError = TEXT("WidgetBlueprint has no event graph and one could not be created.");
+		return false;
+	}
+
+	RemoveGeneratedWidgetDragNodes(WidgetBlueprint);
+
+	UFunction* GetOwningPlayerFunction = UWidget::StaticClass()->FindFunctionByName(TEXT("GetOwningPlayer"));
+	UFunction* IsInputKeyDownFunction = APlayerController::StaticClass()->FindFunctionByName(TEXT("IsInputKeyDown"));
+	UFunction* GetMousePositionFunction = UWidgetLayoutLibrary::StaticClass()->FindFunctionByName(TEXT("GetMousePositionScaledByDPI"));
+	UFunction* MakeVector2DFunction = UKismetMathLibrary::StaticClass()->FindFunctionByName(TEXT("MakeVector2D"));
+	UFunction* AddVector2DFunction = UKismetMathLibrary::StaticClass()->FindFunctionByName(TEXT("Add_Vector2DVector2D"));
+	UFunction* SubtractVector2DFunction = UKismetMathLibrary::StaticClass()->FindFunctionByName(TEXT("Subtract_Vector2DVector2D"));
+	UFunction* BoolAndFunction = UKismetMathLibrary::StaticClass()->FindFunctionByName(TEXT("BooleanAND"));
+	UFunction* BoolNotFunction = UKismetMathLibrary::StaticClass()->FindFunctionByName(TEXT("Not_PreBool"));
+	UFunction* IsHoveredFunction = UWidget::StaticClass()->FindFunctionByName(TEXT("IsHovered"));
+	UFunction* SetRenderTranslationFunction = UWidget::StaticClass()->FindFunctionByName(TEXT("SetRenderTranslation"));
+
+	if (!GetOwningPlayerFunction || !IsInputKeyDownFunction || !GetMousePositionFunction || !MakeVector2DFunction || !AddVector2DFunction || !SubtractVector2DFunction || !BoolAndFunction || !BoolNotFunction || !IsHoveredFunction || !SetRenderTranslationFunction)
+	{
+		OutError = TEXT("Could not resolve one or more UMG/Kismet functions needed for generated widget-owned dragging.");
+		return false;
+	}
+
+	UK2Node_Event* TickEvent = FindOrAddWidgetTickEvent(WidgetBlueprint, *EventGraph);
+	if (!TickEvent)
+	{
+		OutError = TEXT("Could not create Widget Tick event for generated widget-owned dragging.");
+		return false;
+	}
+
+	UK2Node_ExecutionSequence* SequenceNode = AddGeneratedWidgetDragNode<UK2Node_ExecutionSequence>(*EventGraph, 260, 0);
+	SequenceNode->AddInputPin();
+
+	UK2Node_CallFunction* GetOwningPlayerNode = AddGeneratedWidgetDragFunctionCall(*EventGraph, GetOwningPlayerFunction, 260, 180);
+	UK2Node_CallFunction* IsLeftMouseDownNode = AddGeneratedWidgetDragFunctionCall(*EventGraph, IsInputKeyDownFunction, 520, 180);
+	UK2Node_CallFunction* GetMousePositionNode = AddGeneratedWidgetDragFunctionCall(*EventGraph, GetMousePositionFunction, 520, 360);
+	UK2Node_CallFunction* MakeMousePositionNode = AddGeneratedWidgetDragFunctionCall(*EventGraph, MakeVector2DFunction, 780, 360);
+
+	UK2Node_VariableGet* GetTitleButtonForHoverNode = AddGeneratedWidgetDragVariableGet(*EventGraph, TEXT("NTE_Toggle_TitleBarButton"), 520, 560);
+	UK2Node_CallFunction* IsTitleHoveredNode = AddGeneratedWidgetDragFunctionCall(*EventGraph, IsHoveredFunction, 780, 560);
+	UK2Node_CallFunction* NotPreviousMouseDownNode = AddGeneratedWidgetDragFunctionCall(*EventGraph, BoolNotFunction, 780, 700);
+	UK2Node_VariableGet* GetPreviousMouseDownForNotNode = AddGeneratedWidgetDragVariableGet(*EventGraph, TEXT("NTE_Toggle_WBP_PreviousLeftMouseDown"), 520, 700);
+	UK2Node_CallFunction* DownAndHoveredNode = AddGeneratedWidgetDragFunctionCall(*EventGraph, BoolAndFunction, 1040, 600);
+	UK2Node_CallFunction* StartDragConditionNode = AddGeneratedWidgetDragFunctionCall(*EventGraph, BoolAndFunction, 1300, 600);
+	UK2Node_IfThenElse* StartDragBranchNode = AddGeneratedWidgetDragNode<UK2Node_IfThenElse>(*EventGraph, 1560, 600);
+	UK2Node_VariableSet* SetDraggingTrueNode = AddGeneratedWidgetDragVariableSet(*EventGraph, TEXT("NTE_Toggle_WBP_UIDragging"), 1820, 600);
+	UK2Node_VariableSet* SetDragLastMouseOnStartNode = AddGeneratedWidgetDragVariableSet(*EventGraph, TEXT("NTE_Toggle_WBP_DragLastMousePosition"), 2080, 600);
+
+	UK2Node_VariableGet* GetDraggingNode = AddGeneratedWidgetDragVariableGet(*EventGraph, TEXT("NTE_Toggle_WBP_UIDragging"), 520, 900);
+	UK2Node_CallFunction* NotLeftMouseDownNode = AddGeneratedWidgetDragFunctionCall(*EventGraph, BoolNotFunction, 780, 900);
+	UK2Node_IfThenElse* StopDragBranchNode = AddGeneratedWidgetDragNode<UK2Node_IfThenElse>(*EventGraph, 1040, 900);
+	UK2Node_VariableSet* SetDraggingFalseNode = AddGeneratedWidgetDragVariableSet(*EventGraph, TEXT("NTE_Toggle_WBP_UIDragging"), 1300, 900);
+	UK2Node_IfThenElse* DragMoveBranchNode = AddGeneratedWidgetDragNode<UK2Node_IfThenElse>(*EventGraph, 1040, 1080);
+	UK2Node_VariableGet* GetLastMouseForDeltaNode = AddGeneratedWidgetDragVariableGet(*EventGraph, TEXT("NTE_Toggle_WBP_DragLastMousePosition"), 1040, 1260);
+	UK2Node_CallFunction* MouseDeltaNode = AddGeneratedWidgetDragFunctionCall(*EventGraph, SubtractVector2DFunction, 1300, 1180);
+	UK2Node_VariableGet* GetDragOffsetNode = AddGeneratedWidgetDragVariableGet(*EventGraph, TEXT("NTE_Toggle_WBP_DragOffset"), 1300, 1360);
+	UK2Node_CallFunction* NewDragOffsetNode = AddGeneratedWidgetDragFunctionCall(*EventGraph, AddVector2DFunction, 1560, 1220);
+	UK2Node_VariableSet* SetDragOffsetNode = AddGeneratedWidgetDragVariableSet(*EventGraph, TEXT("NTE_Toggle_WBP_DragOffset"), 1820, 1220);
+	UK2Node_VariableGet* GetWindowPanelForMoveNode = AddGeneratedWidgetDragVariableGet(*EventGraph, TEXT("NTE_Toggle_WindowPanel"), 1820, 1420);
+	UK2Node_CallFunction* SetRenderTranslationNode = AddGeneratedWidgetDragFunctionCall(*EventGraph, SetRenderTranslationFunction, 2080, 1220);
+	UK2Node_VariableSet* SetDragLastMouseAfterMoveNode = AddGeneratedWidgetDragVariableSet(*EventGraph, TEXT("NTE_Toggle_WBP_DragLastMousePosition"), 2340, 1220);
+
+	UK2Node_VariableSet* SetPreviousMouseDownNode = AddGeneratedWidgetDragVariableSet(*EventGraph, TEXT("NTE_Toggle_WBP_PreviousLeftMouseDown"), 520, 1600);
+
+	TryLinkPins(FindThenPin(*TickEvent), FindExecPin(*SequenceNode));
+	TryLinkPins(FindPinByName(*SequenceNode, TEXT("then_0")), FindExecPin(*StartDragBranchNode));
+	TryLinkPins(FindPinByName(*SequenceNode, TEXT("then_1")), FindExecPin(*StopDragBranchNode));
+	TryLinkPins(FindPinByName(*SequenceNode, TEXT("then_2")), FindExecPin(*SetPreviousMouseDownNode));
+
+	TryLinkPins(FindPinByName(*GetOwningPlayerNode, TEXT("ReturnValue")), FindPinByName(*IsLeftMouseDownNode, TEXT("self")));
+	TryLinkPins(FindPinByName(*GetOwningPlayerNode, TEXT("ReturnValue")), FindPinByName(*GetMousePositionNode, TEXT("Player")));
+	if (UEdGraphPin* KeyPin = FindPinByName(*IsLeftMouseDownNode, TEXT("Key")))
+	{
+		KeyPin->DefaultValue = TEXT("LeftMouseButton");
+	}
+	TryLinkPins(FindPinByName(*GetMousePositionNode, TEXT("LocationX")), FindPinByName(*MakeMousePositionNode, TEXT("X")));
+	TryLinkPins(FindPinByName(*GetMousePositionNode, TEXT("LocationY")), FindPinByName(*MakeMousePositionNode, TEXT("Y")));
+
+	TryLinkPins(FindPinByName(*GetTitleButtonForHoverNode, TEXT("NTE_Toggle_TitleBarButton")), FindPinByName(*IsTitleHoveredNode, TEXT("self")));
+	TryLinkPins(FindPinByName(*GetPreviousMouseDownForNotNode, TEXT("NTE_Toggle_WBP_PreviousLeftMouseDown")), FindPinByName(*NotPreviousMouseDownNode, TEXT("A")));
+	TryLinkPins(FindPinByName(*IsLeftMouseDownNode, TEXT("ReturnValue")), FindPinByName(*DownAndHoveredNode, TEXT("A")));
+	TryLinkPins(FindPinByName(*IsTitleHoveredNode, TEXT("ReturnValue")), FindPinByName(*DownAndHoveredNode, TEXT("B")));
+	TryLinkPins(FindPinByName(*DownAndHoveredNode, TEXT("ReturnValue")), FindPinByName(*StartDragConditionNode, TEXT("A")));
+	TryLinkPins(FindPinByName(*NotPreviousMouseDownNode, TEXT("ReturnValue")), FindPinByName(*StartDragConditionNode, TEXT("B")));
+	TryLinkPins(FindPinByName(*StartDragConditionNode, TEXT("ReturnValue")), FindPinByName(*StartDragBranchNode, TEXT("Condition")));
+	TryLinkPins(FindThenPin(*StartDragBranchNode), FindExecPin(*SetDraggingTrueNode));
+	if (UEdGraphPin* DraggingTruePin = FindPinByName(*SetDraggingTrueNode, TEXT("NTE_Toggle_WBP_UIDragging")))
+	{
+		DraggingTruePin->DefaultValue = TEXT("true");
+	}
+	TryLinkPins(FindThenPin(*SetDraggingTrueNode), FindExecPin(*SetDragLastMouseOnStartNode));
+	TryLinkPins(FindPinByName(*MakeMousePositionNode, TEXT("ReturnValue")), FindPinByName(*SetDragLastMouseOnStartNode, TEXT("NTE_Toggle_WBP_DragLastMousePosition")));
+
+	TryLinkPins(FindPinByName(*IsLeftMouseDownNode, TEXT("ReturnValue")), FindPinByName(*NotLeftMouseDownNode, TEXT("A")));
+	TryLinkPins(FindPinByName(*NotLeftMouseDownNode, TEXT("ReturnValue")), FindPinByName(*StopDragBranchNode, TEXT("Condition")));
+	TryLinkPins(FindThenPin(*StopDragBranchNode), FindExecPin(*SetDraggingFalseNode));
+	if (UEdGraphPin* DraggingFalsePin = FindPinByName(*SetDraggingFalseNode, TEXT("NTE_Toggle_WBP_UIDragging")))
+	{
+		DraggingFalsePin->DefaultValue = TEXT("false");
+	}
+	TryLinkPins(FindPinByName(*StopDragBranchNode, TEXT("else")), FindExecPin(*DragMoveBranchNode));
+	TryLinkPins(FindPinByName(*GetDraggingNode, TEXT("NTE_Toggle_WBP_UIDragging")), FindPinByName(*DragMoveBranchNode, TEXT("Condition")));
+	TryLinkPins(FindThenPin(*DragMoveBranchNode), FindExecPin(*SetDragOffsetNode));
+
+	TryLinkPins(FindPinByName(*MakeMousePositionNode, TEXT("ReturnValue")), FindPinByName(*MouseDeltaNode, TEXT("A")));
+	TryLinkPins(FindPinByName(*GetLastMouseForDeltaNode, TEXT("NTE_Toggle_WBP_DragLastMousePosition")), FindPinByName(*MouseDeltaNode, TEXT("B")));
+	TryLinkPins(FindPinByName(*GetDragOffsetNode, TEXT("NTE_Toggle_WBP_DragOffset")), FindPinByName(*NewDragOffsetNode, TEXT("A")));
+	TryLinkPins(FindPinByName(*MouseDeltaNode, TEXT("ReturnValue")), FindPinByName(*NewDragOffsetNode, TEXT("B")));
+	TryLinkPins(FindPinByName(*NewDragOffsetNode, TEXT("ReturnValue")), FindPinByName(*SetDragOffsetNode, TEXT("NTE_Toggle_WBP_DragOffset")));
+	TryLinkPins(FindThenPin(*SetDragOffsetNode), FindExecPin(*SetRenderTranslationNode));
+	TryLinkPins(FindPinByName(*GetWindowPanelForMoveNode, TEXT("NTE_Toggle_WindowPanel")), FindPinByName(*SetRenderTranslationNode, TEXT("self")));
+	TryLinkPins(FindPinByName(*NewDragOffsetNode, TEXT("ReturnValue")), FindPinByName(*SetRenderTranslationNode, TEXT("Translation")));
+	TryLinkPins(FindThenPin(*SetRenderTranslationNode), FindExecPin(*SetDragLastMouseAfterMoveNode));
+	TryLinkPins(FindPinByName(*MakeMousePositionNode, TEXT("ReturnValue")), FindPinByName(*SetDragLastMouseAfterMoveNode, TEXT("NTE_Toggle_WBP_DragLastMousePosition")));
+
+	TryLinkPins(FindPinByName(*IsLeftMouseDownNode, TEXT("ReturnValue")), FindPinByName(*SetPreviousMouseDownNode, TEXT("NTE_Toggle_WBP_PreviousLeftMouseDown")));
+
+	EventGraph->NotifyGraphChanged();
+	FBlueprintEditorUtils::MarkBlueprintAsStructurallyModified(&WidgetBlueprint);
+	if (Context.Result)
+	{
+		Context.Result->Actions.Add(TEXT("patched widget-owned drag graph"));
+	}
+	bOutChanged = true;
+	return true;
+}
+
+bool PatchWidgetChromeBehavior(FRuntimeBuildContext& Context, UWidgetBlueprint& WidgetBlueprint, bool& bOutChanged, FString& OutError)
+{
+	bOutChanged = false;
+	if (!WidgetBlueprint.WidgetTree)
+	{
+		OutError = TEXT("TemplateWidgetBlueprint must be a UWidgetBlueprint with a WidgetTree.");
+		return false;
+	}
+
+	UButton* TitleButton = Cast<UButton>(WidgetBlueprint.WidgetTree->FindWidget(FName(TEXT("NTE_Toggle_TitleBarButton"))));
+	if (!TitleButton)
+	{
+		OutError = TEXT("Widget template is missing Button 'NTE_Toggle_TitleBarButton' required for dragging the toggle UI.");
+		return false;
+	}
+
+	bool bChanged = false;
+	bChanged |= SetWidgetVisibilityIfDifferent(*TitleButton, ESlateVisibility::Visible);
+	bChanged |= SetWidgetEnabledIfDifferent(*TitleButton, true);
+	bChanged |= PatchButtonFocusableIfDifferent(*TitleButton, false);
+
+	TArray<UWidget*> Widgets;
+	WidgetBlueprint.WidgetTree->GetAllWidgets(Widgets);
+	for (UWidget* Widget : Widgets)
+	{
+		if (!Widget || Widget == TitleButton)
+		{
+			continue;
+		}
+
+		if (IsDescendantOfWidget(*WidgetBlueprint.WidgetTree, *Widget, *TitleButton))
+		{
+			bChanged |= SetWidgetVisibilityIfDifferent(*Widget, ESlateVisibility::HitTestInvisible);
+		}
+	}
+
+	for (int32 GroupIndex = 0; GroupIndex < Context.Options.ToggleGroups.Num(); ++GroupIndex)
+	{
+		const int32 TemplateGroupOrdinal = GroupIndex + 1;
+		UButton* Button = Cast<UButton>(WidgetBlueprint.WidgetTree->FindWidget(FName(*MakeStandardButtonWidgetName(TemplateGroupOrdinal))));
+		if (Button)
+		{
+			bChanged |= PatchButtonFocusableIfDifferent(*Button, false);
+		}
+
+		UTextBlock* LabelTextBlock = Cast<UTextBlock>(WidgetBlueprint.WidgetTree->FindWidget(FName(*MakeStandardButtonLabelWidgetName(TemplateGroupOrdinal))));
+		if (LabelTextBlock)
+		{
+			bChanged |= SetWidgetVisibilityIfDifferent(*LabelTextBlock, ESlateVisibility::HitTestInvisible);
+		}
+	}
+
+	if (bChanged && Context.Result)
+	{
+		Context.Result->Actions.Add(TEXT("patched widget chrome hit-test behavior for drag/buttons"));
+	}
+	bOutChanged = bChanged;
+	return true;
+}
+
 bool ApplyFontToTextBlock(UTextBlock& TextBlock, const UFont* Font)
 {
 	if (!Font)
@@ -793,6 +1250,19 @@ bool PatchWidgetBlueprintLabels(FRuntimeBuildContext& Context, FString& OutError
 	}
 
 	bool bChanged = false;
+	bool bChromeChanged = false;
+	if (!PatchWidgetChromeBehavior(Context, *WidgetBlueprint, bChromeChanged, OutError))
+	{
+		return false;
+	}
+	bChanged |= bChromeChanged;
+	bool bDragGraphChanged = false;
+	if (!PatchWidgetBlueprintSelfDragGraph(Context, *WidgetBlueprint, bDragGraphChanged, OutError))
+	{
+		return false;
+	}
+	bChanged |= bDragGraphChanged;
+
 	UFont* EmbeddedUnicodeFont = nullptr;
 	if (NeedsEmbeddedUnicodeFont(Context))
 	{

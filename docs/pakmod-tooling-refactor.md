@@ -273,7 +273,8 @@ The core generator duplicates three user-supplied template assets and patches on
 - Group input marker variables use `NTE_Toggle_Input_N_...`, where `N` is the 1-based setup group ordinal. Empty user hotkeys are patched to `None`, so the UI button remains usable without accidentally inheriting a template placeholder key.
 - UI button widgets use `NTE_Toggle_Button_XX_toggle_group_N`, and their label `TextBlock` widgets use `NTE_Toggle_Button_XX_toggle_group_N_Label`. The label must be inside the corresponding button so it is both visible and clickable. The generator patches the label text from the setup JSON; unlabeled old-style button-only widgets are not valid standard templates.
 - If any configured UI label contains non-ASCII text, the generator embeds a Unicode fallback font into the generated Widget Blueprint package and applies it to the template text blocks. This keeps Chinese labels readable without requiring an extra font package in the mod job.
-- The template must expose `NTE_Toggle_TitleBarButton` and `NTE_Toggle_WindowPanel` for the standard drag-to-move UI logic.
+- The template must expose `NTE_Toggle_TitleBarButton` and `NTE_Toggle_WindowPanel` for the standard drag-to-move UI logic. The generated Widget Blueprint owns this drag behavior in its own Tick graph: it reads left-mouse state, starts dragging only from the title button hover edge, stores the last mouse position when dragging starts, accumulates mouse delta into a drag offset, and calls `SetRenderTranslation` on `NTE_Toggle_WindowPanel`.
+- Title-bar descendant text should be hit-test invisible, generated toggle button labels should be hit-test invisible, and generated buttons should be non-focusable so text and focus state do not block button clicks, hotkeys, or title-bar dragging.
 - UI button click handlers in the template must toggle the same visible-state variable used by the group hotkey and save-game state.
 - A toggle item may bind multiple material slots. The Post Process template must contain enough `ShowMaterialSection` nodes linked to that group's visible-state variable to cover all configured slots. The generator assigns slot indices to those nodes in graph traversal order, cycling through the configured slots when the same group logic appears more than once, and warns if a configured slot has no node to control it.
 - The template group count must match `Groups.Num()` in the setup JSON.
@@ -562,6 +563,18 @@ select SkeletalMesh
 `StandardPostProcessTemplate` is the current default `RuntimeMode`. The generator no longer grows compatibility logic for arbitrary old blueprint names such as `ui_only` or `cycle_a`. A template that does not expose the Standard Runtime Template Contract should fail with a clear message.
 
 Hardcoded package targets, the five current mod paths, and one-off asset-repair rules must stay out of plugin source. They belong in setup JSON, material recipes, package jobs, audit configs, or a future migration commandlet.
+
+## 2026-07-08 Widget-Owned Drag Verification
+
+The standard generator now patches generated Widget Blueprints so UI dragging is not owned by the Post Process Anim Blueprint update loop. This removes one failure path where the UI exists but the ABP tick path stops controlling the panel.
+
+Verification run:
+
+- `PhyLabEditor Win64 Development` builds with the mirrored plugin.
+- `NteMeshToggle` regenerates `/Game/Characters/Player/004_lacrimosa/mod/Runtime` from `NTE_ModToggleSetup.json`.
+- `NteAssetInspection` reports `WBP_NTE_ModToggleMenu` with 31 graph nodes and `InvalidNodeGuid=0`.
+- The generated 004 widget has title-bar drag widgets, hit-test invisible title text, non-focusable toggle buttons, and Chinese labels `外套`, `裙子`, `鞋子`, `上衣`.
+- `NteModPackage` rebuilds `lacrimosa_mod_P` into `F:\Neverness To Everness\Client\WindowsNoEditor\HT\Content\Paks\Mods\安魂曲` with 0 errors and 0 warnings.
 
 ## Git Strategy
 

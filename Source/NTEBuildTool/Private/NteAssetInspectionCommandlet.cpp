@@ -9,6 +9,17 @@
 #include "Animation/AnimBlueprint.h"
 #include "Animation/AnimInstance.h"
 #include "Blueprint/UserWidget.h"
+#include "Blueprint/WidgetTree.h"
+#include "Components/Button.h"
+#include "Components/CanvasPanelSlot.h"
+#include "Components/ContentWidget.h"
+#include "Components/HorizontalBoxSlot.h"
+#include "Components/PanelWidget.h"
+#include "Components/ScrollBoxSlot.h"
+#include "Components/SizeBoxSlot.h"
+#include "Components/TextBlock.h"
+#include "Components/VerticalBoxSlot.h"
+#include "Components/Widget.h"
 #include "Dom/JsonObject.h"
 #include "Engine/Blueprint.h"
 #include "Engine/SkeletalMesh.h"
@@ -29,6 +40,7 @@
 #include "StaticMeshResources.h"
 #include "StaticParameterSet.h"
 #include "Engine/Texture.h"
+#include "WidgetBlueprint.h"
 
 namespace
 {
@@ -252,6 +264,8 @@ void AddGraphNodeInfo(const UEdGraphNode& Node, FJsonObject& Object)
 	Object.SetStringField(TEXT("Name"), Node.GetName());
 	Object.SetStringField(TEXT("Class"), Node.GetClass()->GetName());
 	Object.SetStringField(TEXT("Title"), Node.GetNodeTitle(ENodeTitleType::FullTitle).ToString());
+	Object.SetStringField(TEXT("NodeGuid"), Node.NodeGuid.ToString(EGuidFormats::DigitsWithHyphens));
+	Object.SetBoolField(TEXT("HasValidNodeGuid"), Node.NodeGuid.IsValid());
 
 	TArray<TSharedPtr<FJsonValue>> Pins;
 	for (const UEdGraphPin* Pin : Node.Pins)
@@ -313,6 +327,137 @@ void AddBlueprintGraphInfo(const UBlueprint& Blueprint, FJsonObject& Object)
 	AddGraphArray(TEXT("Macro"), Blueprint.MacroGraphs);
 	AddGraphArray(TEXT("DelegateSignature"), Blueprint.DelegateSignatureGraphs);
 	Object.SetArrayField(TEXT("Graphs"), Graphs);
+}
+
+TSharedRef<FJsonObject> MakeWidgetInfoObject(const UWidget& Widget)
+{
+	const auto MarginToString = [](const FMargin& Margin)
+	{
+		return FString::Printf(TEXT("(Left=%f,Top=%f,Right=%f,Bottom=%f)"), Margin.Left, Margin.Top, Margin.Right, Margin.Bottom);
+	};
+
+	const TSharedRef<FJsonObject> Entry = MakeShared<FJsonObject>();
+	Entry->SetStringField(TEXT("Name"), Widget.GetName());
+	Entry->SetStringField(TEXT("Class"), Widget.GetClass()->GetName());
+	Entry->SetStringField(TEXT("Visibility"), StaticEnum<ESlateVisibility>()->GetNameStringByValue(static_cast<int64>(Widget.GetVisibility())));
+	Entry->SetBoolField(TEXT("IsEnabled"), Widget.GetIsEnabled());
+	Entry->SetBoolField(TEXT("IsVariable"), Widget.bIsVariable);
+	Entry->SetStringField(TEXT("RenderTransformTranslation"), Widget.GetRenderTransform().Translation.ToString());
+	Entry->SetStringField(TEXT("RenderTransformScale"), Widget.GetRenderTransform().Scale.ToString());
+	Entry->SetStringField(TEXT("RenderTransformPivot"), Widget.GetRenderTransformPivot().ToString());
+
+	const UPanelWidget* ParentWidget = Widget.GetParent();
+	Entry->SetStringField(TEXT("Parent"), ParentWidget ? ParentWidget->GetName() : FString());
+	Entry->SetStringField(TEXT("ParentClass"), ParentWidget ? ParentWidget->GetClass()->GetName() : FString());
+	if (ParentWidget)
+	{
+		Entry->SetNumberField(TEXT("ParentChildIndex"), ParentWidget->GetChildIndex(&Widget));
+	}
+
+	if (const UPanelWidget* PanelWidget = Cast<UPanelWidget>(&Widget))
+	{
+		TArray<TSharedPtr<FJsonValue>> Children;
+		for (int32 ChildIndex = 0; ChildIndex < PanelWidget->GetChildrenCount(); ++ChildIndex)
+		{
+			if (const UWidget* ChildWidget = PanelWidget->GetChildAt(ChildIndex))
+			{
+				Children.Add(MakeShared<FJsonValueString>(ChildWidget->GetName()));
+			}
+		}
+		Entry->SetArrayField(TEXT("Children"), Children);
+	}
+
+	if (const UPanelSlot* Slot = Widget.Slot)
+	{
+		Entry->SetStringField(TEXT("SlotClass"), Slot->GetClass()->GetName());
+		if (const UCanvasPanelSlot* CanvasSlot = Cast<UCanvasPanelSlot>(Slot))
+		{
+			Entry->SetStringField(TEXT("SlotPosition"), CanvasSlot->GetPosition().ToString());
+			Entry->SetStringField(TEXT("SlotSize"), CanvasSlot->GetSize().ToString());
+			Entry->SetStringField(TEXT("SlotOffsets"), MarginToString(CanvasSlot->GetOffsets()));
+			Entry->SetStringField(TEXT("SlotAnchorsMinimum"), CanvasSlot->GetAnchors().Minimum.ToString());
+			Entry->SetStringField(TEXT("SlotAnchorsMaximum"), CanvasSlot->GetAnchors().Maximum.ToString());
+			Entry->SetStringField(TEXT("SlotAlignment"), CanvasSlot->GetAlignment().ToString());
+			Entry->SetBoolField(TEXT("SlotAutoSize"), CanvasSlot->GetAutoSize());
+			Entry->SetNumberField(TEXT("SlotZOrder"), CanvasSlot->GetZOrder());
+		}
+		else if (const UVerticalBoxSlot* VerticalSlot = Cast<UVerticalBoxSlot>(Slot))
+		{
+			Entry->SetStringField(TEXT("SlotPadding"), MarginToString(VerticalSlot->GetPadding()));
+			Entry->SetStringField(TEXT("SlotSizeRule"), StaticEnum<ESlateSizeRule::Type>()->GetNameStringByValue(static_cast<int64>(VerticalSlot->GetSize().SizeRule)));
+			Entry->SetNumberField(TEXT("SlotSizeValue"), VerticalSlot->GetSize().Value);
+			Entry->SetStringField(TEXT("SlotHorizontalAlignment"), StaticEnum<EHorizontalAlignment>()->GetNameStringByValue(static_cast<int64>(VerticalSlot->GetHorizontalAlignment())));
+			Entry->SetStringField(TEXT("SlotVerticalAlignment"), StaticEnum<EVerticalAlignment>()->GetNameStringByValue(static_cast<int64>(VerticalSlot->GetVerticalAlignment())));
+		}
+		else if (const UHorizontalBoxSlot* HorizontalSlot = Cast<UHorizontalBoxSlot>(Slot))
+		{
+			Entry->SetStringField(TEXT("SlotPadding"), MarginToString(HorizontalSlot->GetPadding()));
+			Entry->SetStringField(TEXT("SlotSizeRule"), StaticEnum<ESlateSizeRule::Type>()->GetNameStringByValue(static_cast<int64>(HorizontalSlot->GetSize().SizeRule)));
+			Entry->SetNumberField(TEXT("SlotSizeValue"), HorizontalSlot->GetSize().Value);
+			Entry->SetStringField(TEXT("SlotHorizontalAlignment"), StaticEnum<EHorizontalAlignment>()->GetNameStringByValue(static_cast<int64>(HorizontalSlot->GetHorizontalAlignment())));
+			Entry->SetStringField(TEXT("SlotVerticalAlignment"), StaticEnum<EVerticalAlignment>()->GetNameStringByValue(static_cast<int64>(HorizontalSlot->GetVerticalAlignment())));
+		}
+		else if (const UScrollBoxSlot* ScrollBoxSlot = Cast<UScrollBoxSlot>(Slot))
+		{
+			Entry->SetStringField(TEXT("SlotPadding"), MarginToString(ScrollBoxSlot->GetPadding()));
+			Entry->SetStringField(TEXT("SlotHorizontalAlignment"), StaticEnum<EHorizontalAlignment>()->GetNameStringByValue(static_cast<int64>(ScrollBoxSlot->GetHorizontalAlignment())));
+			Entry->SetStringField(TEXT("SlotVerticalAlignment"), StaticEnum<EVerticalAlignment>()->GetNameStringByValue(static_cast<int64>(ScrollBoxSlot->GetVerticalAlignment())));
+		}
+		else if (const USizeBoxSlot* SizeBoxSlot = Cast<USizeBoxSlot>(Slot))
+		{
+			Entry->SetStringField(TEXT("SlotPadding"), MarginToString(SizeBoxSlot->GetPadding()));
+			Entry->SetStringField(TEXT("SlotHorizontalAlignment"), StaticEnum<EHorizontalAlignment>()->GetNameStringByValue(static_cast<int64>(SizeBoxSlot->GetHorizontalAlignment())));
+			Entry->SetStringField(TEXT("SlotVerticalAlignment"), StaticEnum<EVerticalAlignment>()->GetNameStringByValue(static_cast<int64>(SizeBoxSlot->GetVerticalAlignment())));
+		}
+	}
+
+	if (const UTextBlock* TextBlock = Cast<UTextBlock>(&Widget))
+	{
+		Entry->SetStringField(TEXT("Text"), TextBlock->GetText().ToString());
+		Entry->SetStringField(TEXT("ColorAndOpacity"), TextBlock->GetColorAndOpacity().GetSpecifiedColor().ToString());
+	}
+
+	if (const UContentWidget* ContentWidget = Cast<UContentWidget>(&Widget))
+	{
+		const UWidget* Content = ContentWidget->GetContent();
+		Entry->SetStringField(TEXT("Content"), Content ? Content->GetName() : FString());
+		Entry->SetStringField(TEXT("ContentClass"), Content ? Content->GetClass()->GetName() : FString());
+	}
+
+	if (const UButton* Button = Cast<UButton>(&Widget))
+	{
+		Entry->SetStringField(TEXT("BackgroundColor"), Button->GetBackgroundColor().ToString());
+		Entry->SetStringField(TEXT("ColorAndOpacity"), Button->GetColorAndOpacity().ToString());
+		Entry->SetBoolField(TEXT("IsFocusable"), Button->GetIsFocusable());
+	}
+
+	return Entry;
+}
+
+void AddWidgetBlueprintInfo(const UWidgetBlueprint& WidgetBlueprint, FJsonObject& Object)
+{
+	const UWidgetTree* WidgetTree = WidgetBlueprint.WidgetTree;
+	Object.SetBoolField(TEXT("HasWidgetTree"), WidgetTree != nullptr);
+	if (!WidgetTree)
+	{
+		return;
+	}
+
+	Object.SetStringField(TEXT("WidgetTreePath"), WidgetTree->GetPathName());
+	Object.SetStringField(TEXT("RootWidget"), WidgetTree->RootWidget ? WidgetTree->RootWidget->GetName() : FString());
+	Object.SetStringField(TEXT("RootWidgetClass"), WidgetTree->RootWidget ? WidgetTree->RootWidget->GetClass()->GetName() : FString());
+
+	TArray<UWidget*> Widgets;
+	WidgetTree->GetAllWidgets(Widgets);
+	TArray<TSharedPtr<FJsonValue>> WidgetValues;
+	for (const UWidget* Widget : Widgets)
+	{
+		if (Widget)
+		{
+			WidgetValues.Add(MakeShared<FJsonValueObject>(MakeWidgetInfoObject(*Widget)));
+		}
+	}
+	Object.SetArrayField(TEXT("Widgets"), WidgetValues);
 }
 
 void AddSkeletalMeshInfo(const USkeletalMesh& SkeletalMesh, FJsonObject& Object)
@@ -435,6 +580,14 @@ TSharedRef<FJsonObject> InspectAsset(const FString& AssetPath)
 		Object->SetStringField(TEXT("ParentClass"), AnimBlueprint->ParentClass ? AnimBlueprint->ParentClass->GetPathName() : FString());
 		AddBlueprintBinaryPatternInfo(*AnimBlueprint, *Object);
 		AddBlueprintGraphInfo(*AnimBlueprint, *Object);
+	}
+	else if (const UWidgetBlueprint* WidgetBlueprint = Cast<UWidgetBlueprint>(Asset))
+	{
+		Object->SetStringField(TEXT("GeneratedClass"), WidgetBlueprint->GeneratedClass ? WidgetBlueprint->GeneratedClass->GetPathName() : FString());
+		Object->SetStringField(TEXT("ParentClass"), WidgetBlueprint->ParentClass ? WidgetBlueprint->ParentClass->GetPathName() : FString());
+		AddBlueprintBinaryPatternInfo(*WidgetBlueprint, *Object);
+		AddBlueprintGraphInfo(*WidgetBlueprint, *Object);
+		AddWidgetBlueprintInfo(*WidgetBlueprint, *Object);
 	}
 	else if (const UBlueprint* Blueprint = Cast<UBlueprint>(Asset))
 	{
