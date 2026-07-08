@@ -227,6 +227,13 @@ Runtime Blueprint generation is not optional in the editor workflow: hotkey bind
 
 The deeper target is configuration-driven generation: the user decides the toggle items, labels, hotkeys, and material slots, and the generator creates the required UI entries, variables, save state, and graph logic. Hardcoded group counts in templates are transitional. A standard template may currently define a maximum group capacity, but it should not force the user's setup to use every group. The generator disables unused template groups, and the next deeper target is generating group UI/state/graph entries from config without requiring pre-authored group widgets.
 
+Current implementation checkpoint:
+
+- `NteMeshToggleStandardTemplateModel` owns the Standard Runtime Template Contract naming rules.
+- The model scans SaveGame visible variables, Post Process visible/input marker variables, and Widget Blueprint button/label widgets before the builder patches any graphs.
+- Compatibility errors now point at the exact missing standard contract piece, such as SaveGame capacity, Post Process visible capacity, a missing Widget button/label, or a missing input marker for a configured hotkey.
+- `NteMeshToggleBlueprintBuilder` consumes the model instead of rediscovering template capacity through ad hoc string parsing. This is the seam for the future config-generated UI/state/graph entries.
+
 The future deeper runtime target is separating the runtime controller from the post-process animation instance. In that mode, the Post Process Anim Blueprint becomes a thin anchor that ensures a controller exists and has the target `SkinnedMeshComponent`. The controller owns:
 
 - hotkey polling;
@@ -324,6 +331,7 @@ The core generator duplicates three user-supplied template assets and patches on
 - UI button click handlers in the template must toggle the same visible-state variable used by the group hotkey and save-game state.
 - A toggle item may bind multiple material slots. The Post Process template must contain enough `ShowMaterialSection` nodes linked to that group's visible-state variable to cover all configured slots. The generator assigns slot indices to those nodes in graph traversal order, cycling through the configured slots when the same group logic appears more than once, and warns if a configured slot has no node to control it.
 - The template group capacity must be greater than or equal to `Groups.Num()` in the setup JSON. Extra template groups are patched to `None` hotkeys, false save defaults, and hidden/disabled Widget Blueprint buttons so a single larger standard template can serve smaller setups.
+- Capacity is evaluated by `NteMeshToggleStandardTemplateModel`, which treats contiguous groups from 1 as the safe generated runtime capacity. Non-contiguous or mismatched template groups fail early with a targeted validation message instead of producing half-patched Blueprint assets.
 - UI hotkey placeholder nodes use `Slash` and modifier-key pins; those pins are patched from `UIInputChord`.
 - The generated runtime asset names default to `ABP_NTE_ModToggle_PostProcess`, `WBP_NTE_ModToggleMenu`, and `BP_NTE_ModToggleSaveGame`; users normally configure templates and toggle items, not output asset names.
 
@@ -621,6 +629,15 @@ Verification run:
 - `NteAssetInspection` reports `WBP_NTE_ModToggleMenu` with 31 graph nodes and `InvalidNodeGuid=0`.
 - The generated 004 widget has title-bar drag widgets, hit-test invisible title text, non-focusable toggle buttons, and Chinese labels `外套`, `裙子`, `鞋子`, `上衣`.
 - `NteModPackage` rebuilds `lacrimosa_mod_P` into `F:\Neverness To Everness\Client\WindowsNoEditor\HT\Content\Paks\Mods\安魂曲` with 0 errors and 0 warnings.
+
+## 2026-07-08 Standard Template Model Checkpoint
+
+The toggle generator now has a dedicated `NteMeshToggleStandardTemplateModel` module. The model centralizes standard group parsing for SaveGame variables, Post Process variables/input markers, and Widget Blueprint button/label widgets. This removes another chunk of naming-rule knowledge from `NteMeshToggleBlueprintBuilder` and makes the next step explicit: generate missing UI/state/graph entries from config behind the model instead of adding asset-specific compatibility code.
+
+Verification run:
+
+- `RunUAT BuildPlugin -Plugin='F:\NTE\NTEBuildTool\NTEBuildTool.uplugin' -Package='F:\NTE\NTEBuildTool\.scratch\PluginBuild_TemplateModel' -TargetPlatforms=Win64 -StrictIncludes`
+- Result: `BUILD SUCCESSFUL`.
 
 ## Git Strategy
 

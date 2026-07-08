@@ -4,6 +4,7 @@
 
 #include "NTEBuildTool.h"
 #include "NteEditorAssetUtils.h"
+#include "NteMeshToggleStandardTemplateModel.h"
 
 #include "Animation/AnimBlueprint.h"
 #include "Animation/AnimInstance.h"
@@ -58,6 +59,7 @@ struct FRuntimeBuildContext
 	UBlueprint* WidgetBlueprint = nullptr;
 	UBlueprint* SaveGameBlueprint = nullptr;
 	FNteMeshToggleBlueprintBuildResult* Result = nullptr;
+	FNteStandardToggleTemplateModel StandardTemplateModel;
 	TMap<int32, int32> ShowMaterialSectionNodeOrdinalByGroup;
 	TMap<int32, int32> PatchedShowMaterialSectionNodeCountByGroup;
 };
@@ -256,44 +258,6 @@ FString GetLinkedVariableName(const UEdGraphPin& Pin)
 	return VariableNode ? VariableNode->GetVarNameString() : FString();
 }
 
-bool ParseStandardGroupOrdinalFromVisibleVar(const FString& VariableName, int32& OutOrdinal)
-{
-	OutOrdinal = INDEX_NONE;
-	if (!VariableName.StartsWith(TEXT("NTE_Toggle_")) || !VariableName.Contains(TEXT("_toggle_group_")) || !VariableName.EndsWith(TEXT("_Visible")))
-	{
-		return false;
-	}
-
-	FString Remaining = VariableName.RightChop(FCString::Strlen(TEXT("NTE_Toggle_")));
-	FString OrdinalText;
-	if (!Remaining.Split(TEXT("_"), &OrdinalText, &Remaining))
-	{
-		return false;
-	}
-
-	OutOrdinal = FCString::Atoi(*OrdinalText);
-	return OutOrdinal > 0;
-}
-
-bool ParseStandardGroupOrdinalFromInputVar(const FString& VariableName, int32& OutOrdinal)
-{
-	OutOrdinal = INDEX_NONE;
-	if (!VariableName.StartsWith(TEXT("NTE_Toggle_Input_")))
-	{
-		return false;
-	}
-
-	FString Tail = VariableName.RightChop(FCString::Strlen(TEXT("NTE_Toggle_Input_")));
-	FString OrdinalText;
-	if (!Tail.Split(TEXT("_"), &OrdinalText, &Tail))
-	{
-		return false;
-	}
-
-	OutOrdinal = FCString::Atoi(*OrdinalText);
-	return OutOrdinal > 0;
-}
-
 bool IsCallFunctionNodeWithTitle(const UEdGraphNode& Node, const TCHAR* TitleNeedle)
 {
 	const UK2Node_CallFunction* CallFunctionNode = Cast<UK2Node_CallFunction>(&Node);
@@ -365,7 +329,7 @@ void PatchShowMaterialSectionNode(FRuntimeBuildContext& Context, UEdGraphNode& N
 	}
 
 	int32 TemplateGroupOrdinal = INDEX_NONE;
-	if (!ParseStandardGroupOrdinalFromVisibleVar(GetLinkedVariableName(*ShowPin), TemplateGroupOrdinal))
+	if (!ParseStandardToggleVisibleVariableName(GetLinkedVariableName(*ShowPin), TemplateGroupOrdinal))
 	{
 		return;
 	}
@@ -456,7 +420,7 @@ void PatchInputKeyNode(FRuntimeBuildContext& Context, UEdGraphNode& Node)
 		for (const UEdGraphPin* CandidatePin : LinkedNode->Pins)
 		{
 			const FString VariableName = CandidatePin ? GetLinkedVariableName(*CandidatePin) : FString();
-			if (ParseStandardGroupOrdinalFromInputVar(VariableName, TemplateGroupOrdinal))
+			if (ParseStandardToggleInputVariableName(VariableName, TemplateGroupOrdinal))
 			{
 				break;
 			}
@@ -678,7 +642,7 @@ void PatchSaveGameBlueprintDefaults(FRuntimeBuildContext& Context)
 	for (FBPVariableDescription& Variable : Context.SaveGameBlueprint->NewVariables)
 	{
 		int32 TemplateGroupOrdinal = INDEX_NONE;
-		if (!ParseStandardGroupOrdinalFromVisibleVar(Variable.VarName.ToString(), TemplateGroupOrdinal))
+		if (!ParseStandardToggleVisibleVariableName(Variable.VarName.ToString(), TemplateGroupOrdinal))
 		{
 			continue;
 		}
@@ -689,22 +653,6 @@ void PatchSaveGameBlueprintDefaults(FRuntimeBuildContext& Context)
 
 	FBlueprintEditorUtils::MarkBlueprintAsStructurallyModified(Context.SaveGameBlueprint);
 	FKismetEditorUtilities::CompileBlueprint(Context.SaveGameBlueprint, EBlueprintCompileOptions::SkipGarbageCollection);
-}
-
-FString MakeStandardButtonLabelWidgetName(const int32 TemplateGroupOrdinal)
-{
-	return FString::Printf(
-		TEXT("NTE_Toggle_Button_%02d_toggle_group_%d_Label"),
-		TemplateGroupOrdinal,
-		TemplateGroupOrdinal);
-}
-
-FString MakeStandardButtonWidgetName(const int32 TemplateGroupOrdinal)
-{
-	return FString::Printf(
-		TEXT("NTE_Toggle_Button_%02d_toggle_group_%d"),
-		TemplateGroupOrdinal,
-		TemplateGroupOrdinal);
 }
 
 bool NeedsEmbeddedUnicodeFont(const FRuntimeBuildContext& Context)
@@ -1181,13 +1129,13 @@ bool PatchWidgetChromeBehavior(FRuntimeBuildContext& Context, UWidgetBlueprint& 
 	for (int32 GroupIndex = 0; GroupIndex < Context.Options.ToggleGroups.Num(); ++GroupIndex)
 	{
 		const int32 TemplateGroupOrdinal = GroupIndex + 1;
-		UButton* Button = Cast<UButton>(WidgetBlueprint.WidgetTree->FindWidget(FName(*MakeStandardButtonWidgetName(TemplateGroupOrdinal))));
+		UButton* Button = Cast<UButton>(WidgetBlueprint.WidgetTree->FindWidget(FName(*MakeStandardToggleButtonWidgetName(TemplateGroupOrdinal))));
 		if (Button)
 		{
 			bChanged |= PatchButtonFocusableIfDifferent(*Button, false);
 		}
 
-		UTextBlock* LabelTextBlock = Cast<UTextBlock>(WidgetBlueprint.WidgetTree->FindWidget(FName(*MakeStandardButtonLabelWidgetName(TemplateGroupOrdinal))));
+		UTextBlock* LabelTextBlock = Cast<UTextBlock>(WidgetBlueprint.WidgetTree->FindWidget(FName(*MakeStandardToggleButtonLabelWidgetName(TemplateGroupOrdinal))));
 		if (LabelTextBlock)
 		{
 			bChanged |= SetWidgetVisibilityIfDifferent(*LabelTextBlock, ESlateVisibility::HitTestInvisible);
@@ -1220,28 +1168,6 @@ bool ApplyFontToTextBlock(UTextBlock& TextBlock, const UFont* Font)
 	FontInfo.TypefaceFontName = FName(TEXT("Regular"));
 	TextBlock.SetFont(FontInfo);
 	return true;
-}
-
-TSet<int32> CollectTemplateGroupOrdinals(const UBlueprint& Blueprint);
-
-int32 GetTemplateGroupCapacity(const FRuntimeBuildContext& Context)
-{
-	TSet<int32> Ordinals;
-	if (Context.SaveGameBlueprint)
-	{
-		Ordinals.Append(CollectTemplateGroupOrdinals(*Context.SaveGameBlueprint));
-	}
-	if (Context.PostProcessAnimBlueprint)
-	{
-		Ordinals.Append(CollectTemplateGroupOrdinals(*Context.PostProcessAnimBlueprint));
-	}
-
-	int32 MaxOrdinal = 0;
-	for (const int32 Ordinal : Ordinals)
-	{
-		MaxOrdinal = FMath::Max(MaxOrdinal, Ordinal);
-	}
-	return MaxOrdinal;
 }
 
 bool PatchWidgetBlueprintLabels(FRuntimeBuildContext& Context, FString& OutError)
@@ -1295,11 +1221,10 @@ bool PatchWidgetBlueprintLabels(FRuntimeBuildContext& Context, FString& OutError
 		}
 	}
 
-	const int32 TemplateGroupCount = GetTemplateGroupCapacity(Context);
-	for (int32 GroupIndex = 0; GroupIndex < TemplateGroupCount; ++GroupIndex)
+	for (int32 GroupIndex = 0; GroupIndex < Context.Options.ToggleGroups.Num(); ++GroupIndex)
 	{
 		const int32 TemplateGroupOrdinal = GroupIndex + 1;
-		const FString ButtonWidgetName = MakeStandardButtonWidgetName(TemplateGroupOrdinal);
+		const FString ButtonWidgetName = MakeStandardToggleButtonWidgetName(TemplateGroupOrdinal);
 		UWidget* ButtonWidget = WidgetBlueprint->WidgetTree->FindWidget(FName(*ButtonWidgetName));
 		UButton* Button = Cast<UButton>(ButtonWidget);
 		if (!Button)
@@ -1311,7 +1236,7 @@ bool PatchWidgetBlueprintLabels(FRuntimeBuildContext& Context, FString& OutError
 			return false;
 		}
 
-		const FString LabelWidgetName = MakeStandardButtonLabelWidgetName(TemplateGroupOrdinal);
+		const FString LabelWidgetName = MakeStandardToggleButtonLabelWidgetName(TemplateGroupOrdinal);
 		UWidget* Widget = WidgetBlueprint->WidgetTree->FindWidget(FName(*LabelWidgetName));
 		UTextBlock* LabelTextBlock = Cast<UTextBlock>(Widget);
 		if (!LabelTextBlock)
@@ -1329,18 +1254,6 @@ bool PatchWidgetBlueprintLabels(FRuntimeBuildContext& Context, FString& OutError
 				*LabelWidgetName,
 				*ButtonWidgetName);
 			return false;
-		}
-
-		if (!Context.Options.ToggleGroups.IsValidIndex(GroupIndex))
-		{
-			bChanged |= SetWidgetVisibilityIfDifferent(*Button, ESlateVisibility::Collapsed);
-			bChanged |= SetWidgetEnabledIfDifferent(*Button, false);
-			bChanged |= SetWidgetVisibilityIfDifferent(*LabelTextBlock, ESlateVisibility::Collapsed);
-			if (Context.Result)
-			{
-				Context.Result->Actions.Add(FString::Printf(TEXT("hid unused widget group %d"), TemplateGroupOrdinal));
-			}
-			continue;
 		}
 
 		const FNteMeshToggleGroup& Group = Context.Options.ToggleGroups[GroupIndex];
@@ -1365,6 +1278,33 @@ bool PatchWidgetBlueprintLabels(FRuntimeBuildContext& Context, FString& OutError
 		}
 	}
 
+	TArray<int32> WidgetGroupOrdinals = Context.StandardTemplateModel.GetWidgetGroups().Array();
+	WidgetGroupOrdinals.Sort();
+	for (const int32 WidgetGroupOrdinal : WidgetGroupOrdinals)
+	{
+		if (WidgetGroupOrdinal <= Context.Options.ToggleGroups.Num())
+		{
+			continue;
+		}
+
+		UButton* Button = Cast<UButton>(WidgetBlueprint->WidgetTree->FindWidget(FName(*MakeStandardToggleButtonWidgetName(WidgetGroupOrdinal))));
+		if (Button)
+		{
+			bChanged |= SetWidgetVisibilityIfDifferent(*Button, ESlateVisibility::Collapsed);
+			bChanged |= SetWidgetEnabledIfDifferent(*Button, false);
+		}
+
+		UTextBlock* LabelTextBlock = Cast<UTextBlock>(WidgetBlueprint->WidgetTree->FindWidget(FName(*MakeStandardToggleButtonLabelWidgetName(WidgetGroupOrdinal))));
+		if (LabelTextBlock)
+		{
+			bChanged |= SetWidgetVisibilityIfDifferent(*LabelTextBlock, ESlateVisibility::Collapsed);
+		}
+		if (Context.Result && (Button || LabelTextBlock))
+		{
+			Context.Result->Actions.Add(FString::Printf(TEXT("hid unused widget group %d"), WidgetGroupOrdinal));
+		}
+	}
+
 	if (bChanged)
 	{
 		FBlueprintEditorUtils::MarkBlueprintAsStructurallyModified(WidgetBlueprint);
@@ -1373,73 +1313,86 @@ bool PatchWidgetBlueprintLabels(FRuntimeBuildContext& Context, FString& OutError
 	return true;
 }
 
-TSet<int32> CollectTemplateGroupOrdinals(const UBlueprint& Blueprint)
-{
-	TSet<int32> Ordinals;
-	for (const FBPVariableDescription& Variable : Blueprint.NewVariables)
-	{
-		int32 Ordinal = INDEX_NONE;
-		if (ParseStandardGroupOrdinalFromVisibleVar(Variable.VarName.ToString(), Ordinal))
-		{
-			Ordinals.Add(Ordinal);
-		}
-	}
-
-	const auto AddFromGraphs = [&Ordinals](const TArray<TObjectPtr<UEdGraph>>& Graphs)
-	{
-		for (const UEdGraph* Graph : Graphs)
-		{
-			if (!Graph)
-			{
-				continue;
-			}
-
-			for (const UEdGraphNode* Node : Graph->Nodes)
-			{
-				const UK2Node_Variable* VariableNode = Cast<UK2Node_Variable>(Node);
-				if (!VariableNode)
-				{
-					continue;
-				}
-
-				int32 Ordinal = INDEX_NONE;
-				if (ParseStandardGroupOrdinalFromVisibleVar(VariableNode->GetVarNameString(), Ordinal))
-				{
-					Ordinals.Add(Ordinal);
-				}
-			}
-		}
-	};
-
-	AddFromGraphs(Blueprint.UbergraphPages);
-	AddFromGraphs(Blueprint.FunctionGraphs);
-	AddFromGraphs(Blueprint.MacroGraphs);
-	return Ordinals;
-}
-
 bool ValidateTemplateCompatibility(const FRuntimeBuildContext& Context, FString& OutError)
 {
-	const int32 MaxOrdinal = GetTemplateGroupCapacity(Context);
-	if (MaxOrdinal <= 0)
+	const FNteStandardToggleTemplateModel& Model = Context.StandardTemplateModel;
+	const int32 RequiredGroupCount = Context.Options.ToggleGroups.Num();
+	const int32 SaveGameCapacity = Model.GetSaveGameVisibleCapacity();
+	const int32 PostProcessCapacity = Model.GetPostProcessVisibleCapacity();
+	if (SaveGameCapacity <= 0)
 	{
-		OutError = TEXT("Standard runtime template does not expose any NTE_Toggle_*_Visible groups.");
+		OutError = TEXT("Standard SaveGame template does not expose any contiguous NTE_Toggle_*_Visible groups.");
+		return false;
+	}
+	if (PostProcessCapacity <= 0)
+	{
+		OutError = TEXT("Standard Post Process template does not expose any contiguous NTE_Toggle_*_Visible groups.");
 		return false;
 	}
 
-	if (MaxOrdinal < Context.Options.ToggleGroups.Num())
+	if (SaveGameCapacity < RequiredGroupCount)
 	{
 		OutError = FString::Printf(
-			TEXT("Standard runtime template capacity (%d) is smaller than setup group count (%d). Choose a template with enough standard groups or reduce the setup before generating runtime blueprints."),
-			MaxOrdinal,
-			Context.Options.ToggleGroups.Num());
+			TEXT("Standard SaveGame template capacity (%d) is smaller than setup group count (%d). Add contiguous NTE_Toggle_*_Visible variables or reduce the setup."),
+			SaveGameCapacity,
+			RequiredGroupCount);
 		return false;
 	}
-	if (MaxOrdinal > Context.Options.ToggleGroups.Num() && Context.Result)
+	if (PostProcessCapacity < RequiredGroupCount)
+	{
+		OutError = FString::Printf(
+			TEXT("Standard Post Process template capacity (%d) is smaller than setup group count (%d). Add contiguous NTE_Toggle_*_Visible groups to the template graph or reduce the setup."),
+			PostProcessCapacity,
+			RequiredGroupCount);
+		return false;
+	}
+
+	for (int32 GroupIndex = 0; GroupIndex < RequiredGroupCount; ++GroupIndex)
+	{
+		const int32 TemplateGroupOrdinal = GroupIndex + 1;
+		if (!Model.WidgetButtonGroups.Contains(TemplateGroupOrdinal))
+		{
+			OutError = FString::Printf(
+				TEXT("Standard Widget template is missing Button '%s' for setup group %d."),
+				*MakeStandardToggleButtonWidgetName(TemplateGroupOrdinal),
+				TemplateGroupOrdinal);
+			return false;
+		}
+		if (!Model.WidgetLabelGroups.Contains(TemplateGroupOrdinal))
+		{
+			OutError = FString::Printf(
+				TEXT("Standard Widget template is missing TextBlock '%s' for setup group %d."),
+				*MakeStandardToggleButtonLabelWidgetName(TemplateGroupOrdinal),
+				TemplateGroupOrdinal);
+			return false;
+		}
+
+		const FNteMeshToggleGroup& Group = Context.Options.ToggleGroups[GroupIndex];
+		if (Group.Chord.Key.IsValid() && !Model.PostProcessInputGroups.Contains(TemplateGroupOrdinal))
+		{
+			OutError = FString::Printf(
+				TEXT("Standard Post Process template is missing input marker 'NTE_Toggle_Input_%d_*' for setup group %d with hotkey %s. Add the marker or clear the hotkey for a UI-only item."),
+				TemplateGroupOrdinal,
+				TemplateGroupOrdinal,
+				*Group.Chord.Key.GetFName().ToString());
+			return false;
+		}
+	}
+
+	if (SaveGameCapacity != PostProcessCapacity && Context.Result)
 	{
 		Context.Result->Warnings.Add(FString::Printf(
-			TEXT("Standard runtime template has %d group(s) and setup uses %d. Extra template groups will be disabled and hidden in the generated runtime."),
-			MaxOrdinal,
-			Context.Options.ToggleGroups.Num()));
+			TEXT("Standard template state capacity differs: SaveGame exposes %d group(s), Post Process exposes %d group(s). The usable runtime state capacity is %d."),
+			SaveGameCapacity,
+			PostProcessCapacity,
+			Model.GetRuntimeStateCapacity()));
+	}
+	if (Model.GetRuntimeStateCapacity() > RequiredGroupCount && Context.Result)
+	{
+		Context.Result->Warnings.Add(FString::Printf(
+			TEXT("Standard runtime template has %d state group(s) and setup uses %d. Extra input groups will be patched to None and any extra widget groups will be hidden in the generated runtime."),
+			Model.GetRuntimeStateCapacity(),
+			RequiredGroupCount));
 	}
 	return true;
 }
@@ -1554,6 +1507,10 @@ bool BuildMeshToggleRuntimeBlueprints(
 	FKismetEditorUtilities::CompileBlueprint(Context.SaveGameBlueprint, EBlueprintCompileOptions::SkipGarbageCollection);
 	FKismetEditorUtilities::CompileBlueprint(Context.WidgetBlueprint, EBlueprintCompileOptions::SkipGarbageCollection);
 	FKismetEditorUtilities::CompileBlueprint(Context.PostProcessAnimBlueprint, EBlueprintCompileOptions::SkipGarbageCollection);
+	Context.StandardTemplateModel = BuildStandardToggleTemplateModel(
+		Context.SaveGameBlueprint,
+		Context.PostProcessAnimBlueprint,
+		Cast<UWidgetBlueprint>(Context.WidgetBlueprint));
 
 	if (!ValidateTemplateCompatibility(Context, OutError))
 	{
