@@ -233,6 +233,7 @@ Current implementation checkpoint:
 - The model scans SaveGame visible variables, Post Process visible/input marker variables, and Widget Blueprint button/label widgets before the builder patches any graphs.
 - Compatibility errors now point at the exact missing standard contract piece, such as SaveGame capacity, Post Process visible capacity, a missing Widget button/label, or a missing input marker for a configured hotkey.
 - `NteMeshToggleBlueprintBuilder` consumes the model instead of rediscovering template capacity through ad hoc string parsing. This is the seam for the future config-generated UI/state/graph entries.
+- `NtePakModAudit` and `NteAssetInspection` also report the same Standard Template Model, so generated assets can be checked through commandlets instead of only by manually opening Blueprint graphs.
 
 The future deeper runtime target is separating the runtime controller from the post-process animation instance. In that mode, the Post Process Anim Blueprint becomes a thin anchor that ensures a controller exists and has the target `SkinnedMeshComponent`. The controller owns:
 
@@ -634,9 +635,13 @@ Verification run:
 
 The toggle generator now has a dedicated `NteMeshToggleStandardTemplateModel` module. The model centralizes standard group parsing for SaveGame variables, Post Process variables/input markers, and Widget Blueprint button/label widgets. This removes another chunk of naming-rule knowledge from `NteMeshToggleBlueprintBuilder` and makes the next step explicit: generate missing UI/state/graph entries from config behind the model instead of adding asset-specific compatibility code.
 
+`NtePakModAudit` now loads the generated Post Process, Widget, and SaveGame assets for a toggle setup and emits the same model in the audit JSON. It raises targeted findings for missing SaveGame capacity, Post Process visible capacity, Widget buttons/labels, or input markers required by configured hotkeys. `NteAssetInspection` reports the standard groups exposed by individual Blueprint assets for lower-level debugging.
+
 Verification run:
 
 - `RunUAT BuildPlugin -Plugin='F:\NTE\NTEBuildTool\NTEBuildTool.uplugin' -Package='F:\NTE\NTEBuildTool\.scratch\PluginBuild_TemplateModel' -TargetPlatforms=Win64 -StrictIncludes`
+- Result: `BUILD SUCCESSFUL`.
+- `RunUAT BuildPlugin -Plugin='F:\NTE\NTEBuildTool\NTEBuildTool.uplugin' -Package='F:\NTE\NTEBuildTool\.scratch\PluginBuild_TemplateAudit' -TargetPlatforms=Win64 -StrictIncludes`
 - Result: `BUILD SUCCESSFUL`.
 
 ## Git Strategy

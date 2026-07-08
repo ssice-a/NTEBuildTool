@@ -5,6 +5,7 @@
 #include "NTEBuildTool.h"
 #include "NteEditorAssetUtils.h"
 #include "NteJsonFileUtils.h"
+#include "NteMeshToggleStandardTemplateModel.h"
 
 #include "Animation/AnimBlueprint.h"
 #include "Animation/AnimInstance.h"
@@ -443,6 +444,12 @@ void AddWidgetBlueprintInfo(const UWidgetBlueprint& WidgetBlueprint, FJsonObject
 		return;
 	}
 
+	const NTEBuildTool::Toggle::FNteStandardToggleTemplateModel TemplateModel =
+		NTEBuildTool::Toggle::BuildStandardToggleTemplateModel(nullptr, nullptr, &WidgetBlueprint);
+	const TSharedRef<FJsonObject> TemplateModelObject = MakeShared<FJsonObject>();
+	NTEBuildTool::Toggle::AddStandardToggleTemplateModelJson(TemplateModel, *TemplateModelObject);
+	Object.SetObjectField(TEXT("StandardTemplateModel"), TemplateModelObject);
+
 	Object.SetStringField(TEXT("WidgetTreePath"), WidgetTree->GetPathName());
 	Object.SetStringField(TEXT("RootWidget"), WidgetTree->RootWidget ? WidgetTree->RootWidget->GetName() : FString());
 	Object.SetStringField(TEXT("RootWidgetClass"), WidgetTree->RootWidget ? WidgetTree->RootWidget->GetClass()->GetName() : FString());
@@ -578,6 +585,11 @@ TSharedRef<FJsonObject> InspectAsset(const FString& AssetPath)
 	{
 		Object->SetStringField(TEXT("GeneratedClass"), AnimBlueprint->GeneratedClass ? AnimBlueprint->GeneratedClass->GetPathName() : FString());
 		Object->SetStringField(TEXT("ParentClass"), AnimBlueprint->ParentClass ? AnimBlueprint->ParentClass->GetPathName() : FString());
+		const NTEBuildTool::Toggle::FNteStandardToggleTemplateModel TemplateModel =
+			NTEBuildTool::Toggle::BuildStandardToggleTemplateModel(nullptr, AnimBlueprint, nullptr);
+		const TSharedRef<FJsonObject> TemplateModelObject = MakeShared<FJsonObject>();
+		NTEBuildTool::Toggle::AddStandardToggleTemplateModelJson(TemplateModel, *TemplateModelObject);
+		Object->SetObjectField(TEXT("StandardTemplateModel"), TemplateModelObject);
 		AddBlueprintBinaryPatternInfo(*AnimBlueprint, *Object);
 		AddBlueprintGraphInfo(*AnimBlueprint, *Object);
 	}
@@ -593,6 +605,11 @@ TSharedRef<FJsonObject> InspectAsset(const FString& AssetPath)
 	{
 		Object->SetStringField(TEXT("GeneratedClass"), Blueprint->GeneratedClass ? Blueprint->GeneratedClass->GetPathName() : FString());
 		Object->SetStringField(TEXT("ParentClass"), Blueprint->ParentClass ? Blueprint->ParentClass->GetPathName() : FString());
+		const NTEBuildTool::Toggle::FNteStandardToggleTemplateModel TemplateModel =
+			NTEBuildTool::Toggle::BuildStandardToggleTemplateModel(Blueprint, nullptr, nullptr);
+		const TSharedRef<FJsonObject> TemplateModelObject = MakeShared<FJsonObject>();
+		NTEBuildTool::Toggle::AddStandardToggleTemplateModelJson(TemplateModel, *TemplateModelObject);
+		Object->SetObjectField(TEXT("StandardTemplateModel"), TemplateModelObject);
 		AddBlueprintBinaryPatternInfo(*Blueprint, *Object);
 		AddBlueprintGraphInfo(*Blueprint, *Object);
 	}

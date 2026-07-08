@@ -6,6 +6,7 @@
 
 class UBlueprint;
 class UWidgetBlueprint;
+class FJsonObject;
 
 namespace NTEBuildTool::Toggle
 {
@@ -39,4 +40,5 @@ FNteStandardToggleTemplateModel BuildStandardToggleTemplateModel(
 	const UBlueprint* SaveGameBlueprint,
 	const UBlueprint* PostProcessAnimBlueprint,
 	const UWidgetBlueprint* WidgetBlueprint);
+void AddStandardToggleTemplateModelJson(const FNteStandardToggleTemplateModel& Model, FJsonObject& Object);
 }

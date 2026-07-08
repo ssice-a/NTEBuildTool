@@ -7,6 +7,7 @@
 #include "NteJsonFileUtils.h"
 #include "NteMaterialInstanceTool.h"
 #include "NteMeshToggleConfig.h"
+#include "NteMeshToggleStandardTemplateModel.h"
 #include "NteModPackageJob.h"
 
 #include "Animation/AnimBlueprint.h"
@@ -23,6 +24,7 @@
 #include "Misc/Parse.h"
 #include "Misc/Paths.h"
 #include "StaticParameterSet.h"
+#include "WidgetBlueprint.h"
 
 namespace
 {
@@ -534,13 +536,23 @@ TArray<TSharedPtr<FJsonValue>> AuditToggleSetup(const FString& SetupFilename, FN
 
 	UAnimBlueprint* PostProcessAnimBlueprint = LoadAssetByPath<UAnimBlueprint>(PostProcessPath);
 	UBlueprint* ControllerBlueprint = ControllerPath.IsEmpty() ? nullptr : LoadAssetByPath<UBlueprint>(ControllerPath);
+	UWidgetBlueprint* WidgetBlueprint = LoadAssetByPath<UWidgetBlueprint>(WidgetPath);
+	UBlueprint* SaveGameBlueprint = LoadAssetByPath<UBlueprint>(SaveGamePath);
 	Result->SetBoolField(TEXT("PostProcessAnimBlueprintLoads"), PostProcessAnimBlueprint != nullptr);
 	Result->SetBoolField(TEXT("ControllerBlueprintLoads"), ControllerBlueprint != nullptr);
-	Result->SetBoolField(TEXT("WidgetBlueprintLoads"), LoadAnyAssetByPath(WidgetPath) != nullptr);
-	Result->SetBoolField(TEXT("SaveGameBlueprintLoads"), LoadAnyAssetByPath(SaveGamePath) != nullptr);
+	Result->SetBoolField(TEXT("WidgetBlueprintLoads"), WidgetBlueprint != nullptr);
+	Result->SetBoolField(TEXT("SaveGameBlueprintLoads"), SaveGameBlueprint != nullptr);
 	if (!PostProcessAnimBlueprint)
 	{
 		AddFinding(Context, TEXT("Error"), TEXT("Toggle"), TEXT("PostProcessAnimBlueprint does not load."), PostProcessPath);
+	}
+	if (!WidgetBlueprint)
+	{
+		AddFinding(Context, TEXT("Error"), TEXT("Toggle"), TEXT("WidgetBlueprint does not load or is not a UWidgetBlueprint."), WidgetPath);
+	}
+	if (!SaveGameBlueprint)
+	{
+		AddFinding(Context, TEXT("Error"), TEXT("Toggle"), TEXT("SaveGameBlueprint does not load."), SaveGamePath);
 	}
 
 	const bool bThinAnchorMode = Options.RuntimeMode.Equals(TEXT("ThinAnchorController"), ESearchCase::IgnoreCase);
@@ -583,6 +595,43 @@ TArray<TSharedPtr<FJsonValue>> AuditToggleSetup(const FString& SetupFilename, FN
 	if (bThinAnchorMode && bLooksStandardTemplateRuntime)
 	{
 		AddFinding(Context, TEXT("Warning"), TEXT("Toggle"), TEXT("RuntimeMode is ThinAnchorController, but the PostProcessAnimBlueprint still looks like a StandardPostProcessTemplate runtime."), PostProcessPath);
+	}
+
+	if (bStandardTemplateMode)
+	{
+		const NTEBuildTool::Toggle::FNteStandardToggleTemplateModel TemplateModel =
+			NTEBuildTool::Toggle::BuildStandardToggleTemplateModel(SaveGameBlueprint, PostProcessAnimBlueprint, WidgetBlueprint);
+		const TSharedRef<FJsonObject> TemplateModelObject = MakeShared<FJsonObject>();
+		NTEBuildTool::Toggle::AddStandardToggleTemplateModelJson(TemplateModel, *TemplateModelObject);
+		Result->SetObjectField(TEXT("StandardTemplateModel"), TemplateModelObject);
+
+		const int32 GroupCount = Options.ToggleGroups.Num();
+		if (TemplateModel.GetSaveGameVisibleCapacity() < GroupCount)
+		{
+			AddFinding(Context, TEXT("Error"), TEXT("Toggle"), FString::Printf(TEXT("SaveGame standard visible-state capacity is %d, but setup has %d group(s)."), TemplateModel.GetSaveGameVisibleCapacity(), GroupCount), SaveGamePath);
+		}
+		if (TemplateModel.GetPostProcessVisibleCapacity() < GroupCount)
+		{
+			AddFinding(Context, TEXT("Error"), TEXT("Toggle"), FString::Printf(TEXT("Post Process standard visible-state capacity is %d, but setup has %d group(s)."), TemplateModel.GetPostProcessVisibleCapacity(), GroupCount), PostProcessPath);
+		}
+
+		for (int32 GroupIndex = 0; GroupIndex < Options.ToggleGroups.Num(); ++GroupIndex)
+		{
+			const int32 Ordinal = GroupIndex + 1;
+			const NTEBuildTool::Toggle::FNteMeshToggleGroup& Group = Options.ToggleGroups[GroupIndex];
+			if (!TemplateModel.WidgetButtonGroups.Contains(Ordinal))
+			{
+				AddFinding(Context, TEXT("Error"), TEXT("Toggle"), FString::Printf(TEXT("WidgetBlueprint is missing standard button for group %d."), Ordinal), WidgetPath);
+			}
+			if (!TemplateModel.WidgetLabelGroups.Contains(Ordinal))
+			{
+				AddFinding(Context, TEXT("Error"), TEXT("Toggle"), FString::Printf(TEXT("WidgetBlueprint is missing standard label TextBlock for group %d."), Ordinal), WidgetPath);
+			}
+			if (Group.Chord.Key.IsValid() && !TemplateModel.PostProcessInputGroups.Contains(Ordinal))
+			{
+				AddFinding(Context, TEXT("Error"), TEXT("Toggle"), FString::Printf(TEXT("PostProcessAnimBlueprint is missing NTE_Toggle_Input_%d_* marker for configured hotkey %s."), Ordinal, *Group.Chord.Key.GetFName().ToString()), PostProcessPath);
+			}
+		}
 	}
 
 	TArray<TSharedPtr<FJsonValue>> GroupObjects;

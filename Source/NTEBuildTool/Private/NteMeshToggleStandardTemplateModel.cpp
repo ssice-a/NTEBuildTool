@@ -3,6 +3,8 @@
 #include "NteMeshToggleStandardTemplateModel.h"
 
 #include "Blueprint/WidgetTree.h"
+#include "Dom/JsonObject.h"
+#include "Dom/JsonValue.h"
 #include "EdGraph/EdGraph.h"
 #include "K2Node_Variable.h"
 #include "WidgetBlueprint.h"
@@ -75,6 +77,19 @@ void CollectBlueprintVariableOrdinals(
 	AddFromGraphs(Blueprint.UbergraphPages);
 	AddFromGraphs(Blueprint.FunctionGraphs);
 	AddFromGraphs(Blueprint.MacroGraphs);
+}
+
+TArray<TSharedPtr<FJsonValue>> OrdinalSetToJsonValues(const TSet<int32>& Ordinals)
+{
+	TArray<int32> SortedOrdinals = Ordinals.Array();
+	SortedOrdinals.Sort();
+
+	TArray<TSharedPtr<FJsonValue>> Values;
+	for (const int32 Ordinal : SortedOrdinals)
+	{
+		Values.Add(MakeShared<FJsonValueNumber>(Ordinal));
+	}
+	return Values;
 }
 }
 
@@ -252,5 +267,20 @@ FNteStandardToggleTemplateModel BuildStandardToggleTemplateModel(
 		}
 	}
 	return Model;
+}
+
+void AddStandardToggleTemplateModelJson(const FNteStandardToggleTemplateModel& Model, FJsonObject& Object)
+{
+	Object.SetNumberField(TEXT("SaveGameVisibleCapacity"), Model.GetSaveGameVisibleCapacity());
+	Object.SetNumberField(TEXT("PostProcessVisibleCapacity"), Model.GetPostProcessVisibleCapacity());
+	Object.SetNumberField(TEXT("PostProcessInputCapacity"), Model.GetPostProcessInputCapacity());
+	Object.SetNumberField(TEXT("WidgetButtonCapacity"), Model.GetWidgetButtonCapacity());
+	Object.SetNumberField(TEXT("WidgetLabelCapacity"), Model.GetWidgetLabelCapacity());
+	Object.SetNumberField(TEXT("RuntimeStateCapacity"), Model.GetRuntimeStateCapacity());
+	Object.SetArrayField(TEXT("SaveGameVisibleGroups"), OrdinalSetToJsonValues(Model.SaveGameVisibleGroups));
+	Object.SetArrayField(TEXT("PostProcessVisibleGroups"), OrdinalSetToJsonValues(Model.PostProcessVisibleGroups));
+	Object.SetArrayField(TEXT("PostProcessInputGroups"), OrdinalSetToJsonValues(Model.PostProcessInputGroups));
+	Object.SetArrayField(TEXT("WidgetButtonGroups"), OrdinalSetToJsonValues(Model.WidgetButtonGroups));
+	Object.SetArrayField(TEXT("WidgetLabelGroups"), OrdinalSetToJsonValues(Model.WidgetLabelGroups));
 }
 }
