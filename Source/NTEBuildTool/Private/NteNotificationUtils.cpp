@@ -112,6 +112,38 @@ bool ChooseSaveJsonFileWithTitle(const FText& Title, const FString& DefaultFilen
 	return true;
 }
 
+bool ChooseAssetFileWithTitle(const FText& Title, const FString& DefaultFilename, const FString& FileTypes, FString& OutFilename)
+{
+	IDesktopPlatform* DesktopPlatform = FDesktopPlatformModule::Get();
+	if (!DesktopPlatform)
+	{
+		ShowError(LOCTEXT("NoDesktopPlatformForAsset", "Desktop file dialog is unavailable."));
+		return false;
+	}
+
+	TArray<FString> OpenFilenames;
+	const void* ParentWindowHandle = FSlateApplication::IsInitialized()
+		? FSlateApplication::Get().FindBestParentWindowHandleForDialogs(nullptr)
+		: nullptr;
+
+	const bool bOpened = DesktopPlatform->OpenFileDialog(
+		ParentWindowHandle,
+		Title.ToString(),
+		FPaths::ProjectContentDir(),
+		DefaultFilename,
+		FileTypes,
+		EFileDialogFlags::None,
+		OpenFilenames);
+
+	if (!bOpened || OpenFilenames.IsEmpty())
+	{
+		return false;
+	}
+
+	OutFilename = OpenFilenames[0];
+	return true;
+}
+
 bool ChooseDirectoryWithTitle(const FText& Title, const FString& DefaultDirectory, FString& OutDirectory)
 {
 	IDesktopPlatform* DesktopPlatform = FDesktopPlatformModule::Get();

@@ -16,6 +16,7 @@ public:
 private:
 	void RegisterMenus();
 	void ImportFModelPhysicsAssetJson();
+	void CreateModMaterialInstanceFromSourceJson();
 	void CreateModMaterialInstanceFromConfig();
 	void CreateMeshToggleUiSetup();
 	void BuildSelectedAssetsModPackage();

@@ -23,6 +23,7 @@ bool IsGameContentPath(const FString& ContentPath);
 FString NormalizeAssetPathForText(FString AssetPath);
 FString ToObjectPath(const FString& AssetPath);
 FString JoinAssetPath(const FString& PackagePath, const FString& AssetName);
+FString TryConvertFilenameToGamePackagePath(const FString& Filename);
 FString GetAssetPackagePath(UObject* Asset);
 UObject* LoadAnyAssetByPath(const FString& AssetPath);
 

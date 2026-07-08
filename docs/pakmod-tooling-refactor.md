@@ -192,6 +192,13 @@ The recipe format should mirror that workflow:
 
 `SourceTextureOverrides` is expanded through Source Texture Usage. If the source material uses `/Game/.../source_id` for both `PM_Diffuse` and `ID_Tex`, one entry writes the replacement texture into both parameters. `TextureOverrides` remains an advanced per-parameter layer and is applied after source-texture expansion.
 
+Current implementation checkpoint:
+
+- `Create Material Instance From FModel Material JSON` opens a source-texture usage dialog.
+- The dialog displays each source texture once and lists the material parameters that use it.
+- Users can choose one replacement texture per source texture group, and the material module expands it into parameter overrides.
+- `Create Material Instance From Recipe JSON` and the `NteMaterialConfig` commandlet still consume the same core material module, so manual and automated recipes stay compatible.
+
 ### Toggle Runtime Module
 
 Proposed files:

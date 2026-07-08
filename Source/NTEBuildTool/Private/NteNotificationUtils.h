@@ -12,5 +12,6 @@ void ShowSuccessNotification(const FText& Message);
 
 bool ChooseJsonFileWithTitle(const FText& Title, const FString& DefaultFilename, FString& OutFilename);
 bool ChooseSaveJsonFileWithTitle(const FText& Title, const FString& DefaultFilename, FString& OutFilename);
+bool ChooseAssetFileWithTitle(const FText& Title, const FString& DefaultFilename, const FString& FileTypes, FString& OutFilename);
 bool ChooseDirectoryWithTitle(const FText& Title, const FString& DefaultDirectory, FString& OutDirectory);
 }

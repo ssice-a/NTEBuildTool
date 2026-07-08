@@ -4,6 +4,7 @@
 
 #include "FModelPhysicsAssetImporter.h"
 #include "NteEditorAssetUtils.h"
+#include "NteMaterialInstanceDialog.h"
 #include "NteMaterialInstanceTool.h"
 #include "NteMeshToggleConfig.h"
 #include "NteMeshToggleDialog.h"
@@ -59,6 +60,12 @@ void FNTEBuildToolModule::RegisterMenus()
 		LOCTEXT("ImportFModelPhysicsAssetTooltip", "Analyze a FModel PhysicsAsset JSON, create a matching PhysicsAsset, and assign it to the selected SkeletalMesh."),
 		FSlateIcon(),
 		FUIAction(FExecuteAction::CreateRaw(this, &FNTEBuildToolModule::ImportFModelPhysicsAssetJson))));
+	Section.AddEntry(FToolMenuEntry::InitMenuEntry(
+		TEXT("NTEBuildTool_CreateModMaterialInstanceFromSourceJson"),
+		LOCTEXT("CreateModMaterialInstanceFromSourceJsonLabel", "Create Material Instance From FModel Material JSON"),
+		LOCTEXT("CreateModMaterialInstanceFromSourceJsonTooltip", "Inspect source texture usage from a FModel material JSON and create or update a mod MaterialInstanceConstant."),
+		FSlateIcon(),
+		FUIAction(FExecuteAction::CreateRaw(this, &FNTEBuildToolModule::CreateModMaterialInstanceFromSourceJson))));
 	Section.AddEntry(FToolMenuEntry::InitMenuEntry(
 		TEXT("NTEBuildTool_CreateModMaterialInstanceFromRecipe"),
 		LOCTEXT("CreateModMaterialInstanceFromRecipeLabel", "Create Material Instance From Recipe JSON"),
@@ -128,6 +135,48 @@ void FNTEBuildToolModule::ImportFModelPhysicsAssetJson()
 		FText::AsNumber(Summary.DisabledCollisionPairCount),
 		FText::FromString(PhysicsAsset->GetName()),
 		FText::FromString(SelectedSkeletalMesh->GetName())));
+}
+
+void FNTEBuildToolModule::CreateModMaterialInstanceFromSourceJson()
+{
+	FString SourceMaterialJson;
+	if (!NTEBuildTool::Editor::ChooseJsonFileWithTitle(
+		LOCTEXT("ChooseFModelMaterialJson", "Choose FModel Material JSON"),
+		TEXT("MI_source_material.json"),
+		SourceMaterialJson))
+	{
+		return;
+	}
+
+	NTEBuildTool::Material::FNteMaterialInstanceOptions Options;
+	TSharedPtr<FJsonObject> SourceTextureOverrides;
+	if (!NTEBuildTool::Material::ShowMaterialInstanceRecipeDialog(SourceMaterialJson, Options, SourceTextureOverrides))
+	{
+		return;
+	}
+
+	FString Error;
+	NTEBuildTool::Material::FNteMaterialConfigApplyResult Result;
+	const FScopedTransaction Transaction(LOCTEXT("CreateModMaterialInstanceFromSourceTransaction", "Create Mod Material Instance From FModel Source"));
+	if (!NTEBuildTool::Material::ApplyModMaterialConfig(
+		Options,
+		SourceTextureOverrides.IsValid() ? SourceTextureOverrides.Get() : nullptr,
+		nullptr,
+		nullptr,
+		nullptr,
+		nullptr,
+		Result,
+		Error))
+	{
+		NTEBuildTool::Editor::ShowError(FText::FromString(Error));
+		return;
+	}
+
+	NTEBuildTool::Editor::ShowSuccessNotification(FText::Format(
+		LOCTEXT("CreatedModMaterialInstanceFromSource", "Created/updated {0}. Source texture groups: {1}. Report: {2}"),
+		FText::FromString(Result.OutputMaterialPath),
+		FText::AsNumber(Result.CreateResult.ApplySummary.SourceTextureOverrideGroups),
+		FText::FromString(Result.ReportFilename)));
 }
 
 void FNTEBuildToolModule::CreateModMaterialInstanceFromConfig()

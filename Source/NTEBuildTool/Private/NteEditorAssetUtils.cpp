@@ -117,6 +117,25 @@ FString JoinAssetPath(const FString& PackagePath, const FString& AssetName)
 	return NormalizedPackagePath / AssetName;
 }
 
+FString TryConvertFilenameToGamePackagePath(const FString& Filename)
+{
+	FString NormalizedFilename = FPaths::ConvertRelativePathToFull(Filename);
+	FPaths::NormalizeFilename(NormalizedFilename);
+
+	FString ContentDir = FPaths::ConvertRelativePathToFull(FPaths::ProjectContentDir());
+	FPaths::NormalizeFilename(ContentDir);
+	ContentDir.RemoveFromEnd(TEXT("/"));
+
+	if (!NormalizedFilename.StartsWith(ContentDir / TEXT("")) || !NormalizedFilename.EndsWith(TEXT(".uasset"), ESearchCase::IgnoreCase))
+	{
+		return FString();
+	}
+
+	FString RelativePath = NormalizedFilename.Mid((ContentDir / TEXT("")).Len());
+	RelativePath.RemoveFromEnd(TEXT(".uasset"), ESearchCase::IgnoreCase);
+	return TEXT("/Game/") + RelativePath;
+}
+
 FString GetAssetPackagePath(UObject* Asset)
 {
 	return Asset ? Asset->GetPackage()->GetName() : FString();

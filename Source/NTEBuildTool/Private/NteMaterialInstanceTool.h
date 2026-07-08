@@ -91,6 +91,15 @@ bool CreateOrUpdateModMaterialInstance(
 	FNteMaterialInstanceCreateResult& OutResult,
 	FString& OutError);
 
+bool ApplyModMaterialConfig(
+	const FNteMaterialInstanceOptions& Options,
+	const FJsonObject* SourceTextureOverrides,
+	const FJsonObject* TextureOverrides,
+	const FJsonObject* ScalarOverrides,
+	const FJsonObject* VectorOverrides,
+	const FJsonObject* StaticSwitchOverrides,
+	FNteMaterialConfigApplyResult& OutResult,
+	FString& OutError);
 bool ApplyModMaterialConfigFromFile(const FString& ConfigFilename, FNteMaterialConfigApplyResult& OutResult, FString& OutError);
 bool SaveMaterialInstanceOverrideReport(UMaterialInstanceConstant& MaterialInstance, FString& OutFilename, FString& OutError);
 }
