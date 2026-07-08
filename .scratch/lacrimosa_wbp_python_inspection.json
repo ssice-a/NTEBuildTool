@@ -1,0 +1,23 @@
+[
+  {
+    "path": "/Game/Characters/Player/004_lacrimosa/mod/Runtime/WBP_NTE_ModToggleMenu",
+    "loads": true,
+    "class": "WidgetBlueprint",
+    "name": "WBP_NTE_ModToggleMenu",
+    "has_widget_tree": false,
+    "widgets": []
+  },
+  {
+    "path": "/Game/Characters/Player/004_lacrimosa/mod/Runtime/ABP_NTE_ModToggle_PostProcess",
+    "loads": true,
+    "class": "AnimBlueprint",
+    "name": "ABP_NTE_ModToggle_PostProcess"
+  },
+  {
+    "path": "/Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+    "loads": true,
+    "class": "SkeletalMesh",
+    "name": "player_004_lacrimosa_skin",
+    "post_process_anim_blueprint": "/Game/Characters/Player/004_lacrimosa/mod/Runtime/ABP_NTE_ModToggle_PostProcess.ABP_NTE_ModToggle_PostProcess_C"
+  }
+]

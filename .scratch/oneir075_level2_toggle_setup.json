@@ -1,66 +1,76 @@
-{
-	"Format": "NTE.ModToggleSetup",
-	"Version": 2,
-	"Mesh": "/Game/Maps_4N/Characters/Player/075_oneir_rpg/player_075_oneir_rpg_level2/player_075_oneir_rpg_level2_cloth/cloth",
-	"PostProcessAnimBlueprint": "/Game/Maps_4N/Characters/Player/075_oneir_rpg/player_075_oneir_rpg_level2/player_075_oneir_rpg_level2_cloth/mod/Runtime/ABP_NTE_ModToggle_PostProcess",
-	"ControllerBlueprint": "/Game/Maps_4N/Characters/Player/075_oneir_rpg/player_075_oneir_rpg_level2/player_075_oneir_rpg_level2_cloth/mod/Runtime/BP_NTE_ModToggleController",
-	"WidgetBlueprint": "/Game/Maps_4N/Characters/Player/075_oneir_rpg/player_075_oneir_rpg_level2/player_075_oneir_rpg_level2_cloth/mod/Runtime/WBP_NTE_ModToggleMenu",
-	"SaveGameBlueprint": "/Game/Maps_4N/Characters/Player/075_oneir_rpg/player_075_oneir_rpg_level2/player_075_oneir_rpg_level2_cloth/mod/Runtime/BP_NTE_ModToggleSaveGame",
-	"SaveSlot": "cloth_NTE_ModToggle",
-	"UIInputChord": {
-		"Key": "Slash",
-		"Shift": false,
-		"Ctrl": true,
-		"Alt": false,
-		"Cmd": false,
-		"DisplayName": "Ctrl+Slash"
-	},
-	"Groups": [
-		{
-			"GroupId": "slot_2",
-			"Key": "NumPadEight",
-			"Label": "Slot 2",
-			"DefaultVisible": true,
-			"InputChord": {
-				"Key": "NumPadEight",
-				"Shift": false,
-				"Ctrl": false,
-				"Alt": false,
-				"Cmd": false,
-				"DisplayName": "Num 8"
-			},
-			"MaterialSlots": [ 2 ],
-			"MaterialSlotBindings": [
-				{
-					"SlotIndex": 2,
-					"SlotName": "材质_004",
-					"ImportedSlotName": "材质_004",
-					"MaterialPath": "/Game/Maps_4N/Characters/Player/075_oneir_rpg/player_075_oneir_rpg_level2/player_075_oneir_rpg_level2_cloth/mod/Materials/MI_mod_body"
-				}
-			]
-		},
-		{
-			"GroupId": "slot_3",
-			"Key": "NumPadTwo",
-			"Label": "Slot 3",
-			"DefaultVisible": true,
-			"InputChord": {
-				"Key": "NumPadTwo",
-				"Shift": false,
-				"Ctrl": false,
-				"Alt": false,
-				"Cmd": false,
-				"DisplayName": "Num 2"
-			},
-			"MaterialSlots": [ 3 ],
-			"MaterialSlotBindings": [
-				{
-					"SlotIndex": 3,
-					"SlotName": "材质_005",
-					"ImportedSlotName": "材质_005",
-					"MaterialPath": "/Game/Maps_4N/Characters/Player/075_oneir_rpg/player_075_oneir_rpg_level2/player_075_oneir_rpg_level2_cloth/mod/Materials/MI_mod_body"
-				}
-			]
-		}
-	]
+﻿{
+    "Format":  "NTE.ModToggleSetup",
+    "Version":  2,
+    "Mesh":  "/Game/Maps_4N/Characters/Player/075_oneir_rpg/player_075_oneir_rpg_level2/player_075_oneir_rpg_level2_cloth/cloth",
+    "PostProcessAnimBlueprint":  "/Game/Maps_4N/Characters/Player/075_oneir_rpg/player_075_oneir_rpg_level2/player_075_oneir_rpg_level2_cloth/mod/Runtime/ABP_NTE_ModToggle_PostProcess",
+    "ControllerBlueprint":  "/Game/Maps_4N/Characters/Player/075_oneir_rpg/player_075_oneir_rpg_level2/player_075_oneir_rpg_level2_cloth/mod/Runtime/BP_NTE_ModToggleController",
+    "WidgetBlueprint":  "/Game/Maps_4N/Characters/Player/075_oneir_rpg/player_075_oneir_rpg_level2/player_075_oneir_rpg_level2_cloth/mod/Runtime/WBP_NTE_ModToggleMenu",
+    "SaveGameBlueprint":  "/Game/Maps_4N/Characters/Player/075_oneir_rpg/player_075_oneir_rpg_level2/player_075_oneir_rpg_level2_cloth/mod/Runtime/BP_NTE_ModToggleSaveGame",
+    "SaveSlot":  "cloth_NTE_ModToggle",
+    "UIInputChord":  {
+                         "Key":  "Slash",
+                         "Shift":  false,
+                         "Ctrl":  true,
+                         "Alt":  false,
+                         "Cmd":  false,
+                         "DisplayName":  "Ctrl+Slash"
+                     },
+    "Groups":  [
+                   {
+                       "GroupId":  "slot_2",
+                       "Key":  "NumPadEight",
+                       "Label":  "Slot 2",
+                       "DefaultVisible":  true,
+                       "InputChord":  {
+                                          "Key":  "NumPadEight",
+                                          "Shift":  false,
+                                          "Ctrl":  false,
+                                          "Alt":  false,
+                                          "Cmd":  false,
+                                          "DisplayName":  "Num 8"
+                                      },
+                       "MaterialSlots":  [
+                                             2
+                                         ],
+                       "MaterialSlotBindings":  [
+                                                    {
+                                                        "SlotIndex":  2,
+                                                        "SlotName":  "材质_004",
+                                                        "ImportedSlotName":  "材质_004",
+                                                        "MaterialPath":  "/Game/Maps_4N/Characters/Player/075_oneir_rpg/player_075_oneir_rpg_level2/player_075_oneir_rpg_level2_cloth/ter/MI_player_075_oneiroi_rpg_level2_cloth"
+                                                    }
+                                                ]
+                   },
+                   {
+                       "GroupId":  "slot_3",
+                       "Key":  "NumPadTwo",
+                       "Label":  "Slot 3",
+                       "DefaultVisible":  true,
+                       "InputChord":  {
+                                          "Key":  "NumPadTwo",
+                                          "Shift":  false,
+                                          "Ctrl":  false,
+                                          "Alt":  false,
+                                          "Cmd":  false,
+                                          "DisplayName":  "Num 2"
+                                      },
+                       "MaterialSlots":  [
+                                             3
+                                         ],
+                       "MaterialSlotBindings":  [
+                                                    {
+                                                        "SlotIndex":  3,
+                                                        "SlotName":  "材质_005",
+                                                        "ImportedSlotName":  "材质_005",
+                                                        "MaterialPath":  "/Game/Maps_4N/Characters/Player/075_oneir_rpg/player_075_oneir_rpg_level2/player_075_oneir_rpg_level2_cloth/ter/MI_player_075_oneiroi_rpg_level2_cloth"
+                                                    }
+                                                ]
+                   }
+               ],
+    "TargetMesh":  "/Game/Maps_4N/Characters/Player/075_oneir_rpg/player_075_oneir_rpg_level2/player_075_oneir_rpg_level2_cloth/cloth",
+    "RuntimeAnchorMesh":  "/Game/Maps_4N/Characters/Player/075_oneir_rpg/player_075_oneir_rpg_level2/player_075_oneir_rpg_level2_cloth/cloth",
+    "RuntimeMode":  "OldPostProcessRuntime",
+    "StaticMeshVisibilityAdapter":  "",
+    "HiddenMaterial":  "",
+    "ValidateOnly":  false
 }

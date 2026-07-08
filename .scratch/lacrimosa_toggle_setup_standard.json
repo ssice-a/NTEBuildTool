@@ -1,0 +1,141 @@
+{
+	"Format": "NTE.ModToggleSetup",
+	"Version": 2,
+	"Mesh": "/Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+	"TargetMesh": "/Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+	"RuntimeAnchorMesh": "/Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+	"PostProcessAnimBlueprint": "/Game/Characters/Player/004_lacrimosa/mod/Runtime/ABP_NTE_ModToggle_PostProcess",
+	"ControllerBlueprint": "",
+	"WidgetBlueprint": "/Game/Characters/Player/004_lacrimosa/mod/Runtime/WBP_NTE_ModToggleMenu",
+	"SaveGameBlueprint": "/Game/Characters/Player/004_lacrimosa/mod/Runtime/BP_NTE_ModToggleSaveGame",
+	"TemplatePostProcessAnimBlueprint": "/Game/Characters/Player/004_lacrimosa/mod/Runtime/ABP_NTE_ModToggle_PostProcess",
+	"TemplateWidgetBlueprint": "/Game/Characters/Player/004_lacrimosa/mod/Runtime/WBP_NTE_ModToggleMenu",
+	"TemplateSaveGameBlueprint": "/Game/Characters/Player/004_lacrimosa/mod/Runtime/BP_NTE_ModToggleSaveGame",
+	"SaveSlot": "player_004_lacrimosa_skin_NTE_ModToggle",
+	"RuntimeMode": "StandardPostProcessTemplate",
+	"StaticMeshVisibilityAdapter": "MaterialSwap",
+	"HiddenMaterial": "",
+	"AssignPostProcess": true,
+	"SaveDirtyAssetsAfterCreate": true,
+	"OverwriteExistingRuntimeAssets": true,
+	"ValidateOnly": false,
+	"UIInputChord":
+	{
+		"Key": "Slash",
+		"Shift": false,
+		"Ctrl": true,
+		"Alt": false,
+		"Cmd": false,
+		"DisplayName": "Ctrl+Slash"
+	},
+	"Groups": [
+		{
+			"GroupId": "toggle_group_1",
+			"Key": "",
+			"Label": "外套",
+			"DefaultVisible": true,
+			"InputChord":
+			{
+				"Key": "",
+				"Shift": false,
+				"Ctrl": false,
+				"Alt": false,
+				"Cmd": false,
+				"DisplayName": ""
+			},
+			"MaterialSlots": [ 12 ],
+			"MaterialSlotBindings": [
+				{
+					"SlotIndex": 12,
+					"SlotName": "shangyi",
+					"ImportedSlotName": "shangyi",
+					"MaterialPath": "/Game/Characters/Player/004_lacrimosa/ter_new/cloth_ter/MI_player_004_lacrimosa_01"
+				}
+			]
+		},
+		{
+			"GroupId": "toggle_group_2",
+			"Key": "",
+			"Label": "裙子",
+			"DefaultVisible": true,
+			"InputChord":
+			{
+				"Key": "",
+				"Shift": false,
+				"Ctrl": false,
+				"Alt": false,
+				"Cmd": false,
+				"DisplayName": ""
+			},
+			"MaterialSlots": [ 1, 13, 15 ],
+			"MaterialSlotBindings": [
+				{
+					"SlotIndex": 1,
+					"SlotName": "MI_player_004_lacrimosa_03",
+					"ImportedSlotName": "MI_player_004_lacrimosa_03",
+					"MaterialPath": "/Game/Characters/Player/004_lacrimosa/ter_new/cloth_ter/MI_player_004_lacrimosa_03"
+				},
+				{
+					"SlotIndex": 13,
+					"SlotName": "piaodai",
+					"ImportedSlotName": "piaodai",
+					"MaterialPath": "/Game/Characters/Player/004_lacrimosa/ter_new/cloth_ter/MI_player_004_lacrimosa_01"
+				},
+				{
+					"SlotIndex": 15,
+					"SlotName": "qunzi",
+					"ImportedSlotName": "qunzi",
+					"MaterialPath": "/Game/Characters/Player/004_lacrimosa/ter_new/cloth_ter/MI_player_004_lacrimosa_02"
+				}
+			]
+		},
+		{
+			"GroupId": "toggle_group_3",
+			"Key": "",
+			"Label": "鞋子",
+			"DefaultVisible": true,
+			"InputChord":
+			{
+				"Key": "",
+				"Shift": false,
+				"Ctrl": false,
+				"Alt": false,
+				"Cmd": false,
+				"DisplayName": ""
+			},
+			"MaterialSlots": [ 14 ],
+			"MaterialSlotBindings": [
+				{
+					"SlotIndex": 14,
+					"SlotName": "xiezi",
+					"ImportedSlotName": "xiezi",
+					"MaterialPath": "/Game/Characters/Player/004_lacrimosa/ter_new/cloth_ter/MI_player_004_lacrimosa_01"
+				}
+			]
+		},
+		{
+			"GroupId": "toggle_group_4",
+			"Key": "",
+			"Label": "上衣",
+			"DefaultVisible": true,
+			"InputChord":
+			{
+				"Key": "",
+				"Shift": false,
+				"Ctrl": false,
+				"Alt": false,
+				"Cmd": false,
+				"DisplayName": ""
+			},
+			"MaterialSlots": [ 16 ],
+			"MaterialSlotBindings": [
+				{
+					"SlotIndex": 16,
+					"SlotName": "shangyi1",
+					"ImportedSlotName": "shangyi1",
+					"MaterialPath": "/Game/Characters/Player/004_lacrimosa/ter_new/cloth_ter/MI_player_004_lacrimosa_02"
+				}
+			]
+		}
+	]
+}

@@ -1,0 +1,26 @@
+﻿{
+  "Format": "NTE.ModToggleSetup",
+  "Version": 2,
+  "Mesh": "/Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+  "TargetMesh": "/Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+  "RuntimeAnchorMesh": "/Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+  "PostProcessAnimBlueprint": "/Game/NTEBuildTool/SmokeTests/MeshToggleGenerated/ABP_NTE_ModToggle_PostProcess",
+  "ControllerBlueprint": "/Game/NTEBuildTool/SmokeTests/MeshToggleGenerated/BP_NTE_ModToggleController",
+  "WidgetBlueprint": "/Game/NTEBuildTool/SmokeTests/MeshToggleGenerated/WBP_NTE_ModToggleMenu",
+  "SaveGameBlueprint": "/Game/NTEBuildTool/SmokeTests/MeshToggleGenerated/BP_NTE_ModToggleSaveGame",
+  "TemplatePostProcessAnimBlueprint": "/Game/NTEBuildTool/SmokeTests/MeshToggle/ABP_NTE_Smoke_ModToggle_PostProcess",
+  "TemplateWidgetBlueprint": "/Game/NTEBuildTool/SmokeTests/MeshToggle/WBP_NTE_Smoke_ModToggleMenu",
+  "TemplateSaveGameBlueprint": "/Game/NTEBuildTool/SmokeTests/MeshToggle/BP_NTE_Smoke_ModToggleSaveGame",
+  "SaveSlot": "NTEBuildTool_SmokeGenerated_MeshToggle",
+  "RuntimeMode": "OldPostProcessRuntime",
+  "AssignPostProcess": false,
+  "CreateBlueprintAssets": true,
+  "SaveDirtyAssetsAfterCreate": true,
+  "OverwriteExistingRuntimeAssets": true,
+  "UIInputChord": { "Key": "Slash", "Shift": false, "Ctrl": true, "Alt": false, "Cmd": false, "DisplayName": "Ctrl+Slash" },
+  "Groups": [
+    { "GroupId": "slot_15", "Key": "F9", "Label": "Slot 15", "DefaultVisible": true, "InputChord": { "Key": "F9", "Shift": false, "Ctrl": false, "Alt": false, "Cmd": false, "DisplayName": "F9" }, "MaterialSlots": [15] },
+    { "GroupId": "slot_16", "Key": "F10", "Label": "Slot 16", "DefaultVisible": false, "InputChord": { "Key": "F10", "Shift": false, "Ctrl": false, "Alt": false, "Cmd": false, "DisplayName": "F10" }, "MaterialSlots": [16] },
+    { "GroupId": "slot_17", "Key": "F10", "Label": "Slot 17", "DefaultVisible": false, "InputChord": { "Key": "F10", "Shift": false, "Ctrl": false, "Alt": false, "Cmd": false, "DisplayName": "F10" }, "MaterialSlots": [17] }
+  ]
+}

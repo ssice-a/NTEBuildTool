@@ -1,0 +1,8 @@
+{
+  "asset": "/Game/Characters/Player/004_lacrimosa/mod/Runtime/WBP_NTE_ModToggleMenu",
+  "asset_loads": true,
+  "asset_class": "WidgetBlueprint",
+  "generated_class": "{'error': \"WidgetBlueprint: Failed to find property 'generated_class' for attribute 'generated_class' on 'WidgetBlueprint'\"}",
+  "generated_class_class": "",
+  "asset_widget_tree": "{'error': \"WidgetBlueprint: Failed to find property 'widget_tree' for attribute 'widget_tree' on 'WidgetBlueprint'\"}"
+}
