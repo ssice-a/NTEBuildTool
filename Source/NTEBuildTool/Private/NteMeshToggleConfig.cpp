@@ -559,6 +559,15 @@ bool RunMeshToggleUiSetup(FNteMeshToggleSetupOptions Options, FNteMeshToggleSetu
 	{
 		Options.RuntimeMode = TEXT("StandardPostProcessTemplate");
 	}
+	if (!Options.RuntimeMode.Equals(TEXT("StandardPostProcessTemplate"), ESearchCase::IgnoreCase))
+	{
+		OutError = FString::Printf(
+			TEXT("Unsupported RuntimeMode '%s'. The current mesh toggle generator only supports StandardPostProcessTemplate; ThinAnchorController is a future runtime contract and must not be generated yet."),
+			*Options.RuntimeMode);
+		return false;
+	}
+	Options.RuntimeMode = TEXT("StandardPostProcessTemplate");
+	Options.ControllerBlueprintName.Reset();
 	if (Options.StaticMeshVisibilityAdapter.IsEmpty())
 	{
 		Options.StaticMeshVisibilityAdapter = TEXT("MaterialSwap");
