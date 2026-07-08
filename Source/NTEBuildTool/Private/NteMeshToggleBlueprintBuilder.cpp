@@ -16,15 +16,20 @@
 #include "EdGraph/EdGraphNode.h"
 #include "EdGraph/EdGraphPin.h"
 #include "EdGraphSchema_K2.h"
+#include "Engine/Font.h"
+#include "Engine/FontFace.h"
 #include "Engine/Blueprint.h"
 #include "Engine/SkeletalMesh.h"
+#include "Fonts/CompositeFont.h"
 #include "IAssetTools.h"
 #include "K2Node_CallFunction.h"
 #include "K2Node_DynamicCast.h"
 #include "K2Node_Variable.h"
 #include "Kismet2/BlueprintEditorUtils.h"
 #include "Kismet2/KismetEditorUtilities.h"
+#include "Misc/FileHelper.h"
 #include "Misc/PackageName.h"
+#include "Misc/Paths.h"
 #include "ObjectTools.h"
 #include "UObject/SavePackage.h"
 #include "WidgetBlueprint.h"
@@ -618,6 +623,162 @@ FString MakeStandardButtonWidgetName(const int32 TemplateGroupOrdinal)
 		TemplateGroupOrdinal);
 }
 
+bool NeedsEmbeddedUnicodeFont(const FRuntimeBuildContext& Context)
+{
+	const auto ContainsNonAscii = [](const FString& Text)
+	{
+		for (const TCHAR Character : Text)
+		{
+			if (Character > 0x7f)
+			{
+				return true;
+			}
+		}
+		return false;
+	};
+
+	for (const FNteMeshToggleGroup& Group : Context.Options.ToggleGroups)
+	{
+		if (ContainsNonAscii(Group.Label))
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+bool LoadFontBytes(const FString& Filename, TArray<uint8>& OutBytes, FString& OutError)
+{
+	if (Filename.IsEmpty() || !FPaths::FileExists(Filename))
+	{
+		OutError = FString::Printf(TEXT("Unicode UI font file does not exist: %s"), *Filename);
+		return false;
+	}
+	if (!FFileHelper::LoadFileToArray(OutBytes, *Filename) || OutBytes.IsEmpty())
+	{
+		OutError = FString::Printf(TEXT("Could not read Unicode UI font file: %s"), *Filename);
+		return false;
+	}
+	return true;
+}
+
+UFont* FindOrCreateEmbeddedUnicodeFont(UWidgetBlueprint& WidgetBlueprint, FString& OutError)
+{
+	const FName FontName(TEXT("NTE_Embedded_CJK_UI_Font"));
+	const FName FontFaceName(TEXT("NTE_Embedded_CJK_UI_FontFace"));
+
+	UPackage* Package = WidgetBlueprint.GetPackage();
+	if (!Package)
+	{
+		OutError = FString::Printf(TEXT("Widget blueprint has no package: %s"), *WidgetBlueprint.GetName());
+		return nullptr;
+	}
+
+	UFont* Font = FindObject<UFont>(Package, *FontName.ToString());
+	UFontFace* FontFace = Font ? FindObject<UFontFace>(Font, *FontFaceName.ToString()) : nullptr;
+
+	const FString FontFilename = FPaths::EngineContentDir() / TEXT("Slate/Fonts/DroidSansFallback.ttf");
+	TArray<uint8> FontBytes;
+	if (!LoadFontBytes(FontFilename, FontBytes, OutError))
+	{
+		return nullptr;
+	}
+
+	WidgetBlueprint.Modify();
+	if (!Font)
+	{
+		Font = NewObject<UFont>(Package, FontName, RF_Public | RF_Standalone | RF_Transactional);
+	}
+	if (!FontFace)
+	{
+		FontFace = NewObject<UFontFace>(Font, FontFaceName, RF_Public | RF_Transactional);
+	}
+
+	Font->SetFlags(RF_Public | RF_Standalone | RF_Transactional);
+	FontFace->SetFlags(RF_Public | RF_Transactional);
+	if (!FontFace->FontFaceData->HasData())
+	{
+		FontFace->InitializeFromBulkData(FontFilename, EFontHinting::Default, FontBytes.GetData(), FontBytes.Num());
+	}
+	FontFace->LoadingPolicy = EFontLoadingPolicy::Inline;
+	FontFace->Modify();
+
+	Font->FontCacheType = EFontCacheType::Runtime;
+	Font->LegacyFontSize = 16;
+	Font->CompositeFont.DefaultTypeface.Fonts.Reset();
+	FTypefaceEntry& Entry = Font->CompositeFont.DefaultTypeface.Fonts.AddDefaulted_GetRef();
+	Entry.Name = FName(TEXT("Regular"));
+	Entry.Font = FFontData(FontFace);
+	Font->CompositeFont.FallbackTypeface.Typeface.Fonts.Reset();
+	FTypefaceEntry& FallbackEntry = Font->CompositeFont.FallbackTypeface.Typeface.Fonts.AddDefaulted_GetRef();
+	FallbackEntry.Name = FName(TEXT("Regular"));
+	FallbackEntry.Font = FFontData(FontFace);
+	Font->CompositeFont.MakeDirty();
+	Font->Modify();
+	Font->MarkPackageDirty();
+	Package->MarkPackageDirty();
+
+	return Font;
+}
+
+bool IsDescendantOfWidget(const UWidgetTree& WidgetTree, const UWidget& Candidate, const UWidget& ExpectedParent)
+{
+	bool bFound = false;
+	UWidgetTree::ForWidgetAndChildren(
+		const_cast<UWidget*>(&ExpectedParent),
+		[&Candidate, &bFound](UWidget* Widget)
+		{
+			if (Widget == &Candidate)
+			{
+				bFound = true;
+			}
+		});
+	return bFound;
+}
+
+bool ValidateWidgetTemplateChrome(const UWidgetBlueprint& WidgetBlueprint, FString& OutError)
+{
+	if (!WidgetBlueprint.WidgetTree)
+	{
+		OutError = TEXT("TemplateWidgetBlueprint must be a UWidgetBlueprint with a WidgetTree.");
+		return false;
+	}
+
+	if (!Cast<UButton>(WidgetBlueprint.WidgetTree->FindWidget(FName(TEXT("NTE_Toggle_TitleBarButton")))))
+	{
+		OutError = TEXT("Widget template is missing Button 'NTE_Toggle_TitleBarButton' required for dragging the toggle UI.");
+		return false;
+	}
+
+	if (!WidgetBlueprint.WidgetTree->FindWidget(FName(TEXT("NTE_Toggle_WindowPanel"))))
+	{
+		OutError = TEXT("Widget template is missing widget 'NTE_Toggle_WindowPanel' required for dragging the toggle UI.");
+		return false;
+	}
+
+	return true;
+}
+
+bool ApplyFontToTextBlock(UTextBlock& TextBlock, const UFont* Font)
+{
+	if (!Font)
+	{
+		return false;
+	}
+
+	FSlateFontInfo FontInfo = TextBlock.GetFont();
+	if (FontInfo.FontObject == Font)
+	{
+		return false;
+	}
+
+	TextBlock.Modify();
+	FontInfo.FontObject = Font;
+	FontInfo.TypefaceFontName = FName(TEXT("Regular"));
+	TextBlock.SetFont(FontInfo);
+	return true;
+}
+
 bool PatchWidgetBlueprintLabels(FRuntimeBuildContext& Context, FString& OutError)
 {
 	UWidgetBlueprint* WidgetBlueprint = Cast<UWidgetBlueprint>(Context.WidgetBlueprint);
@@ -626,15 +787,44 @@ bool PatchWidgetBlueprintLabels(FRuntimeBuildContext& Context, FString& OutError
 		OutError = TEXT("TemplateWidgetBlueprint must be a UWidgetBlueprint with a WidgetTree.");
 		return false;
 	}
+	if (!ValidateWidgetTemplateChrome(*WidgetBlueprint, OutError))
+	{
+		return false;
+	}
 
 	bool bChanged = false;
+	UFont* EmbeddedUnicodeFont = nullptr;
+	if (NeedsEmbeddedUnicodeFont(Context))
+	{
+		EmbeddedUnicodeFont = FindOrCreateEmbeddedUnicodeFont(*WidgetBlueprint, OutError);
+		if (!EmbeddedUnicodeFont)
+		{
+			return false;
+		}
+		bChanged = true;
+	}
+
+	if (EmbeddedUnicodeFont)
+	{
+		TArray<UWidget*> Widgets;
+		WidgetBlueprint->WidgetTree->GetAllWidgets(Widgets);
+		for (UWidget* Widget : Widgets)
+		{
+			if (UTextBlock* TextBlock = Cast<UTextBlock>(Widget))
+			{
+				bChanged |= ApplyFontToTextBlock(*TextBlock, EmbeddedUnicodeFont);
+			}
+		}
+	}
+
 	for (int32 GroupIndex = 0; GroupIndex < Context.Options.ToggleGroups.Num(); ++GroupIndex)
 	{
 		const int32 TemplateGroupOrdinal = GroupIndex + 1;
 		const FNteMeshToggleGroup& Group = Context.Options.ToggleGroups[GroupIndex];
 		const FString ButtonWidgetName = MakeStandardButtonWidgetName(TemplateGroupOrdinal);
 		UWidget* ButtonWidget = WidgetBlueprint->WidgetTree->FindWidget(FName(*ButtonWidgetName));
-		if (!Cast<UButton>(ButtonWidget))
+		UButton* Button = Cast<UButton>(ButtonWidget);
+		if (!Button)
 		{
 			OutError = FString::Printf(
 				TEXT("Widget template is missing Button '%s' required for toggle item '%s'."),
@@ -654,6 +844,14 @@ bool PatchWidgetBlueprintLabels(FRuntimeBuildContext& Context, FString& OutError
 				*Group.Label);
 			return false;
 		}
+		if (!IsDescendantOfWidget(*WidgetBlueprint->WidgetTree, *LabelTextBlock, *Button))
+		{
+			OutError = FString::Printf(
+				TEXT("Widget template TextBlock '%s' must be inside Button '%s' so the UI button has a visible label."),
+				*LabelWidgetName,
+				*ButtonWidgetName);
+			return false;
+		}
 
 		const FText NewLabel = FText::FromString(Group.Label);
 		if (!LabelTextBlock->GetText().EqualTo(NewLabel))
@@ -661,6 +859,10 @@ bool PatchWidgetBlueprintLabels(FRuntimeBuildContext& Context, FString& OutError
 			LabelTextBlock->Modify();
 			LabelTextBlock->SetText(NewLabel);
 			bChanged = true;
+		}
+		if (EmbeddedUnicodeFont)
+		{
+			bChanged |= ApplyFontToTextBlock(*LabelTextBlock, EmbeddedUnicodeFont);
 		}
 
 		if (Context.Result)
