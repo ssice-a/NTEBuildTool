@@ -11,6 +11,9 @@ This repository contains an Unreal Engine editor plugin for rebuilding and packa
 - **Replaced Asset**: A cooked asset whose `/Game/...` package path matches the original game asset path. Replaced assets are the reliable pure-pak entry point.
 - **Added Asset**: A new asset under a mod subfolder such as `/Game/.../mod/Runtime/...`. Added assets must be referenced by a replaced asset, otherwise cook or the game may not load them.
 - **Runtime Anchor**: A loaded asset or runtime object that gives pure-pak logic an execution opportunity. The preferred current anchor is the replaced `SkeletalMesh` referencing a generated Post Process Anim Blueprint.
+- **Runtime Anchor Mesh**: The `SkeletalMesh` that owns the Post Process Anim Blueprint used to tick pure-pak runtime logic. A `Skeleton` asset cannot be used as this anchor because it has no runtime component tick.
+- **Target Mesh**: The mesh whose material slots should be toggled. It can be the same asset as the Runtime Anchor Mesh, or a separate mesh referenced by the runtime controller.
+- **StaticMesh Visibility Adapter**: Runtime logic used when the Target Mesh is a `StaticMesh`. `SkinnedMeshComponent::ShowMaterialSection` does not apply, so the controller must use a separate adapter such as material swapping to a hidden/transparent material.
 - **Thin Post Process Anim Blueprint**: A generated post-process animation blueprint whose AnimGraph passes the pose through and whose EventGraph only starts or reconnects a toggle runtime controller. It should not own UI/input/material state.
 - **Toggle Runtime Controller**: The generated runtime logic that polls hotkeys, opens or closes UI, persists toggle state, and applies material-section visibility to a target `SkinnedMeshComponent`.
 - **Toggle Setup**: A JSON description of one target mesh, runtime assets, UI hotkey, save slot, and material-slot toggle groups.
@@ -39,4 +42,4 @@ The plugin should stay modular:
 - Cook and IoStore packaging is a separate package pipeline module.
 - The editor menu module wires these modules together and owns no large implementation.
 
-Pure pak remains the default strategy. A native DLL is only a fallback if evidence proves a target scenario has no reliable pure-pak runtime anchor.
+Pure pak remains the default strategy. A native DLL is only a fallback if evidence proves a target scenario has no reliable pure-pak runtime anchor. StaticMesh targets should first be attempted with a loaded Runtime Anchor Mesh plus a StaticMesh Visibility Adapter; adding a Post Process Anim Blueprint to a Skeleton is not a valid path.

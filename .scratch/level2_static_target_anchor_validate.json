@@ -1,0 +1,55 @@
+{
+	"Format": "NTE.ModToggleSetup",
+	"Version": 2,
+	"TargetMesh": "/Game/Maps_4N/Characters/Player/075_oneir_rpg/player_075_oneir_rpg_level2/player_075_oneir_rpg_level2_cloth/cloth",
+	"RuntimeAnchorMesh": "/Game/Maps_4N/Characters/Player/075_oneir_rpg/player_075_oneir_rpg_level3/player_075_oneir_rpg_level3_cloth/player_075_oneir_rpg_level3_cloth",
+	"PostProcessAnimBlueprint": "/Game/Maps_4N/Characters/Player/075_oneir_rpg/player_075_oneir_rpg_level2/player_075_oneir_rpg_level2_cloth/mod/Runtime/ABP_NTE_ModToggle_PostProcess",
+	"ControllerBlueprint": "/Game/Maps_4N/Characters/Player/075_oneir_rpg/player_075_oneir_rpg_level2/player_075_oneir_rpg_level2_cloth/mod/Runtime/BP_NTE_ModToggleController",
+	"WidgetBlueprint": "/Game/Maps_4N/Characters/Player/075_oneir_rpg/player_075_oneir_rpg_level2/player_075_oneir_rpg_level2_cloth/mod/Runtime/WBP_NTE_ModToggleMenu",
+	"SaveGameBlueprint": "/Game/Maps_4N/Characters/Player/075_oneir_rpg/player_075_oneir_rpg_level2/player_075_oneir_rpg_level2_cloth/mod/Runtime/BP_NTE_ModToggleSaveGame",
+	"SaveSlot": "cloth_NTE_ModToggle",
+	"RuntimeMode": "ThinAnchorController",
+	"StaticMeshVisibilityAdapter": "MaterialSwap",
+	"HiddenMaterial": "",
+	"ValidateOnly": true,
+	"UIInputChord": {
+		"Key": "Slash",
+		"Shift": false,
+		"Ctrl": true,
+		"Alt": false,
+		"Cmd": false,
+		"DisplayName": "Ctrl+Slash"
+	},
+	"Groups": [
+		{
+			"GroupId": "slot_2",
+			"Key": "NumPadEight",
+			"Label": "Slot 2",
+			"DefaultVisible": true,
+			"InputChord": {
+				"Key": "NumPadEight",
+				"Shift": false,
+				"Ctrl": false,
+				"Alt": false,
+				"Cmd": false,
+				"DisplayName": "Num 8"
+			},
+			"MaterialSlots": [ 2 ]
+		},
+		{
+			"GroupId": "slot_3",
+			"Key": "NumPadTwo",
+			"Label": "Slot 3",
+			"DefaultVisible": true,
+			"InputChord": {
+				"Key": "NumPadTwo",
+				"Shift": false,
+				"Ctrl": false,
+				"Alt": false,
+				"Cmd": false,
+				"DisplayName": "Num 2"
+			},
+			"MaterialSlots": [ 3 ]
+		}
+	]
+}

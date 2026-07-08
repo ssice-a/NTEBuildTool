@@ -178,7 +178,47 @@ void FNTEBuildToolModule::CreateMeshToggleUiSetup()
 
 void FNTEBuildToolModule::BuildSelectedAssetsModPackage()
 {
-	NTEBuildTool::Editor::ShowError(LOCTEXT("BuildSelectedAssetsNotMigrated", "Build Mod Package UI has not been migrated into the modular package pipeline yet."));
+	FString ModsDir;
+	if (!NTEBuildTool::Editor::ChooseDirectoryWithTitle(
+		LOCTEXT("ChooseModsOutputDirectory", "Choose Mods Output Directory"),
+		FPaths::ProjectSavedDir() / TEXT("NTEBuildTool/Mods"),
+		ModsDir))
+	{
+		return;
+	}
+
+	FString JobFilename;
+	if (!NTEBuildTool::Editor::ChooseSaveJsonFileWithTitle(
+		LOCTEXT("SaveModPackageJobJson", "Save NTE Mod Package Job JSON"),
+		TEXT("nte_mod_P.job.json"),
+		JobFilename))
+	{
+		return;
+	}
+
+	NTEBuildTool::Package::FNteModPackageJobCreateOptions CreateOptions;
+	CreateOptions.ModsDir = ModsDir;
+	CreateOptions.JobFilename = JobFilename;
+
+	FString Error;
+	NTEBuildTool::Package::FNteModPackageJobCreateResult CreateResult;
+	if (!NTEBuildTool::Package::CreateModPackageJobFromSelection(CreateOptions, CreateResult, Error))
+	{
+		NTEBuildTool::Editor::ShowError(FText::FromString(Error));
+		return;
+	}
+
+	NTEBuildTool::Package::FNteModPackageLaunchResult LaunchResult;
+	if (!NTEBuildTool::Package::LaunchModPackageBuildJob(CreateResult.JobFile, LaunchResult, Error))
+	{
+		NTEBuildTool::Editor::ShowError(FText::FromString(Error));
+		return;
+	}
+
+	NTEBuildTool::Editor::ShowInfo(FText::Format(
+		LOCTEXT("BuildSelectedAssetsPackageStarted", "Created package job with {0} packages and finished build. Job file: {1}"),
+		FText::AsNumber(CreateResult.PackageCount),
+		FText::FromString(LaunchResult.JobFile)));
 }
 
 void FNTEBuildToolModule::BuildModPackageFromJobJson()

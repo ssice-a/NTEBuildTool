@@ -403,7 +403,8 @@ Intended setup:
 - slot 2 and 3 material setup follows the task notes: slot 2 and 3 use the material relationship derived from slot 0/1, with material 1 getting its own instance inheriting material 0 as required;
 - body texture overrides are the existing `body_bml`, `body_id`, `body_nm`, `body_rmt`;
 - pants textures from the sibling pants folder must be included in the package job.
-- current inspection shows the `cloth` target is a `StaticMesh`, while the pure-pak runtime anchor path can only assign a Post Process Anim Blueprint to a `SkeletalMesh`; reimporting the PSK as a `SkeletalMesh` or choosing another loaded skeletal anchor is required before pure-pak hotkey/UI toggles can be considered runtime-ready.
+- current inspection shows the `cloth` target is a `StaticMesh`. A Post Process Anim Blueprint cannot be attached to the target itself, and it also cannot be attached to a `Skeleton` asset because a `Skeleton` has no runtime component tick.
+- the pure-pak route for this case is to choose a loaded `SkeletalMesh` as `RuntimeAnchorMesh`, keep the level2 `cloth` as `TargetMesh`, and have the runtime controller apply a `StaticMeshVisibilityAdapter` such as material swapping to a hidden/transparent material for slots 2 and 3.
 
 ## Final Package Output Layout
 
@@ -465,6 +466,14 @@ The editor plugin can verify graph structure and asset references. In-game verif
 
 If preview pages still do not run the anchor, record evidence before considering DLL work.
 
+### Package UI Verification
+
+The editor `Build Mod Package` menu entry should:
+
+- collect selected Content Browser assets and recursively selected `/Game` folders;
+- save a normalized `NTE.ModPackageJob` JSON outside plugin code;
+- launch the same cook/package pipeline as `Build Mod Package From Job JSON`.
+
 ## 2026-07-08 Verification Result
 
 This refactor checkpoint has been built and exercised through the `PhyLab` mirror project.
@@ -486,6 +495,18 @@ F:\Neverness To Everness\Client\WindowsNoEditor\HT\Content\Paks\Mods\yly-level1\
 F:\Neverness To Everness\Client\WindowsNoEditor\HT\Content\Paks\Mods\yly-level2\oneir075_level2_mod_P.pak/.utoc/.ucas
 F:\Neverness To Everness\Client\WindowsNoEditor\HT\Content\Paks\Mods\yly-level3\oneir075_level3_mod_P.pak/.utoc/.ucas
 ```
+
+## 2026-07-08 Runtime Anchor And Package UI Update
+
+This checkpoint deepens two modules without coupling the current five mod targets into plugin code.
+
+- `NTE.ModToggleSetup` now distinguishes `TargetMesh` from `RuntimeAnchorMesh`. Existing `Mesh` JSON still loads as both fields for backward compatibility.
+- `RuntimeAnchorMesh` must be a `SkeletalMesh`; a `Skeleton` cannot host a Post Process Anim Blueprint and cannot tick runtime logic.
+- `TargetMesh` can be a `StaticMesh`, but the setup is only runtime-ready when the runtime controller implements the configured `StaticMeshVisibilityAdapter`. The current documented adapter is `MaterialSwap`, which requires a `HiddenMaterial` package for hidden states.
+- `ValidateOnly` was added for `NTE.ModToggleSetup` so StaticMesh target/RuntimeAnchorMesh combinations can be checked without saving setup JSON, assigning a Post Process Anim Blueprint, or requiring generated runtime assets to exist.
+- The editor menu entry `Build Mod Package` now creates a package job from selected Content Browser assets or folders, asks for the Mods output directory and job JSON path, saves the normalized job, and launches the existing cook/package pipeline.
+- `F:\NTE\NTEBuildTool\.scratch\level2_static_target_anchor_validate.json` validates the level2 StaticMesh target with a sample SkeletalMesh runtime anchor and exits with 0 errors. It still warns that `MaterialSwap` needs a `HiddenMaterial` and controller support before the setup is runtime-complete.
+- The remaining runtime work is still to generate or migrate the thin Post Process Anim Blueprint plus controller blueprint. Existing 004/level1/level3 assets remain old hardcoded Post Process runtimes until that controller module is implemented.
 
 ## Git Strategy
 

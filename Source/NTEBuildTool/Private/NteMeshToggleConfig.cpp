@@ -119,6 +119,25 @@ void AddSlotBindingFromSkeletalMesh(const USkeletalMesh& SkeletalMesh, const int
 	Group.SlotBindings.Add(Binding);
 }
 
+void AddSlotBindingFromStaticMesh(const UStaticMesh& StaticMesh, const int32 SlotIndex, FNteMeshToggleGroup& Group)
+{
+	const TArray<FStaticMaterial>& Materials = StaticMesh.GetStaticMaterials();
+	if (!Materials.IsValidIndex(SlotIndex))
+	{
+		return;
+	}
+
+	const FStaticMaterial& Material = Materials[SlotIndex];
+	FNteMeshToggleSlotBinding Binding;
+	Binding.SlotIndex = SlotIndex;
+	Binding.SlotName = Material.MaterialSlotName.ToString();
+#if WITH_EDITORONLY_DATA
+	Binding.ImportedSlotName = Material.ImportedMaterialSlotName.ToString();
+#endif
+	Binding.MaterialPath = Material.MaterialInterface ? Material.MaterialInterface->GetPackage()->GetName() : FString();
+	Group.SlotBindings.Add(Binding);
+}
+
 TSharedRef<FJsonObject> SlotBindingToJsonObject(const FNteMeshToggleSlotBinding& Binding)
 {
 	const TSharedRef<FJsonObject> Object = MakeShared<FJsonObject>();
@@ -139,9 +158,8 @@ FNteMeshToggleSlotBinding SlotBindingFromJsonObject(const FJsonObject& Object)
 	return Binding;
 }
 
-bool ValidateToggleGroupsAgainstMesh(const USkeletalMesh& SkeletalMesh, const TArray<FNteMeshToggleGroup>& Groups, FString& OutError)
+bool ValidateToggleGroupsAgainstMaterialCount(const FString& TargetMeshPath, const int32 MaterialCount, const TArray<FNteMeshToggleGroup>& Groups, FString& OutError)
 {
-	const int32 MaterialCount = SkeletalMesh.GetMaterials().Num();
 	for (const FNteMeshToggleGroup& Group : Groups)
 	{
 		if (Group.GroupId.IsEmpty())
@@ -162,7 +180,7 @@ bool ValidateToggleGroupsAgainstMesh(const USkeletalMesh& SkeletalMesh, const TA
 					TEXT("Material slot %d in group %s is out of range for %s, which has %d slots."),
 					SlotIndex,
 					*Group.GroupId,
-					*SkeletalMesh.GetPackage()->GetName(),
+					*TargetMeshPath,
 					MaterialCount);
 				return false;
 			}
@@ -172,7 +190,22 @@ bool ValidateToggleGroupsAgainstMesh(const USkeletalMesh& SkeletalMesh, const TA
 	return true;
 }
 
-void FillMissingSlotBindings(const USkeletalMesh& SkeletalMesh, TArray<FNteMeshToggleGroup>& Groups)
+bool ValidateToggleGroupsAgainstMesh(const UObject& MeshAsset, const TArray<FNteMeshToggleGroup>& Groups, FString& OutError)
+{
+	if (const USkeletalMesh* SkeletalMesh = Cast<USkeletalMesh>(&MeshAsset))
+	{
+		return ValidateToggleGroupsAgainstMaterialCount(SkeletalMesh->GetPackage()->GetName(), SkeletalMesh->GetMaterials().Num(), Groups, OutError);
+	}
+	if (const UStaticMesh* StaticMesh = Cast<UStaticMesh>(&MeshAsset))
+	{
+		return ValidateToggleGroupsAgainstMaterialCount(StaticMesh->GetPackage()->GetName(), StaticMesh->GetStaticMaterials().Num(), Groups, OutError);
+	}
+
+	OutError = FString::Printf(TEXT("Target asset is neither a SkeletalMesh nor a StaticMesh: %s (%s)"), *MeshAsset.GetPackage()->GetName(), *MeshAsset.GetClass()->GetName());
+	return false;
+}
+
+void FillMissingSlotBindings(const UObject& MeshAsset, TArray<FNteMeshToggleGroup>& Groups)
 {
 	for (FNteMeshToggleGroup& Group : Groups)
 	{
@@ -183,7 +216,14 @@ void FillMissingSlotBindings(const USkeletalMesh& SkeletalMesh, TArray<FNteMeshT
 
 		for (const int32 SlotIndex : Group.Slots)
 		{
-			AddSlotBindingFromSkeletalMesh(SkeletalMesh, SlotIndex, Group);
+			if (const USkeletalMesh* SkeletalMesh = Cast<USkeletalMesh>(&MeshAsset))
+			{
+				AddSlotBindingFromSkeletalMesh(*SkeletalMesh, SlotIndex, Group);
+			}
+			else if (const UStaticMesh* StaticMesh = Cast<UStaticMesh>(&MeshAsset))
+			{
+				AddSlotBindingFromStaticMesh(*StaticMesh, SlotIndex, Group);
+			}
 		}
 	}
 }
@@ -259,12 +299,35 @@ bool LoadMeshToggleSetupOptionsFromJsonFile(const FString& ConfigFilename, FNteM
 	}
 
 	OutOptions.MeshPath = NormalizeAssetPathForText(GetStringAny(*Root, TEXT("Mesh"), TEXT("mesh")));
+	OutOptions.TargetMeshPath = NormalizeAssetPathForText(GetStringAny(*Root, TEXT("TargetMesh"), TEXT("targetMesh")));
+	OutOptions.RuntimeAnchorMeshPath = NormalizeAssetPathForText(GetStringAny(*Root, TEXT("RuntimeAnchorMesh"), TEXT("runtimeAnchorMesh"), TEXT("AnchorMesh")));
 	OutOptions.OutputFolder = TEXT("/Game");
 	const FString PostProcessAnimBlueprintPath = NormalizeAssetPathForText(GetStringAny(*Root, TEXT("PostProcessAnimBlueprint")));
 	const FString ControllerBlueprintPath = NormalizeAssetPathForText(GetStringAny(*Root, TEXT("ControllerBlueprint")));
 	const FString WidgetBlueprintPath = NormalizeAssetPathForText(GetStringAny(*Root, TEXT("WidgetBlueprint")));
 	const FString SaveGameBlueprintPath = NormalizeAssetPathForText(GetStringAny(*Root, TEXT("SaveGameBlueprint")));
 	OutOptions.SaveSlotName = GetStringAny(*Root, TEXT("SaveSlot"), TEXT("saveSlot"));
+	OutOptions.RuntimeMode = GetStringAny(*Root, TEXT("RuntimeMode"), TEXT("runtimeMode"));
+	OutOptions.StaticMeshVisibilityAdapter = GetStringAny(*Root, TEXT("StaticMeshVisibilityAdapter"), TEXT("staticMeshVisibilityAdapter"));
+	OutOptions.HiddenMaterialPath = NormalizeAssetPathForText(GetStringAny(*Root, TEXT("HiddenMaterial"), TEXT("hiddenMaterial")));
+	GetBoolAny(*Root, OutOptions.bValidateOnly, TEXT("ValidateOnly"), TEXT("validateOnly"));
+
+	if (OutOptions.TargetMeshPath.IsEmpty())
+	{
+		OutOptions.TargetMeshPath = OutOptions.MeshPath;
+	}
+	if (OutOptions.RuntimeAnchorMeshPath.IsEmpty())
+	{
+		OutOptions.RuntimeAnchorMeshPath = OutOptions.TargetMeshPath;
+	}
+	if (OutOptions.RuntimeMode.IsEmpty())
+	{
+		OutOptions.RuntimeMode = TEXT("ThinAnchorController");
+	}
+	if (OutOptions.StaticMeshVisibilityAdapter.IsEmpty())
+	{
+		OutOptions.StaticMeshVisibilityAdapter = TEXT("MaterialSwap");
+	}
 
 	if (!PostProcessAnimBlueprintPath.IsEmpty())
 	{
@@ -356,12 +419,20 @@ bool SaveMeshToggleSetupOptionsToJsonFile(const FNteMeshToggleSetupOptions& Opti
 	const TSharedRef<FJsonObject> Root = MakeShared<FJsonObject>();
 	Root->SetStringField(TEXT("Format"), TEXT("NTE.ModToggleSetup"));
 	Root->SetNumberField(TEXT("Version"), 2.0);
-	Root->SetStringField(TEXT("Mesh"), Options.MeshPath);
+	const FString TargetMeshPath = !Options.TargetMeshPath.IsEmpty() ? Options.TargetMeshPath : Options.MeshPath;
+	const FString RuntimeAnchorMeshPath = !Options.RuntimeAnchorMeshPath.IsEmpty() ? Options.RuntimeAnchorMeshPath : TargetMeshPath;
+	Root->SetStringField(TEXT("Mesh"), TargetMeshPath);
+	Root->SetStringField(TEXT("TargetMesh"), TargetMeshPath);
+	Root->SetStringField(TEXT("RuntimeAnchorMesh"), RuntimeAnchorMeshPath);
 	Root->SetStringField(TEXT("PostProcessAnimBlueprint"), JoinAssetPath(Options.OutputFolder, Options.PostProcessAnimBlueprintName));
 	Root->SetStringField(TEXT("ControllerBlueprint"), JoinAssetPath(Options.OutputFolder, Options.ControllerBlueprintName));
 	Root->SetStringField(TEXT("WidgetBlueprint"), JoinAssetPath(Options.OutputFolder, Options.WidgetBlueprintName));
 	Root->SetStringField(TEXT("SaveGameBlueprint"), JoinAssetPath(Options.OutputFolder, Options.SaveGameBlueprintName));
 	Root->SetStringField(TEXT("SaveSlot"), Options.SaveSlotName);
+	Root->SetStringField(TEXT("RuntimeMode"), Options.RuntimeMode);
+	Root->SetStringField(TEXT("StaticMeshVisibilityAdapter"), Options.StaticMeshVisibilityAdapter);
+	Root->SetStringField(TEXT("HiddenMaterial"), Options.HiddenMaterialPath);
+	Root->SetBoolField(TEXT("ValidateOnly"), Options.bValidateOnly);
 	Root->SetObjectField(TEXT("UIInputChord"), InputChordToJsonObject(Options.UiChord));
 
 	TArray<TSharedPtr<FJsonValue>> Groups;
@@ -396,49 +467,91 @@ bool SaveMeshToggleSetupOptionsToJsonFile(const FNteMeshToggleSetupOptions& Opti
 bool RunMeshToggleUiSetup(FNteMeshToggleSetupOptions Options, FNteMeshToggleSetupResult& OutResult, FString& OutError)
 {
 	OutResult = FNteMeshToggleSetupResult();
+	if (Options.TargetMeshPath.IsEmpty())
+	{
+		Options.TargetMeshPath = Options.MeshPath;
+	}
+	if (Options.RuntimeAnchorMeshPath.IsEmpty())
+	{
+		Options.RuntimeAnchorMeshPath = Options.TargetMeshPath;
+	}
 	if (Options.MeshPath.IsEmpty())
 	{
-		OutError = TEXT("Mesh toggle setup requires a Mesh path.");
+		Options.MeshPath = Options.TargetMeshPath;
+	}
+	if (Options.TargetMeshPath.IsEmpty())
+	{
+		OutError = TEXT("Mesh toggle setup requires a TargetMesh path.");
 		return false;
 	}
 
 	if (Options.OutputFolder.IsEmpty())
 	{
-		Options.OutputFolder = FPackageName::GetLongPackagePath(Options.MeshPath) / TEXT("mod/Runtime");
+		Options.OutputFolder = FPackageName::GetLongPackagePath(Options.TargetMeshPath) / TEXT("mod/Runtime");
 	}
 	if (Options.SaveSlotName.IsEmpty())
 	{
-		Options.SaveSlotName = FPackageName::GetShortName(Options.MeshPath) + TEXT("_NTE_ModToggle");
+		Options.SaveSlotName = FPackageName::GetShortName(Options.TargetMeshPath) + TEXT("_NTE_ModToggle");
+	}
+	if (Options.RuntimeMode.IsEmpty())
+	{
+		Options.RuntimeMode = TEXT("ThinAnchorController");
+	}
+	if (Options.StaticMeshVisibilityAdapter.IsEmpty())
+	{
+		Options.StaticMeshVisibilityAdapter = TEXT("MaterialSwap");
 	}
 
-	UObject* MeshAsset = LoadAnyAssetByPath(Options.MeshPath);
-	if (!MeshAsset)
+	UObject* TargetMeshAsset = LoadAnyAssetByPath(Options.TargetMeshPath);
+	if (!TargetMeshAsset)
 	{
-		OutError = FString::Printf(TEXT("Could not load mesh: %s"), *Options.MeshPath);
+		OutError = FString::Printf(TEXT("Could not load target mesh: %s"), *Options.TargetMeshPath);
 		return false;
 	}
+	OutResult.TargetMesh = TargetMeshAsset;
 
-	if (UStaticMesh* StaticMesh = Cast<UStaticMesh>(MeshAsset))
+	UObject* AnchorMeshAsset = LoadAnyAssetByPath(Options.RuntimeAnchorMeshPath);
+	if (!AnchorMeshAsset)
+	{
+		OutError = FString::Printf(TEXT("Could not load runtime anchor mesh: %s"), *Options.RuntimeAnchorMeshPath);
+		return false;
+	}
+	USkeletalMesh* AnchorSkeletalMesh = Cast<USkeletalMesh>(AnchorMeshAsset);
+	if (!AnchorSkeletalMesh)
 	{
 		OutError = FString::Printf(
-			TEXT("%s is a StaticMesh. Pure-pak hotkey/UI toggles need a Runtime Anchor, and this module can only assign a PostProcessAnimBlueprint to a SkeletalMesh. Reimport the PSK as a SkeletalMesh or choose another loaded SkeletalMesh anchor before generating runtime toggles."),
-			*StaticMesh->GetPackage()->GetName());
+			TEXT("RuntimeAnchorMesh must be a SkeletalMesh because PostProcessAnimBlueprint can only tick through a SkinnedMeshComponent. Asset=%s Class=%s. A Skeleton asset cannot be used as a runtime anchor."),
+			*Options.RuntimeAnchorMeshPath,
+			*AnchorMeshAsset->GetClass()->GetName());
 		return false;
 	}
+	OutResult.RuntimeAnchorMesh = AnchorSkeletalMesh;
 
-	USkeletalMesh* SkeletalMesh = Cast<USkeletalMesh>(MeshAsset);
-	if (!SkeletalMesh)
-	{
-		OutError = FString::Printf(TEXT("Target asset is not a SkeletalMesh: %s (%s)"), *Options.MeshPath, *MeshAsset->GetClass()->GetName());
-		return false;
-	}
-	OutResult.TargetMesh = SkeletalMesh;
-
-	if (!ValidateToggleGroupsAgainstMesh(*SkeletalMesh, Options.ToggleGroups, OutError))
+	if (!ValidateToggleGroupsAgainstMesh(*TargetMeshAsset, Options.ToggleGroups, OutError))
 	{
 		return false;
 	}
-	FillMissingSlotBindings(*SkeletalMesh, Options.ToggleGroups);
+	FillMissingSlotBindings(*TargetMeshAsset, Options.ToggleGroups);
+
+	if (Cast<UStaticMesh>(TargetMeshAsset))
+	{
+		OutResult.Warnings.Add(TEXT("TargetMesh is a StaticMesh. This setup can use the RuntimeAnchorMesh for input/UI ticking, but StaticMesh visibility needs the runtime controller to use the configured StaticMeshVisibilityAdapter instead of SkinnedMeshComponent::ShowMaterialSection."));
+		if (Options.StaticMeshVisibilityAdapter.Equals(TEXT("MaterialSwap"), ESearchCase::IgnoreCase) && Options.HiddenMaterialPath.IsEmpty())
+		{
+			OutResult.Warnings.Add(TEXT("StaticMeshVisibilityAdapter is MaterialSwap but HiddenMaterial is empty. Hidden-state generation will need a transparent/hidden material package before this setup is runtime-complete."));
+		}
+	}
+
+	if (Options.bValidateOnly)
+	{
+		OutResult.ConfigAssetPath = JoinAssetPath(Options.OutputFolder, Options.ConfigAssetName);
+		OutResult.ConfigFilename = DefaultConfigFilenameForOptions(Options);
+		OutResult.PostProcessAnimBlueprintPath = JoinAssetPath(Options.OutputFolder, Options.PostProcessAnimBlueprintName);
+		OutResult.ControllerBlueprintPath = Options.ControllerBlueprintName.IsEmpty() ? FString() : JoinAssetPath(Options.OutputFolder, Options.ControllerBlueprintName);
+		OutResult.WidgetBlueprintPath = JoinAssetPath(Options.OutputFolder, Options.WidgetBlueprintName);
+		OutResult.SaveGameBlueprintPath = JoinAssetPath(Options.OutputFolder, Options.SaveGameBlueprintName);
+		return true;
+	}
 
 	OutResult.ConfigAssetPath = JoinAssetPath(Options.OutputFolder, Options.ConfigAssetName);
 	OutResult.ConfigFilename = DefaultConfigFilenameForOptions(Options);
@@ -517,12 +630,12 @@ bool RunMeshToggleUiSetup(FNteMeshToggleSetupOptions Options, FNteMeshToggleSetu
 
 	if (Options.bAssignPostProcessAnimBlueprint)
 	{
-		SkeletalMesh->Modify();
-		SkeletalMesh->SetPostProcessAnimBlueprint(TSubclassOf<UAnimInstance>(PostProcessAnimBlueprint->GeneratedClass.Get()));
-		SkeletalMesh->PostEditChange();
-		SkeletalMesh->MarkPackageDirty();
+		AnchorSkeletalMesh->Modify();
+		AnchorSkeletalMesh->SetPostProcessAnimBlueprint(TSubclassOf<UAnimInstance>(PostProcessAnimBlueprint->GeneratedClass.Get()));
+		AnchorSkeletalMesh->PostEditChange();
+		AnchorSkeletalMesh->MarkPackageDirty();
 
-		if (Options.bSaveDirtyAssetsAfterCreate && !SaveAssetPackage(*SkeletalMesh, OutError))
+		if (Options.bSaveDirtyAssetsAfterCreate && !SaveAssetPackage(*AnchorSkeletalMesh, OutError))
 		{
 			return false;
 		}

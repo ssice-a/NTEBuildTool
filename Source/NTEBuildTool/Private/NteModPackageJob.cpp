@@ -2,19 +2,25 @@
 
 #include "NteModPackageJob.h"
 
+#include "NteEditorAssetUtils.h"
 #include "NteJsonFileUtils.h"
 
+#include "AssetRegistry/AssetRegistryModule.h"
+#include "AssetRegistry/IAssetRegistry.h"
 #include "Dom/JsonObject.h"
 #include "HAL/PlatformMisc.h"
 #include "HAL/PlatformProcess.h"
+#include "Interfaces/IPluginManager.h"
 #include "Misc/App.h"
 #include "Misc/FileHelper.h"
+#include "Misc/PackageName.h"
 #include "Misc/Paths.h"
-#include "Interfaces/IPluginManager.h"
 
 namespace NTEBuildTool::Package
 {
 using namespace NTEBuildTool::Json;
+
+bool ValidatePackageJob(const FNteModPackageJob& Job, FString& OutError);
 
 namespace
 {
@@ -28,6 +34,79 @@ FString PackageModeToString(const ENteModPackageMode Mode)
 		return TEXT("PackOnly");
 	default:
 		return TEXT("CookAndPack");
+	}
+}
+
+void AddUniqueGamePackage(TArray<FString>& Packages, const FString& PackageName)
+{
+	if (PackageName.StartsWith(TEXT("/Game/")) && !PackageName.Contains(TEXT(".")))
+	{
+		Packages.AddUnique(PackageName);
+	}
+}
+
+FString SanitizeModName(FString ModName)
+{
+	ModName.TrimStartAndEndInline();
+	const FString InvalidChars(FPaths::GetInvalidFileSystemChars());
+	for (const TCHAR InvalidChar : InvalidChars)
+	{
+		ModName.ReplaceCharInline(InvalidChar, TEXT('_'));
+	}
+	return ModName;
+}
+
+FString DeriveModNameFromPackages(const TArray<FString>& Packages)
+{
+	if (Packages.IsEmpty())
+	{
+		return TEXT("nte_mod_P");
+	}
+
+	FString BaseName = FPackageName::GetShortName(Packages[0]);
+	if (BaseName.IsEmpty())
+	{
+		BaseName = TEXT("nte_mod");
+	}
+	if (!BaseName.EndsWith(TEXT("_P"), ESearchCase::IgnoreCase))
+	{
+		BaseName += TEXT("_P");
+	}
+	return SanitizeModName(BaseName);
+}
+
+void CollectSelectedAssetPackages(TArray<FString>& Packages)
+{
+	for (const FAssetData& AssetData : NTEBuildTool::Editor::GetSelectedContentBrowserAssets())
+	{
+		AddUniqueGamePackage(Packages, AssetData.PackageName.ToString());
+	}
+}
+
+void CollectSelectedFolderPackages(TArray<FString>& Packages)
+{
+	const TArray<FString> SelectedFolders = NTEBuildTool::Editor::GetSelectedContentBrowserPaths();
+	if (SelectedFolders.IsEmpty())
+	{
+		return;
+	}
+
+	FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
+	IAssetRegistry& AssetRegistry = AssetRegistryModule.Get();
+
+	for (const FString& Folder : SelectedFolders)
+	{
+		if (!NTEBuildTool::Editor::IsGameContentPath(Folder))
+		{
+			continue;
+		}
+
+		TArray<FAssetData> FolderAssets;
+		AssetRegistry.GetAssetsByPath(FName(*Folder), FolderAssets, true);
+		for (const FAssetData& AssetData : FolderAssets)
+		{
+			AddUniqueGamePackage(Packages, AssetData.PackageName.ToString());
+		}
 	}
 }
 
@@ -103,6 +182,70 @@ bool SaveModPackageJobJson(const FNteModPackageJob& Job, const FString& JobFilen
 	Root->SetBoolField(TEXT("Unversioned"), Job.bUnversioned);
 	Root->SetBoolField(TEXT("SkipCook"), Job.bSkipCook || Job.Mode == ENteModPackageMode::PackOnly);
 	return SaveJsonObjectToFile(Root, JobFilename, OutError);
+}
+
+bool CreateModPackageJobFromSelection(const FNteModPackageJobCreateOptions& Options, FNteModPackageJobCreateResult& OutResult, FString& OutError)
+{
+	OutResult = FNteModPackageJobCreateResult();
+
+	TArray<FString> Packages = Options.Packages;
+	CollectSelectedAssetPackages(Packages);
+	CollectSelectedFolderPackages(Packages);
+	Packages.Sort();
+
+	if (Packages.IsEmpty())
+	{
+		OutError = TEXT("Select at least one Content Browser asset or /Game folder before creating a package job.");
+		return false;
+	}
+
+	const FString ModName = SanitizeModName(!Options.ModName.IsEmpty() ? Options.ModName : DeriveModNameFromPackages(Packages));
+	if (ModName.IsEmpty())
+	{
+		OutError = TEXT("ModName is empty after sanitization.");
+		return false;
+	}
+
+	FNteModPackageJob Job;
+	Job.ProjectRoot = FPaths::ConvertRelativePathToFull(FPaths::ProjectDir());
+	FPaths::NormalizeFilename(Job.ProjectRoot);
+	Job.ProjectFile = FPaths::ConvertRelativePathToFull(FPaths::GetProjectFilePath());
+	FPaths::NormalizeFilename(Job.ProjectFile);
+	Job.ProjectName = FApp::GetProjectName();
+	Job.EngineRoot = FPaths::ConvertRelativePathToFull(FPaths::EngineDir() / TEXT(".."));
+	FPaths::NormalizeFilename(Job.EngineRoot);
+	Job.GameMountName = Options.GameMountName.IsEmpty() ? TEXT("HT") : Options.GameMountName;
+	Job.ModsDir = Options.ModsDir;
+	Job.ModName = ModName;
+	Job.Mode = Options.Mode;
+	Job.Packages = Packages;
+	Job.NeverPackPackagePrefixes = Options.NeverPackPackagePrefixes;
+	Job.bUnversioned = Options.bUnversioned;
+	Job.bSkipCook = Options.bSkipCook || Options.Mode == ENteModPackageMode::PackOnly;
+
+	if (!ValidatePackageJob(Job, OutError))
+	{
+		return false;
+	}
+
+	FString JobFilename = Options.JobFilename;
+	if (JobFilename.IsEmpty())
+	{
+		JobFilename = FPaths::ProjectSavedDir() / TEXT("NTEBuildTool/Packages") / ModName / (ModName + TEXT(".job.json"));
+	}
+	FPaths::NormalizeFilename(JobFilename);
+	IFileManager::Get().MakeDirectory(*FPaths::GetPath(JobFilename), true);
+
+	if (!SaveModPackageJobJson(Job, JobFilename, OutError))
+	{
+		return false;
+	}
+
+	OutResult.JobFile = JobFilename;
+	OutResult.ModName = ModName;
+	OutResult.PackageCount = Packages.Num();
+	OutResult.Job = Job;
+	return true;
 }
 
 bool ValidatePackageJob(const FNteModPackageJob& Job, FString& OutError)

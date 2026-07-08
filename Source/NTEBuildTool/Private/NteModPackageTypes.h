@@ -35,4 +35,25 @@ struct FNteModPackageLaunchResult
 	FString CommandLine;
 	FString WorkRoot;
 };
+
+struct FNteModPackageJobCreateOptions
+{
+	FString JobFilename;
+	FString ModsDir;
+	FString ModName;
+	FString GameMountName = TEXT("HT");
+	ENteModPackageMode Mode = ENteModPackageMode::CookAndPack;
+	TArray<FString> Packages;
+	TArray<FString> NeverPackPackagePrefixes;
+	bool bUnversioned = false;
+	bool bSkipCook = false;
+};
+
+struct FNteModPackageJobCreateResult
+{
+	FString JobFile;
+	FString ModName;
+	int32 PackageCount = 0;
+	FNteModPackageJob Job;
+};
 }

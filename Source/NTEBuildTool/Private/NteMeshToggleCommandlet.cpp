@@ -53,8 +53,9 @@ int32 UNteMeshToggleCommandlet::Main(const FString& Params)
 	UE_LOG(
 		LogNTEBuildTool,
 		Display,
-		TEXT("Mesh toggle setup applied. Mesh=%s Config=%s PostProcess=%s"),
-		*Options.MeshPath,
+		TEXT("Mesh toggle setup applied. TargetMesh=%s RuntimeAnchorMesh=%s Config=%s PostProcess=%s"),
+		*Options.TargetMeshPath,
+		*Options.RuntimeAnchorMeshPath,
 		*Result.ConfigFilename,
 		*Result.PostProcessAnimBlueprintPath);
 	return 0;
