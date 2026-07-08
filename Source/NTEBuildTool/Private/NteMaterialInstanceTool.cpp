@@ -186,12 +186,14 @@ UMaterialInterface* LoadOrCreateParentMaterial(const FString& ParentMaterialPath
 				if (UMaterialInstanceConstant* Placeholder = CreatePlaceholderParentMaterialInstance(ParentMaterialPath, OutError))
 				{
 					OutResult.bCreatedParentPlaceholder = true;
+					OutResult.bCreatedMaterialProxy = true;
 					return Placeholder;
 				}
 			}
 			else if (UMaterial* Placeholder = CreatePlaceholderParentMaterial(ParentMaterialPath, OutError))
 			{
 				OutResult.bCreatedParentPlaceholder = true;
+				OutResult.bCreatedMaterialProxy = true;
 				return Placeholder;
 			}
 		}
@@ -320,6 +322,19 @@ void ApplyTextureParameters(UMaterialInstanceConstant& MaterialInstance, const F
 	}
 }
 
+void AppendTextureParameters(const FJsonObject& Source, FJsonObject& Target)
+{
+	for (const TPair<FString, TSharedPtr<FJsonValue>>& Entry : Source.Values)
+	{
+		if (!Entry.Value.IsValid())
+		{
+			continue;
+		}
+
+		Target.SetStringField(Entry.Key, Entry.Value->AsString());
+	}
+}
+
 void ApplyScalarParameters(UMaterialInstanceConstant& MaterialInstance, const FJsonObject& Scalars, FNteMaterialApplySummary& Summary)
 {
 	for (const TPair<FString, TSharedPtr<FJsonValue>>& Entry : Scalars.Values)
@@ -383,32 +398,6 @@ void ApplyStaticSwitchParameters(UMaterialInstanceConstant& MaterialInstance, co
 		MaterialInstance.SetStaticSwitchParameterValueEditorOnly(MakeGlobalParameterInfo(Entry.Key), Entry.Value->AsBool());
 		++Summary.StaticSwitchOverrides;
 	}
-}
-
-const FJsonObject* FindSourceParameterObject(const FJsonObject* SourceObject, const TCHAR* SectionName)
-{
-	if (!SourceObject)
-	{
-		return nullptr;
-	}
-
-	const TSharedPtr<FJsonObject>* Parameters = nullptr;
-	if (SourceObject->TryGetObjectField(TEXT("Parameters"), Parameters) && Parameters && Parameters->IsValid())
-	{
-		const TSharedPtr<FJsonObject>* Section = nullptr;
-		if ((*Parameters)->TryGetObjectField(SectionName, Section) && Section && Section->IsValid())
-		{
-			return Section->Get();
-		}
-	}
-
-	const TSharedPtr<FJsonObject>* Section = nullptr;
-	if (SourceObject->TryGetObjectField(SectionName, Section) && Section && Section->IsValid())
-	{
-		return Section->Get();
-	}
-
-	return nullptr;
 }
 
 void AddOverrideReportEntry(TArray<TSharedPtr<FJsonValue>>& Overrides, const FString& Type, const FString& ParameterName, const FString& Value, const FString& AssetPath = FString())
@@ -476,6 +465,150 @@ FString DeriveModMaterialFolderFromParentPath(const FString& ParentMaterialPath,
 	}
 
 	return IsGameContentPath(FallbackPath) ? FallbackPath : TEXT("/Game");
+}
+
+const FJsonObject* FindSourceMaterialParameterObject(const FJsonObject* SourceObject, const TCHAR* SectionName)
+{
+	if (!SourceObject)
+	{
+		return nullptr;
+	}
+
+	const TSharedPtr<FJsonObject>* Parameters = nullptr;
+	if (SourceObject->TryGetObjectField(TEXT("Parameters"), Parameters) && Parameters && Parameters->IsValid())
+	{
+		const TSharedPtr<FJsonObject>* Section = nullptr;
+		if ((*Parameters)->TryGetObjectField(SectionName, Section) && Section && Section->IsValid())
+		{
+			return Section->Get();
+		}
+	}
+
+	const TSharedPtr<FJsonObject>* Section = nullptr;
+	if (SourceObject->TryGetObjectField(SectionName, Section) && Section && Section->IsValid())
+	{
+		return Section->Get();
+	}
+
+	return nullptr;
+}
+
+TArray<FNteMaterialSourceTextureUsage> BuildSourceTextureUsage(const FJsonObject* SourceTextures)
+{
+	TArray<FNteMaterialSourceTextureUsage> Usage;
+	TMap<FString, int32> UsageBySourceTexture;
+	if (!SourceTextures)
+	{
+		return Usage;
+	}
+
+	for (const TPair<FString, TSharedPtr<FJsonValue>>& Entry : SourceTextures->Values)
+	{
+		if (!Entry.Value.IsValid())
+		{
+			continue;
+		}
+
+		const FString SourceTexturePath = NormalizeAssetPathForText(Entry.Value->AsString());
+		if (SourceTexturePath.IsEmpty())
+		{
+			continue;
+		}
+
+		int32* ExistingIndex = UsageBySourceTexture.Find(SourceTexturePath);
+		if (!ExistingIndex)
+		{
+			ExistingIndex = &UsageBySourceTexture.Add(SourceTexturePath, Usage.Num());
+			FNteMaterialSourceTextureUsage& NewUsage = Usage.AddDefaulted_GetRef();
+			NewUsage.SourceTexturePath = SourceTexturePath;
+		}
+
+		Usage[*ExistingIndex].ParameterNames.AddUnique(Entry.Key);
+	}
+
+	Usage.Sort([](const FNteMaterialSourceTextureUsage& A, const FNteMaterialSourceTextureUsage& B)
+	{
+		return A.SourceTexturePath < B.SourceTexturePath;
+	});
+	for (FNteMaterialSourceTextureUsage& Entry : Usage)
+	{
+		Entry.ParameterNames.Sort();
+	}
+	return Usage;
+}
+
+TSharedRef<FJsonObject> ExpandSourceTextureOverridesToParameters(
+	const TArray<FNteMaterialSourceTextureUsage>& SourceTextureUsage,
+	const FJsonObject* SourceTextureOverrides,
+	int32& OutMatchedGroups,
+	TArray<FString>* OutUnmatchedSourceTextures)
+{
+	OutMatchedGroups = 0;
+	if (OutUnmatchedSourceTextures)
+	{
+		OutUnmatchedSourceTextures->Reset();
+	}
+
+	const TSharedRef<FJsonObject> ParameterOverrides = MakeShared<FJsonObject>();
+	if (!SourceTextureOverrides)
+	{
+		return ParameterOverrides;
+	}
+
+	TMap<FString, FString> NormalizedOverrides;
+	for (const TPair<FString, TSharedPtr<FJsonValue>>& OverrideEntry : SourceTextureOverrides->Values)
+	{
+		if (!OverrideEntry.Value.IsValid())
+		{
+			continue;
+		}
+
+		const FString SourceTexturePath = NormalizeAssetPathForText(OverrideEntry.Key);
+		const FString ReplacementTexturePath = NormalizeAssetPathForText(OverrideEntry.Value->AsString());
+		if (!SourceTexturePath.IsEmpty() && !ReplacementTexturePath.IsEmpty())
+		{
+			NormalizedOverrides.Add(SourceTexturePath, ReplacementTexturePath);
+		}
+	}
+
+	for (const FNteMaterialSourceTextureUsage& Usage : SourceTextureUsage)
+	{
+		const FString* ReplacementTexturePath = NormalizedOverrides.Find(Usage.SourceTexturePath);
+		if (!ReplacementTexturePath)
+		{
+			continue;
+		}
+
+		++OutMatchedGroups;
+		for (const FString& ParameterName : Usage.ParameterNames)
+		{
+			ParameterOverrides->SetStringField(ParameterName, *ReplacementTexturePath);
+		}
+	}
+
+	if (OutUnmatchedSourceTextures)
+	{
+		for (const TPair<FString, FString>& OverrideEntry : NormalizedOverrides)
+		{
+			bool bMatched = false;
+			for (const FNteMaterialSourceTextureUsage& Usage : SourceTextureUsage)
+			{
+				if (Usage.SourceTexturePath == OverrideEntry.Key)
+				{
+					bMatched = true;
+					break;
+				}
+			}
+
+			if (!bMatched)
+			{
+				OutUnmatchedSourceTextures->Add(OverrideEntry.Key);
+			}
+		}
+		OutUnmatchedSourceTextures->Sort();
+	}
+
+	return ParameterOverrides;
 }
 
 bool CreateOrUpdateModMaterialInstance(
@@ -631,18 +764,45 @@ bool ApplyModMaterialConfigFromFile(const FString& ConfigFilename, FNteMaterialC
 	GetBoolAny(*Config, Options.bEnsureParentPlaceholder, TEXT("EnsureParentPlaceholder"), TEXT("ensureParentPlaceholder"));
 
 	const TSharedPtr<FJsonObject>* TextureOverrides = nullptr;
+	const TSharedPtr<FJsonObject>* SourceTextureOverrides = nullptr;
 	const TSharedPtr<FJsonObject>* ScalarOverrides = nullptr;
 	const TSharedPtr<FJsonObject>* VectorOverrides = nullptr;
 	const TSharedPtr<FJsonObject>* StaticSwitchOverrides = nullptr;
 	TryGetObjectAny(*Config, TextureOverrides, TEXT("TextureOverrides"), TEXT("textureOverrides"));
+	TryGetObjectAny(*Config, SourceTextureOverrides, TEXT("SourceTextureOverrides"), TEXT("sourceTextureOverrides"));
 	TryGetObjectAny(*Config, ScalarOverrides, TEXT("ScalarOverrides"), TEXT("scalarOverrides"));
 	TryGetObjectAny(*Config, VectorOverrides, TEXT("VectorOverrides"), TEXT("vectorOverrides"), TEXT("ColorOverrides"));
 	TryGetObjectAny(*Config, StaticSwitchOverrides, TEXT("StaticSwitchOverrides"), TEXT("staticSwitchOverrides"));
 
-	const FJsonObject* SourceTextures = FindSourceParameterObject(SourceMaterial.Get(), TEXT("Textures"));
-	const FJsonObject* SourceScalars = FindSourceParameterObject(SourceMaterial.Get(), TEXT("Scalars"));
-	const FJsonObject* SourceColors = FindSourceParameterObject(SourceMaterial.Get(), TEXT("Colors"));
-	const FJsonObject* SourceSwitches = FindSourceParameterObject(SourceMaterial.Get(), TEXT("Switches"));
+	const FJsonObject* SourceTextures = FindSourceMaterialParameterObject(SourceMaterial.Get(), TEXT("Textures"));
+	const FJsonObject* SourceScalars = FindSourceMaterialParameterObject(SourceMaterial.Get(), TEXT("Scalars"));
+	const FJsonObject* SourceColors = FindSourceMaterialParameterObject(SourceMaterial.Get(), TEXT("Colors"));
+	const FJsonObject* SourceSwitches = FindSourceMaterialParameterObject(SourceMaterial.Get(), TEXT("Switches"));
+
+	TSharedPtr<FJsonObject> ExpandedTextureOverrides;
+	int32 MatchedSourceTextureGroups = 0;
+	TArray<FString> UnmatchedSourceTextureOverrides;
+	if (SourceTextureOverrides && SourceTextureOverrides->IsValid())
+	{
+		OutResult.SourceTextureUsage = BuildSourceTextureUsage(SourceTextures);
+		ExpandedTextureOverrides = ExpandSourceTextureOverridesToParameters(
+			OutResult.SourceTextureUsage,
+			SourceTextureOverrides->Get(),
+			MatchedSourceTextureGroups,
+			&UnmatchedSourceTextureOverrides);
+	}
+	else
+	{
+		OutResult.SourceTextureUsage = BuildSourceTextureUsage(SourceTextures);
+	}
+	if (TextureOverrides && TextureOverrides->IsValid())
+	{
+		if (!ExpandedTextureOverrides.IsValid())
+		{
+			ExpandedTextureOverrides = MakeShared<FJsonObject>();
+		}
+		AppendTextureParameters(*TextureOverrides->Get(), *ExpandedTextureOverrides);
+	}
 
 	if (!CreateOrUpdateModMaterialInstance(
 		Options,
@@ -650,7 +810,7 @@ bool ApplyModMaterialConfigFromFile(const FString& ConfigFilename, FNteMaterialC
 		SourceScalars,
 		SourceColors,
 		SourceSwitches,
-		TextureOverrides && TextureOverrides->IsValid() ? TextureOverrides->Get() : nullptr,
+		ExpandedTextureOverrides.IsValid() ? ExpandedTextureOverrides.Get() : nullptr,
 		ScalarOverrides && ScalarOverrides->IsValid() ? ScalarOverrides->Get() : nullptr,
 		VectorOverrides && VectorOverrides->IsValid() ? VectorOverrides->Get() : nullptr,
 		StaticSwitchOverrides && StaticSwitchOverrides->IsValid() ? StaticSwitchOverrides->Get() : nullptr,
@@ -659,6 +819,8 @@ bool ApplyModMaterialConfigFromFile(const FString& ConfigFilename, FNteMaterialC
 	{
 		return false;
 	}
+	OutResult.CreateResult.ApplySummary.SourceTextureOverrideGroups = MatchedSourceTextureGroups;
+	OutResult.CreateResult.ApplySummary.UnmatchedSourceTextureOverrides = UnmatchedSourceTextureOverrides;
 
 	return SaveMaterialInstanceOverrideReport(*OutResult.CreateResult.MaterialInstance, OutResult.ReportFilename, OutError);
 }

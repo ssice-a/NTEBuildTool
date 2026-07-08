@@ -101,32 +101,6 @@ FString BoolToString(const bool bValue)
 	return bValue ? TEXT("true") : TEXT("false");
 }
 
-const FJsonObject* FindSourceParameterObject(const FJsonObject* SourceObject, const TCHAR* SectionName)
-{
-	if (!SourceObject)
-	{
-		return nullptr;
-	}
-
-	const TSharedPtr<FJsonObject>* Parameters = nullptr;
-	if (SourceObject->TryGetObjectField(TEXT("Parameters"), Parameters) && Parameters && Parameters->IsValid())
-	{
-		const TSharedPtr<FJsonObject>* Section = nullptr;
-		if ((*Parameters)->TryGetObjectField(SectionName, Section) && Section && Section->IsValid())
-		{
-			return Section->Get();
-		}
-	}
-
-	const TSharedPtr<FJsonObject>* Section = nullptr;
-	if (SourceObject->TryGetObjectField(SectionName, Section) && Section && Section->IsValid())
-	{
-		return Section->Get();
-	}
-
-	return nullptr;
-}
-
 TSet<FString> CollectObjectStringKeys(const FJsonObject* Object)
 {
 	TSet<FString> Keys;
@@ -145,22 +119,11 @@ TSet<FString> CollectObjectStringKeys(const FJsonObject* Object)
 TSet<FString> CollectSourceTexturePackages(const FJsonObject* SourceTextures)
 {
 	TSet<FString> Packages;
-	if (!SourceTextures)
+	for (const NTEBuildTool::Material::FNteMaterialSourceTextureUsage& Usage : NTEBuildTool::Material::BuildSourceTextureUsage(SourceTextures))
 	{
-		return Packages;
-	}
-
-	for (const TPair<FString, TSharedPtr<FJsonValue>>& Entry : SourceTextures->Values)
-	{
-		if (!Entry.Value.IsValid())
+		if (Usage.SourceTexturePath.StartsWith(TEXT("/Game/")))
 		{
-			continue;
-		}
-
-		const FString PackageName = NormalizeAssetPathForText(Entry.Value->AsString());
-		if (PackageName.StartsWith(TEXT("/Game/")))
-		{
-			Packages.Add(PackageName);
+			Packages.Add(Usage.SourceTexturePath);
 		}
 	}
 	return Packages;
@@ -380,8 +343,8 @@ TArray<TSharedPtr<FJsonValue>> AuditMaterialRecipe(const FString& RecipeFilename
 		}
 	}
 
-	const FJsonObject* SourceTextures = FindSourceParameterObject(SourceMaterial.Get(), TEXT("Textures"));
-	const FJsonObject* SourceSwitches = FindSourceParameterObject(SourceMaterial.Get(), TEXT("Switches"));
+	const FJsonObject* SourceTextures = NTEBuildTool::Material::FindSourceMaterialParameterObject(SourceMaterial.Get(), TEXT("Textures"));
+	const FJsonObject* SourceSwitches = NTEBuildTool::Material::FindSourceMaterialParameterObject(SourceMaterial.Get(), TEXT("Switches"));
 	const TSet<FString> SourceSwitchNames = CollectObjectStringKeys(SourceSwitches);
 	const TSet<FString> SourceTexturePackages = CollectSourceTexturePackages(SourceTextures);
 	Result->SetNumberField(TEXT("SourceTextureDependencyCount"), SourceTexturePackages.Num());

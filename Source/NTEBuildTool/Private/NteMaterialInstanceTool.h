@@ -10,14 +10,22 @@ class UObject;
 
 namespace NTEBuildTool::Material
 {
+struct FNteMaterialSourceTextureUsage
+{
+	FString SourceTexturePath;
+	TArray<FString> ParameterNames;
+};
+
 struct FNteMaterialApplySummary
 {
 	int32 TextureOverrides = 0;
+	int32 SourceTextureOverrideGroups = 0;
 	int32 ScalarOverrides = 0;
 	int32 VectorOverrides = 0;
 	int32 StaticSwitchOverrides = 0;
 	TArray<FString> MissingTextures;
 	TArray<FString> InvalidVectors;
+	TArray<FString> UnmatchedSourceTextureOverrides;
 };
 
 struct FNteMaterialInstanceOptions
@@ -35,6 +43,7 @@ struct FNteMaterialInstanceOptions
 	bool bEnsureParentPlaceholder = true;
 	bool bReplaceWrongParentPlaceholder = true;
 	TSharedPtr<FJsonObject> TextureOverrides;
+	TSharedPtr<FJsonObject> SourceTextureOverrides;
 	TArray<FName> ManagedTextureParameters;
 };
 
@@ -45,6 +54,7 @@ struct FNteMaterialInstanceCreateResult
 	FString AssignedMaterialPath;
 	FNteMaterialApplySummary ApplySummary;
 	bool bCreatedParentPlaceholder = false;
+	bool bCreatedMaterialProxy = false;
 };
 
 struct FNteMaterialConfigApplyResult
@@ -53,12 +63,20 @@ struct FNteMaterialConfigApplyResult
 	FString OutputMaterialPath;
 	FString ParentMaterialPath;
 	FString ReportFilename;
+	TArray<FNteMaterialSourceTextureUsage> SourceTextureUsage;
 	FNteMaterialInstanceCreateResult CreateResult;
 };
 
 FString DeriveParentMaterialPathFromFModelJson(const FString& SourceMaterialJson);
 FString MakeModMaterialNameFromFModelJson(const FString& SourceMaterialJson);
 FString DeriveModMaterialFolderFromParentPath(const FString& ParentMaterialPath, const FString& FallbackPath);
+const FJsonObject* FindSourceMaterialParameterObject(const FJsonObject* SourceObject, const TCHAR* SectionName);
+TArray<FNteMaterialSourceTextureUsage> BuildSourceTextureUsage(const FJsonObject* SourceTextures);
+TSharedRef<FJsonObject> ExpandSourceTextureOverridesToParameters(
+	const TArray<FNteMaterialSourceTextureUsage>& SourceTextureUsage,
+	const FJsonObject* SourceTextureOverrides,
+	int32& OutMatchedGroups,
+	TArray<FString>* OutUnmatchedSourceTextures = nullptr);
 
 bool CreateOrUpdateModMaterialInstance(
 	const FNteMaterialInstanceOptions& Options,

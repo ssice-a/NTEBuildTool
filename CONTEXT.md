@@ -19,8 +19,11 @@ This repository contains an Unreal Engine editor plugin for rebuilding and packa
 - **Thin Post Process Anim Blueprint**: A future runtime mode where the generated post-process animation blueprint passes the pose through and only starts or reconnects a toggle runtime controller. It should not own UI/input/material state.
 - **Toggle Runtime Controller**: The future generated runtime logic that polls hotkeys, opens or closes UI, persists toggle state, and applies material-section visibility to a target mesh. It is not required by the current Standard PostProcess Template Runtime.
 - **Toggle Setup**: A JSON description of one target mesh, runtime assets, UI hotkey, save slot, and material-slot toggle groups.
-- **Material Recipe**: A JSON description used to create or update a `MaterialInstanceConstant`, usually from an FModel material JSON plus explicit texture overrides.
+- **Material Recipe**: A JSON description used to create or update a `MaterialInstanceConstant`, usually from an FModel material JSON plus explicit texture overrides. The preferred recipe format is authored around `SourceTextureOverrides`: the key is a source texture package used by the source material, the value is the mod texture package that should replace it. The material module expands that one source-texture replacement to every material parameter in the matching Source Texture Usage group. `TextureOverrides` remains the advanced per-parameter override format and wins when both formats write the same parameter.
+- **Material Proxy**: An editor-only stand-in for a missing cooked game parent material. It lets the Mirror Project create and inspect a mod `MaterialInstanceConstant` that intends to inherit a source game material path. A Material Proxy must not be treated as a Replaced Asset and should not be included in the pakmod package.
+- **Source Texture Usage**: The grouped view of a source material's texture parameters, keyed by the source texture asset. It answers "which texture does this source material use, and which parameters use it?" so the user can replace one source texture once and have that new texture override every matching parameter.
 - **Package Job**: A JSON description of a cook/package run. It lists the project, engine, game mount, output mods directory, mod name, package list, exclusions, and cook/pack options.
+- **Package Plan**: An editable candidate package list derived from one or more selected assets, usually starting from a selected mesh. It is a convenience preview, not an automatic decision: the tool should show dependencies and their reasons, then let the user remove or add packages before writing a Package Job.
 
 ## Current Mod Targets
 
@@ -43,5 +46,9 @@ The plugin should stay modular:
 - Hotkey/UI/material visibility generation is a separate toggle-runtime module.
 - Cook and IoStore packaging is a separate package pipeline module.
 - The editor menu module wires these modules together and owns no large implementation.
+- The material module should expose Source Texture Usage so users can see original texture groups and choose which source texture each new texture replaces.
+- Material recipes should prefer source-texture-group replacement over isolated parameter replacement, because FModel materials commonly bind one texture to several parameters such as `PM_Diffuse` plus `ID_Tex`, `LightMap` plus a same-name mask parameter, or `PM_SpecularMasks` plus `NomralMap`.
+- The package pipeline should build an editable Package Plan from selected assets before creating a Package Job; users remain in control of the final package list.
+- The toggle-runtime module should move toward configuration-driven UI and logic generation. Users define toggle items, labels, hotkeys, and material slots; templates should provide style and runtime anchor shape, not hardcoded item counts.
 
 Pure pak remains the default strategy. A native DLL is only a fallback if evidence proves a target scenario has no reliable pure-pak runtime anchor. StaticMesh targets should first be attempted with a loaded Runtime Anchor Mesh plus a StaticMesh Visibility Adapter; adding a Post Process Anim Blueprint to a Skeleton is not a valid path.

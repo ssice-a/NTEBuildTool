@@ -154,6 +154,9 @@ Responsibilities:
 - load FModel material JSON;
 - derive parent material paths from FModel export paths;
 - create or update `MaterialInstanceConstant` assets;
+- show Source Texture Usage: group source texture parameters by the texture asset they currently reference;
+- let the user choose a replacement texture once per source texture group, then write that replacement to every parameter in the group;
+- create or use editor-only Material Proxy assets when the cooked parent material cannot be loaded in the Mirror Project;
 - reset instances for pak-only texture override workflows;
 - write raw texture parameter overrides;
 - optionally apply scalar/vector overrides;
@@ -166,6 +169,28 @@ Interface:
 - `FNteMaterialInstanceCreateResult`
 - `ApplyModMaterialConfigFromFile`
 - `CreateOrUpdateModMaterialInstance`
+
+Material-instance creation is about preserving intent, not replacing source game materials. A mod material instance can intend to inherit `/Game/.../M_source`, but the Mirror Project may need a Material Proxy to let the editor save and preview that instance. The package pipeline must not include the proxy parent unless the user explicitly marks it as a real Replaced Asset, which should be unusual.
+
+Texture replacement should be presented by source texture usage rather than as isolated parameter rows. Source materials often bind the same texture to multiple parameters. The material UI should show the source texture once, list all parameters that use it, and allow one replacement texture to override all of those parameters together. Advanced users can still edit individual parameters, but the common workflow is "replace source texture A with mod texture B everywhere A is used."
+
+The recipe format should mirror that workflow:
+
+```json
+{
+  "SourceTextureOverrides": {
+    "/Game/.../source_id": "/Game/.../body_id",
+    "/Game/.../source_d": "/Game/.../body_bml",
+    "/Game/.../source_m": "/Game/.../body_rmt",
+    "/Game/.../source_n": "/Game/.../body_nm"
+  },
+  "TextureOverrides": {
+    "OptionalSingleParameter": "/Game/.../special_case"
+  }
+}
+```
+
+`SourceTextureOverrides` is expanded through Source Texture Usage. If the source material uses `/Game/.../source_id` for both `PM_Diffuse` and `ID_Tex`, one entry writes the replacement texture into both parameters. `TextureOverrides` remains an advanced per-parameter layer and is applied after source-texture expansion.
 
 ### Toggle Runtime Module
 
@@ -192,6 +217,8 @@ Responsibilities:
 The current core path is deliberately narrow: select one `SkeletalMesh`, enter a UI hotkey, define toggle items, and generate runtime assets from a standard template contract. A toggle item is user-authored data: UI label, optional hotkey, default visible state, and one or more material slots. The generator should not adapt arbitrary old project assets or infer behaviour from the current five mods.
 
 Runtime Blueprint generation is not optional in the editor workflow: hotkey bindings, UI button labels, save defaults, and material slot mapping are all patched into generated Blueprint assets. The tool supplies default generated names (`ABP_NTE_ModToggle_PostProcess`, `WBP_NTE_ModToggleMenu`, `BP_NTE_ModToggleSaveGame`) and preserves existing setup names when regenerating.
+
+The deeper target is configuration-driven generation: the user decides the toggle items, labels, hotkeys, and material slots, and the generator creates the required UI entries, variables, save state, and graph logic. Hardcoded group counts in templates are transitional. A template may define window chrome, visual style, and runtime anchor shape, but it should not decide how many toggle items a mod can have.
 
 The future deeper runtime target is separating the runtime controller from the post-process animation instance. In that mode, the Post Process Anim Blueprint becomes a thin anchor that ensures a controller exists and has the target `SkinnedMeshComponent`. The controller owns:
 
@@ -221,12 +248,16 @@ Resources/Scripts/BuildNteMod.ps1
 Responsibilities:
 
 - read/write package profiles and package jobs;
+- build an editable Package Plan from selected assets, starting from common shortcuts such as "selected mesh and its dependencies";
+- show why each candidate package is present and whether it looks like a mod asset, source game dependency, runtime asset, texture override, or editor-only proxy;
 - validate project, engine, game mount, package names, and output directories;
 - preview hard dependencies and `NeverPack` conflicts;
 - save dirty packages before build;
 - launch cook/package as an external process;
 - collect logs and outputs under `Saved/NTEBuildTool/Packages/<ModName>`;
 - create `.pak/.utoc/.ucas` using `UnrealPak` and the correct `HT` mount path.
+
+The Package Plan is a convenience, not an authority. Users can manually add or remove packages before the Package Job is written. The default should favor mod-authored assets and generated runtime assets while making source game dependencies visible but easy to exclude when they are already provided by the base game.
 
 The package job remains the stable interface shared by UI, CLI, and future automation.
 
