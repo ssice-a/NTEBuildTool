@@ -37,6 +37,24 @@ function Convert-ToGameMountPath {
     return "../../../$GameMountName/Content/" + ($ProjectRelativeContentPath -replace "\\", "/")
 }
 
+function Test-IsGeneratedRuntimeBlueprintPackage {
+    param([string]$PackageName)
+
+    $assetName = ($PackageName -split "/")[-1]
+    if ($assetName.StartsWith("ABP_NTE_ModToggle_") -or
+        $assetName.StartsWith("WBP_NTE_ModToggle") -or
+        $assetName.StartsWith("BP_NTE_ModToggle")) {
+        return $true
+    }
+
+    if ($PackageName -match "(?i)/mod/Runtime/" -and
+        ($assetName.StartsWith("ABP_") -or $assetName.StartsWith("WBP_") -or $assetName.StartsWith("BP_"))) {
+        return $true
+    }
+
+    return $false
+}
+
 function Add-CookedFilesForPackage {
     param(
         [System.Collections.Generic.List[string]]$Lines,
@@ -105,6 +123,16 @@ if ([string]::IsNullOrWhiteSpace($modName)) {
 
 if ($packages.Count -eq 0) {
     throw "No packages were selected."
+}
+
+if ($useUnversioned) {
+    foreach ($package in $packages) {
+        if (Test-IsGeneratedRuntimeBlueprintPackage $package) {
+            Write-Warning "Package '$package' is a generated runtime Blueprint package. Disabling Unversioned cook to avoid Widget Blueprint serialization errors in the target game."
+            $useUnversioned = $false
+            break
+        }
+    }
 }
 
 $engineRoot = $engineRoot.TrimEnd("\", "/")

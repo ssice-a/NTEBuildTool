@@ -2,6 +2,7 @@
 
 #include "NteModPackageJob.h"
 
+#include "NTEBuildTool.h"
 #include "NteEditorAssetUtils.h"
 #include "NteJsonFileUtils.h"
 
@@ -122,6 +123,52 @@ ENteModPackageMode PackageModeFromString(const FString& Value)
 	}
 	return ENteModPackageMode::CookAndPack;
 }
+
+bool LooksLikeGeneratedRuntimeBlueprintPackage(const FString& PackageName)
+{
+	const FString AssetName = FPackageName::GetShortName(PackageName);
+	return AssetName.StartsWith(TEXT("ABP_NTE_ModToggle_"))
+		|| AssetName.StartsWith(TEXT("WBP_NTE_ModToggle"))
+		|| AssetName.StartsWith(TEXT("BP_NTE_ModToggle"))
+		|| (PackageName.Contains(TEXT("/mod/Runtime/"), ESearchCase::IgnoreCase)
+			&& (AssetName.StartsWith(TEXT("ABP_")) || AssetName.StartsWith(TEXT("WBP_")) || AssetName.StartsWith(TEXT("BP_"))));
+}
+
+bool FindGeneratedRuntimeBlueprintPackage(const FNteModPackageJob& Job, FString& OutPackageName)
+{
+	for (const FString& PackageName : Job.Packages)
+	{
+		if (LooksLikeGeneratedRuntimeBlueprintPackage(PackageName))
+		{
+			OutPackageName = PackageName;
+			return true;
+		}
+	}
+
+	return false;
+}
+
+void NormalizeCookOptionsForRuntimeBlueprints(FNteModPackageJob& Job)
+{
+	if (!Job.bUnversioned)
+	{
+		return;
+	}
+
+	FString RuntimeBlueprintPackage;
+	if (!FindGeneratedRuntimeBlueprintPackage(Job, RuntimeBlueprintPackage))
+	{
+		return;
+	}
+
+	Job.bUnversioned = false;
+	UE_LOG(
+		LogNTEBuildTool,
+		Warning,
+		TEXT("Package job %s contains runtime Blueprint package %s; disabling Unversioned cook to avoid Widget Blueprint serialization errors in the target game."),
+		*Job.ModName,
+		*RuntimeBlueprintPackage);
+}
 }
 
 bool LoadModPackageJobJson(const FString& JobFilename, FNteModPackageJob& OutJob, FString& OutError)
@@ -225,6 +272,7 @@ bool CreateModPackageJobFromSelection(const FNteModPackageJobCreateOptions& Opti
 	Job.NeverPackPackagePrefixes = Options.NeverPackPackagePrefixes;
 	Job.bUnversioned = Options.bUnversioned;
 	Job.bSkipCook = Options.bSkipCook || Options.Mode == ENteModPackageMode::PackOnly;
+	NormalizeCookOptionsForRuntimeBlueprints(Job);
 
 	if (!ValidatePackageJob(Job, OutError))
 	{
@@ -502,6 +550,7 @@ bool LaunchModPackageBuildJob(const FString& JobFilename, FNteModPackageLaunchRe
 		Job.GameMountName = TEXT("HT");
 	}
 	Job.bSkipCook = Job.bSkipCook || Job.Mode == ENteModPackageMode::PackOnly;
+	NormalizeCookOptionsForRuntimeBlueprints(Job);
 
 	const FString WorkRoot = FPaths::Combine(Job.ProjectRoot, TEXT("Saved/NTEBuildTool/Packages"), Job.ModName);
 	const FString ScriptOutputDir = FPaths::Combine(WorkRoot, TEXT("Scripts"));

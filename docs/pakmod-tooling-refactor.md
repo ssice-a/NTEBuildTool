@@ -729,6 +729,24 @@ Verification run:
 - `NteModPackage` built `npc_sub_073_fm_mod_P` into `F:\Neverness To Everness\Client\WindowsNoEditor\HT\Content\Paks\Mods\NPC_Sub_073_fm`.
 - The package response includes only the selected mesh, slot 1 material instance, three body textures, and the three generated runtime Blueprints. It excludes the physics asset, skeleton, and editor-only material proxy parent.
 
+## 2026-07-09 Runtime Blueprint Cook Versioning
+
+The NPC runtime package reproduced a target-game load crash in `AsyncLoading2`:
+
+```text
+ObjectSerializationError:
+/Game/Characters/Npc/NPC_Sub/NPC_Sub_073_fm/mod/Runtime/WBP_NTE_ModToggleMenu
+WidgetTree.NTE_Toggle_ButtonScrollBox: Bad export index .../32
+```
+
+The failing job was manually authored with `Unversioned=true`, while the known-good 004 lacrimosa package used `Unversioned=false`. Runtime Widget Blueprints are therefore treated as incompatible with unversioned package serialization for this target game until proven otherwise.
+
+Packaging now normalizes cook options when a job contains generated runtime Blueprint packages:
+
+- C++ job creation/launch disables `bUnversioned` before saving the normalized work-root job.
+- `BuildNteMod.ps1` also disables `-Unversioned` when run directly with generated runtime Blueprint packages.
+- Ordinary mesh/material/texture packages are unaffected.
+
 ## Git Strategy
 
 Use sparse milestone commits:
