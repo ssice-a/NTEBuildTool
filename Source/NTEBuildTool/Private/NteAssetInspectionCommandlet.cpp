@@ -28,6 +28,9 @@
 #include "EdGraph/EdGraph.h"
 #include "EdGraph/EdGraphNode.h"
 #include "EdGraph/EdGraphPin.h"
+#include "K2Node_CallFunction.h"
+#include "K2Node_DynamicCast.h"
+#include "K2Node_Variable.h"
 #include "Materials/MaterialInstance.h"
 #include "Materials/MaterialInstanceConstant.h"
 #include "Misc/FileHelper.h"
@@ -236,9 +239,12 @@ void AddGraphPinInfo(const UEdGraphPin& Pin, FJsonObject& Object)
 	Object.SetStringField(TEXT("Direction"), Pin.Direction == EGPD_Input ? TEXT("Input") : TEXT("Output"));
 	Object.SetStringField(TEXT("Category"), Pin.PinType.PinCategory.ToString());
 	Object.SetStringField(TEXT("SubCategory"), Pin.PinType.PinSubCategory.ToString());
+	Object.SetStringField(TEXT("SubCategoryObject"), Pin.PinType.PinSubCategoryObject.IsValid() ? Pin.PinType.PinSubCategoryObject->GetPathName() : FString());
 	Object.SetStringField(TEXT("DefaultValue"), Pin.DefaultValue);
 	Object.SetStringField(TEXT("DefaultTextValue"), Pin.DefaultTextValue.ToString());
 	Object.SetStringField(TEXT("DefaultObject"), Pin.DefaultObject ? Pin.DefaultObject->GetPathName() : FString());
+	Object.SetBoolField(TEXT("Orphaned"), Pin.bOrphanedPin);
+	Object.SetBoolField(TEXT("NotConnectable"), Pin.bNotConnectable);
 	Object.SetNumberField(TEXT("LinkedToCount"), Pin.LinkedTo.Num());
 
 	TArray<TSharedPtr<FJsonValue>> LinkedPins;
@@ -267,6 +273,34 @@ void AddGraphNodeInfo(const UEdGraphNode& Node, FJsonObject& Object)
 	Object.SetStringField(TEXT("Title"), Node.GetNodeTitle(ENodeTitleType::FullTitle).ToString());
 	Object.SetStringField(TEXT("NodeGuid"), Node.NodeGuid.ToString(EGuidFormats::DigitsWithHyphens));
 	Object.SetBoolField(TEXT("HasValidNodeGuid"), Node.NodeGuid.IsValid());
+
+	if (const UK2Node_Variable* VariableNode = Cast<UK2Node_Variable>(&Node))
+	{
+		const UBlueprint* Blueprint = VariableNode->GetBlueprint();
+		UClass* BlueprintClass = Blueprint ? Blueprint->GeneratedClass : nullptr;
+		UClass* MemberParentClass = VariableNode->VariableReference.GetMemberParentClass(BlueprintClass);
+		Object.SetStringField(TEXT("VariableName"), VariableNode->VariableReference.GetMemberName().ToString());
+		Object.SetBoolField(TEXT("VariableIsSelfContext"), VariableNode->VariableReference.IsSelfContext());
+		Object.SetStringField(TEXT("VariableMemberParentClass"), MemberParentClass ? MemberParentClass->GetPathName() : FString());
+		Object.SetStringField(TEXT("VariableMemberParentGeneratedBy"), MemberParentClass && MemberParentClass->ClassGeneratedBy ? MemberParentClass->ClassGeneratedBy->GetPathName() : FString());
+		if (FProperty* Property = VariableNode->VariableReference.ResolveMember<FProperty>(BlueprintClass))
+		{
+			Object.SetStringField(TEXT("VariableResolvedOwnerClass"), Property->GetOwnerClass() ? Property->GetOwnerClass()->GetPathName() : FString());
+			Object.SetStringField(TEXT("VariableResolvedPropertyClass"), Property->GetClass()->GetName());
+		}
+	}
+	if (const UK2Node_DynamicCast* CastNode = Cast<UK2Node_DynamicCast>(&Node))
+	{
+		Object.SetStringField(TEXT("CastTargetType"), CastNode->TargetType ? CastNode->TargetType->GetPathName() : FString());
+		Object.SetStringField(TEXT("CastTargetGeneratedBy"), CastNode->TargetType && CastNode->TargetType->ClassGeneratedBy ? CastNode->TargetType->ClassGeneratedBy->GetPathName() : FString());
+	}
+	if (const UK2Node_CallFunction* CallFunctionNode = Cast<UK2Node_CallFunction>(&Node))
+	{
+		UClass* FunctionParentClass = CallFunctionNode->FunctionReference.GetMemberParentClass(CallFunctionNode->GetBlueprintClassFromNode());
+		Object.SetStringField(TEXT("FunctionName"), CallFunctionNode->FunctionReference.GetMemberName().ToString());
+		Object.SetStringField(TEXT("FunctionParentClass"), FunctionParentClass ? FunctionParentClass->GetPathName() : FString());
+		Object.SetStringField(TEXT("FunctionParentGeneratedBy"), FunctionParentClass && FunctionParentClass->ClassGeneratedBy ? FunctionParentClass->ClassGeneratedBy->GetPathName() : FString());
+	}
 
 	TArray<TSharedPtr<FJsonValue>> Pins;
 	for (const UEdGraphPin* Pin : Node.Pins)

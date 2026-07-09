@@ -58,6 +58,10 @@ struct FRuntimeBuildContext
 	UAnimBlueprint* PostProcessAnimBlueprint = nullptr;
 	UBlueprint* WidgetBlueprint = nullptr;
 	UBlueprint* SaveGameBlueprint = nullptr;
+	UBlueprint* TemplateWidgetBlueprint = nullptr;
+	UBlueprint* TemplateSaveGameBlueprint = nullptr;
+	UClass* TargetWidgetClass = nullptr;
+	UClass* TargetSaveGameClass = nullptr;
 	FNteMeshToggleBlueprintBuildResult* Result = nullptr;
 	FNteStandardToggleTemplateModel StandardTemplateModel;
 	TMap<int32, int32> ShowMaterialSectionNodeOrdinalByGroup;
@@ -617,13 +621,198 @@ void PatchObjectClassPins(FRuntimeBuildContext& Context, UEdGraphNode& Node)
 {
 	if (UEdGraphPin* SaveGameClassPin = FindPinByName(Node, TEXT("SaveGameClass")))
 	{
-		SetPinDefaultObject(Context, Node, *SaveGameClassPin, LoadGeneratedClassFromPackagePath(Context.TargetSaveGameBlueprintPath));
+		SetPinDefaultObject(Context, Node, *SaveGameClassPin, Context.TargetSaveGameClass);
 	}
 
 	if (UEdGraphPin* WidgetTypePin = FindPinByName(Node, TEXT("WidgetType")))
 	{
-		SetPinDefaultObject(Context, Node, *WidgetTypePin, LoadGeneratedClassFromPackagePath(Context.TargetWidgetBlueprintPath));
+		SetPinDefaultObject(Context, Node, *WidgetTypePin, Context.TargetWidgetClass);
 	}
+}
+
+bool WasGeneratedByBlueprint(const UClass* Class, const UBlueprint* Blueprint)
+{
+	if (!Class || !Blueprint)
+	{
+		return false;
+	}
+	if (Class->ClassGeneratedBy == Blueprint)
+	{
+		return true;
+	}
+
+	const UClass* AuthoritativeClass = Class->GetAuthoritativeClass();
+	return AuthoritativeClass && AuthoritativeClass->ClassGeneratedBy == Blueprint;
+}
+
+bool PatchExternalRuntimeVariableNode(FRuntimeBuildContext& Context, UK2Node_Variable& VariableNode)
+{
+	if (!Context.PostProcessAnimBlueprint || VariableNode.VariableReference.IsSelfContext())
+	{
+		return false;
+	}
+
+	UClass* MemberParentClass = VariableNode.VariableReference.GetMemberParentClass(Context.PostProcessAnimBlueprint->GeneratedClass);
+	UClass* NewParentClass = nullptr;
+	if (WasGeneratedByBlueprint(MemberParentClass, Context.TemplateSaveGameBlueprint))
+	{
+		NewParentClass = Context.TargetSaveGameClass;
+	}
+	else if (WasGeneratedByBlueprint(MemberParentClass, Context.TemplateWidgetBlueprint))
+	{
+		NewParentClass = Context.TargetWidgetClass;
+	}
+
+	if (!NewParentClass || MemberParentClass == NewParentClass)
+	{
+		return false;
+	}
+
+	const FName MemberName = VariableNode.VariableReference.GetMemberName();
+	VariableNode.Modify();
+	if (FProperty* TargetProperty = FindFProperty<FProperty>(NewParentClass, MemberName))
+	{
+		VariableNode.VariableReference.SetFromField<FProperty>(TargetProperty, false, NewParentClass);
+	}
+	else
+	{
+		VariableNode.VariableReference.SetExternalMember(MemberName, NewParentClass);
+	}
+	VariableNode.ReconstructNode();
+
+	if (Context.Result)
+	{
+		Context.Result->Actions.Add(FString::Printf(
+			TEXT("patched external variable node %s.%s parent to %s"),
+			*VariableNode.GetName(),
+			*MemberName.ToString(),
+			*NewParentClass->GetPathName()));
+	}
+	return true;
+}
+
+UEdGraphPin* FindReplacementForOrphanPin(const UEdGraphNode& Node, const UEdGraphPin& OrphanPin)
+{
+	for (UEdGraphPin* CandidatePin : Node.Pins)
+	{
+		if (CandidatePin
+			&& CandidatePin != &OrphanPin
+			&& !CandidatePin->bOrphanedPin
+			&& CandidatePin->Direction == OrphanPin.Direction
+			&& CandidatePin->PinName == OrphanPin.PinName)
+		{
+			return CandidatePin;
+		}
+	}
+	return nullptr;
+}
+
+int32 RepairOrphanPinsAfterRuntimeClassPatch(FRuntimeBuildContext& Context)
+{
+	TMap<UEdGraphPin*, UEdGraphPin*> ReplacementByOrphanPin;
+	for (UEdGraph* Graph : Context.PostProcessAnimBlueprint->UbergraphPages)
+	{
+		if (!Graph)
+		{
+			continue;
+		}
+
+		for (UEdGraphNode* Node : Graph->Nodes)
+		{
+			if (!Node)
+			{
+				continue;
+			}
+
+			for (UEdGraphPin* Pin : Node->Pins)
+			{
+				if (Pin && Pin->bOrphanedPin)
+				{
+					if (UEdGraphPin* ReplacementPin = FindReplacementForOrphanPin(*Node, *Pin))
+					{
+						ReplacementByOrphanPin.Add(Pin, ReplacementPin);
+					}
+				}
+			}
+		}
+	}
+
+	if (ReplacementByOrphanPin.IsEmpty())
+	{
+		return 0;
+	}
+
+	const UEdGraphSchema_K2* K2Schema = GetDefault<UEdGraphSchema_K2>();
+	int32 RepairedPinCount = 0;
+	for (const TPair<UEdGraphPin*, UEdGraphPin*>& Pair : ReplacementByOrphanPin)
+	{
+		UEdGraphPin* OrphanPin = Pair.Key;
+		UEdGraphPin* ReplacementPin = Pair.Value;
+		UEdGraphNode* OwningNode = OrphanPin ? OrphanPin->GetOwningNodeUnchecked() : nullptr;
+		if (!OrphanPin || !ReplacementPin || !OwningNode || !K2Schema)
+		{
+			continue;
+		}
+
+		const TArray<UEdGraphPin*> LinkedPins = OrphanPin->LinkedTo;
+		for (UEdGraphPin* LinkedPin : LinkedPins)
+		{
+			if (!LinkedPin)
+			{
+				continue;
+			}
+
+			UEdGraphPin* ResolvedLinkedPin = LinkedPin;
+			if (UEdGraphPin* const* LinkedReplacementPin = ReplacementByOrphanPin.Find(LinkedPin))
+			{
+				ResolvedLinkedPin = *LinkedReplacementPin;
+			}
+			if (!ResolvedLinkedPin || ResolvedLinkedPin == ReplacementPin || ResolvedLinkedPin->bOrphanedPin)
+			{
+				continue;
+			}
+			if (ReplacementPin->LinkedTo.Contains(ResolvedLinkedPin))
+			{
+				continue;
+			}
+
+			if (ReplacementPin->Direction == EGPD_Output)
+			{
+				K2Schema->TryCreateConnection(ReplacementPin, ResolvedLinkedPin);
+			}
+			else if (ReplacementPin->Direction == EGPD_Input)
+			{
+				K2Schema->TryCreateConnection(ResolvedLinkedPin, ReplacementPin);
+			}
+			else
+			{
+				K2Schema->TryCreateConnection(ReplacementPin, ResolvedLinkedPin);
+			}
+		}
+
+		OrphanPin->BreakAllPinLinks(false);
+		if (OwningNode->RemovePin(OrphanPin))
+		{
+			++RepairedPinCount;
+		}
+	}
+
+	if (RepairedPinCount > 0 && Context.Result)
+	{
+		Context.Result->Actions.Add(FString::Printf(TEXT("repaired %d orphan PostProcess pin(s) after runtime class patch"), RepairedPinCount));
+	}
+	return RepairedPinCount;
+}
+
+bool CastNodeTargetsRuntimeClass(const UK2Node_DynamicCast& CastNode, const TCHAR* RuntimeClassName)
+{
+	const FString Title = CastNode.GetNodeTitle(ENodeTitleType::FullTitle).ToString();
+	if (Title.Contains(RuntimeClassName))
+	{
+		return true;
+	}
+
+	return CastNode.TargetType && CastNode.TargetType->GetName().Contains(RuntimeClassName);
 }
 
 void PatchSaveSlotPins(FRuntimeBuildContext& Context, UEdGraphNode& Node)
@@ -1399,11 +1588,8 @@ bool ValidateTemplateCompatibility(const FRuntimeBuildContext& Context, FString&
 
 void PatchPostProcessBlueprintGraph(FRuntimeBuildContext& Context)
 {
-	UClass* TargetSaveGameClass = LoadGeneratedClassFromPackagePath(Context.TargetSaveGameBlueprintPath);
-	UClass* TargetWidgetClass = LoadGeneratedClassFromPackagePath(Context.TargetWidgetBlueprintPath);
-
-	PatchMemberVariableType(Context, TEXT("NTE_Toggle_SaveObject"), TargetSaveGameClass);
-	PatchMemberVariableType(Context, TEXT("NTE_Toggle_Widget"), TargetWidgetClass);
+	PatchMemberVariableType(Context, TEXT("NTE_Toggle_SaveObject"), Context.TargetSaveGameClass);
+	PatchMemberVariableType(Context, TEXT("NTE_Toggle_Widget"), Context.TargetWidgetClass);
 
 	for (UEdGraph* Graph : Context.PostProcessAnimBlueprint->UbergraphPages)
 	{
@@ -1424,15 +1610,18 @@ void PatchPostProcessBlueprintGraph(FRuntimeBuildContext& Context)
 			PatchObjectClassPins(Context, *Node);
 			if (UK2Node_DynamicCast* CastNode = Cast<UK2Node_DynamicCast>(Node))
 			{
-				const FString Title = CastNode->GetNodeTitle(ENodeTitleType::FullTitle).ToString();
-				if (Title.Contains(TEXT("BP_NTE_ModToggleSaveGame")))
+				if (CastNodeTargetsRuntimeClass(*CastNode, TEXT("BP_NTE_ModToggleSaveGame")))
 				{
-					PatchCastNode(Context, *CastNode, TargetSaveGameClass);
+					PatchCastNode(Context, *CastNode, Context.TargetSaveGameClass);
 				}
-				else if (Title.Contains(TEXT("WBP_NTE_ModToggleMenu")))
+				else if (CastNodeTargetsRuntimeClass(*CastNode, TEXT("WBP_NTE_ModToggleMenu")))
 				{
-					PatchCastNode(Context, *CastNode, TargetWidgetClass);
+					PatchCastNode(Context, *CastNode, Context.TargetWidgetClass);
 				}
+			}
+			if (UK2Node_Variable* VariableNode = Cast<UK2Node_Variable>(Node))
+			{
+				PatchExternalRuntimeVariableNode(Context, *VariableNode);
 			}
 			if (IsCallFunctionNodeWithTitle(*Node, TEXT("ShowMaterialSection")) || IsCallFunctionNodeWithTitle(*Node, TEXT("Show Material Section")))
 			{
@@ -1447,6 +1636,8 @@ void PatchPostProcessBlueprintGraph(FRuntimeBuildContext& Context)
 
 	FBlueprintEditorUtils::MarkBlueprintAsStructurallyModified(Context.PostProcessAnimBlueprint);
 	FBlueprintEditorUtils::RefreshAllNodes(Context.PostProcessAnimBlueprint);
+	RepairOrphanPinsAfterRuntimeClassPatch(Context);
+	FBlueprintEditorUtils::MarkBlueprintAsStructurallyModified(Context.PostProcessAnimBlueprint);
 	FKismetEditorUtilities::CompileBlueprint(Context.PostProcessAnimBlueprint, EBlueprintCompileOptions::SkipGarbageCollection);
 }
 }
@@ -1470,6 +1661,19 @@ bool BuildMeshToggleRuntimeBlueprints(
 	Context.TargetWidgetBlueprintPath = InOutResult.WidgetBlueprintPath;
 	Context.TargetSaveGameBlueprintPath = InOutResult.SaveGameBlueprintPath;
 	Context.Result = &OutBuildResult;
+
+	Context.TemplateSaveGameBlueprint = Cast<UBlueprint>(LoadAnyAssetByPath(Options.TemplateSaveGameBlueprintPath));
+	Context.TemplateWidgetBlueprint = Cast<UBlueprint>(LoadAnyAssetByPath(Options.TemplateWidgetBlueprintPath));
+	if (!Context.TemplateSaveGameBlueprint)
+	{
+		OutError = FString::Printf(TEXT("Could not load template SaveGame Blueprint for reference patching: %s"), *Options.TemplateSaveGameBlueprintPath);
+		return false;
+	}
+	if (!Context.TemplateWidgetBlueprint)
+	{
+		OutError = FString::Printf(TEXT("Could not load template Widget Blueprint for reference patching: %s"), *Options.TemplateWidgetBlueprintPath);
+		return false;
+	}
 
 	Context.SaveGameBlueprint = Cast<UBlueprint>(DuplicateOrLoadAsset(
 		Options.TemplateSaveGameBlueprintPath,
@@ -1506,6 +1710,19 @@ bool BuildMeshToggleRuntimeBlueprints(
 
 	FKismetEditorUtilities::CompileBlueprint(Context.SaveGameBlueprint, EBlueprintCompileOptions::SkipGarbageCollection);
 	FKismetEditorUtilities::CompileBlueprint(Context.WidgetBlueprint, EBlueprintCompileOptions::SkipGarbageCollection);
+	Context.TargetSaveGameClass = Context.SaveGameBlueprint->GeneratedClass;
+	Context.TargetWidgetClass = Context.WidgetBlueprint->GeneratedClass;
+	if (!Context.TargetSaveGameClass)
+	{
+		OutError = FString::Printf(TEXT("Generated SaveGame class is not available after compile: %s"), *Context.TargetSaveGameBlueprintPath);
+		return false;
+	}
+	if (!Context.TargetWidgetClass)
+	{
+		OutError = FString::Printf(TEXT("Generated Widget class is not available after compile: %s"), *Context.TargetWidgetBlueprintPath);
+		return false;
+	}
+
 	FKismetEditorUtilities::CompileBlueprint(Context.PostProcessAnimBlueprint, EBlueprintCompileOptions::SkipGarbageCollection);
 	Context.StandardTemplateModel = BuildStandardToggleTemplateModel(
 		Context.SaveGameBlueprint,

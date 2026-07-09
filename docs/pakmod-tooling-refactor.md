@@ -122,6 +122,38 @@ Native DLL work should remain a fallback, not the first design. It becomes neces
 
 ## Target Architecture
 
+### Mesh Mod Workspace
+
+The user-facing pakmod workflow should be a `Mesh Mod Workspace`, not three unrelated path-entry dialogs.
+
+Common user model:
+
+```text
+select mesh
+  -> inspect material slots
+  -> create or assign slot materials
+  -> configure Toggle Items for slots
+  -> review Package Plan
+  -> build Package Job
+```
+
+The workspace is an orchestration interface. It should call the material module, toggle-runtime module, and package pipeline module through their existing interfaces, while keeping each implementation local to its module.
+
+The workspace should provide these panes or steps:
+
+- **Mesh Overview**: selected mesh path, original game path confidence, skeleton/physics references, current Post Process Anim Blueprint, material slot table, and LOD section-to-slot summary.
+- **Material Slots**: one row per material slot with slot index, slot name, current material, material class, package status, and actions. The common action is a Slot Material Operation: choose a target slot, choose a source slot or FModel material JSON, choose replacement textures with asset pickers, then apply and assign the generated MaterialInstanceConstant.
+- **Toggle Items**: user-authored UI label, captured hotkey chord, default visible state, and checked material slots. The user should not type standard template asset paths in the common workflow. Default template assets should come from plugin/project settings, with an advanced override.
+- **Package Workspace**: editable Package Plan grouped by selected mesh, generated runtime assets, material instances, replacement textures, source-game dependencies, editor-only Material Proxies, and excluded assets. The user can add assets from Content Browser, remove candidates, and then build.
+
+This does not remove the existing advanced adapters:
+
+- recipe JSON remains the automation adapter for material creation;
+- Toggle Setup JSON remains the automation adapter for runtime generation;
+- Package Job JSON remains the automation adapter for cook/package.
+
+But the default editor path must be mesh/slot/texture/hotkey driven. If a user has to copy a `/Game/...` path for a normal operation, the workspace interface is too shallow.
+
 ### Editor Menu Module
 
 Files:
@@ -199,6 +231,16 @@ Current implementation checkpoint:
 - Users can choose one replacement texture per source texture group, and the material module expands it into parameter overrides.
 - `Create Material Instance From Recipe JSON` and the `NteMaterialConfig` commandlet still consume the same core material module, so manual and automated recipes stay compatible.
 
+Next UX target:
+
+- replace the default material dialog with the Material Slots pane in the Mesh Mod Workspace;
+- let users pick the target slot directly from the selected mesh;
+- let users pick the source slot directly from the same mesh when they want "slot N inherits slot M";
+- keep FModel material JSON selection as an advanced source-material override;
+- use asset pickers and "Use Selected Asset" for replacement textures instead of text-only package paths;
+- preview grouped Source Texture Usage with thumbnails and parameter names;
+- provide one `Apply & Assign` action that creates or updates the material instance, assigns it to the target slot, saves dirty assets, and writes the material report.
+
 ### Toggle Runtime Module
 
 Proposed files:
@@ -234,6 +276,16 @@ Current implementation checkpoint:
 - Compatibility errors now point at the exact missing standard contract piece, such as SaveGame capacity, Post Process visible capacity, a missing Widget button/label, or a missing input marker for a configured hotkey.
 - `NteMeshToggleBlueprintBuilder` consumes the model instead of rediscovering template capacity through ad hoc string parsing. This is the seam for the future config-generated UI/state/graph entries.
 - `NtePakModAudit` and `NteAssetInspection` also report the same Standard Template Model, so generated assets can be checked through commandlets instead of only by manually opening Blueprint graphs.
+
+Next UX target:
+
+- expose Toggle Items in the Mesh Mod Workspace next to the material slot table;
+- capture hotkeys from real key presses instead of requiring Unreal key names like `NumPadOne`;
+- let users choose material slots through checkboxes instead of typing `1,13,15`;
+- require UI labels at entry time and show those labels in a live button preview;
+- source default template assets from plugin/project settings so users do not type three template paths for normal generation;
+- keep template path overrides in an Advanced section;
+- after generation, show the generated runtime asset paths and whether the Runtime Anchor Mesh now references the generated Post Process Anim Blueprint.
 
 The future deeper runtime target is separating the runtime controller from the post-process animation instance. In that mode, the Post Process Anim Blueprint becomes a thin anchor that ensures a controller exists and has the target `SkinnedMeshComponent`. The controller owns:
 
@@ -283,6 +335,16 @@ Current implementation checkpoint:
 - Source-game hard dependencies and likely editor-only Material Proxy assets are shown but unchecked by default.
 - The user confirms the plan before the package job JSON is written.
 - The commandlet path still consumes a stable Package Job directly, so manual JSON packaging remains supported.
+
+Next UX target:
+
+- replace the flat package candidate list with the Package Workspace pane;
+- group candidates by role: selected mesh, generated runtime assets, material instances, replacement textures, mod-authored assets, source-game dependencies, editor-only Material Proxies, and excluded assets;
+- show package path, class, size when available, reason, and default inclusion state;
+- provide buttons for `Add Selected Assets`, `Add Folder`, `Include Runtime`, `Include Material Slots`, `Exclude Source Dependencies`, and `Exclude Proxies`;
+- validate before build that generated runtime assets referenced by the selected mesh are included, while editor-only Material Proxies are excluded;
+- show output directory, ModName, GameMount, mode, and final artifact names in the same confirmation window before launching cook/package;
+- write and display the Package Job path after build so automation can repeat the same package later.
 
 ### Shared Editor Utilities
 
@@ -645,6 +707,27 @@ Verification run:
 - Result: `BUILD SUCCESSFUL`.
 - `RunUAT BuildPlugin -Plugin='F:\NTE\NTEBuildTool\NTEBuildTool.uplugin' -Package='F:\NTE\NTEBuildTool\.scratch\PluginBuild_TemplateAudit' -TargetPlatforms=Win64 -StrictIncludes`
 - Result: `BUILD SUCCESSFUL`.
+
+## 2026-07-09 Runtime Class Reference Patch
+
+Duplicating a standard runtime template into another folder creates several Blueprint classes with the same short names, such as `WBP_NTE_ModToggleMenu_C` and `BP_NTE_ModToggleSaveGame_C`. The generator must patch references by object identity and generated class path, not by the user-visible class display name.
+
+The Post Process builder now patches four layers after duplicating runtime assets:
+
+- member variable types for `NTE_Toggle_SaveObject` and `NTE_Toggle_Widget`;
+- class pins such as `SaveGameClass` and `WidgetType`;
+- dynamic cast targets for the generated SaveGame and Widget classes;
+- external variable nodes that read or write fields owned by the duplicated SaveGame or Widget classes.
+
+After node reconstruction, the builder repairs orphan pins that UE keeps for data recovery. Linked orphan pins must be reconnected to the matching non-orphan replacement pin before compile; otherwise the compiler reports "pin no longer exists" or "same-named object reference is incompatible" errors.
+
+Verification run:
+
+- `PhyLabEditor Win64 Development` builds with the mirrored plugin.
+- `NteMaterialConfig` generated `/Game/Characters/Npc/NPC_Sub/NPC_Sub_073_fm/mod/Materials/MI_mod_npc_sub_073_body_slot1` with `body`, `body_rmt`, and `body_nm` replacing the source texture usage groups.
+- `NteMeshToggle` generated `/Game/Characters/Npc/NPC_Sub/NPC_Sub_073_fm/mod/Runtime` with `DefaultVisible=false` for slot 2 and `NumPadOne` as the toggle hotkey. The second regeneration pass finished with `0 error(s)`; the remaining warning is an unused template `Up` input node.
+- `NteModPackage` built `npc_sub_073_fm_mod_P` into `F:\Neverness To Everness\Client\WindowsNoEditor\HT\Content\Paks\Mods\NPC_Sub_073_fm`.
+- The package response includes only the selected mesh, slot 1 material instance, three body textures, and the three generated runtime Blueprints. It excludes the physics asset, skeleton, and editor-only material proxy parent.
 
 ## Git Strategy
 
