@@ -276,7 +276,8 @@ void FNTEBuildToolModule::BuildSelectedAssetsModPackage()
 		NTEBuildTool::Editor::ShowError(FText::FromString(Error));
 		return;
 	}
-	if (!NTEBuildTool::Package::ShowPackagePlanDialog(Plan))
+	NTEBuildTool::Package::FNtePackagePlanDialogResult DialogResult;
+	if (!NTEBuildTool::Package::ShowPackagePlanDialog(Plan, DialogResult))
 	{
 		return;
 	}
@@ -288,27 +289,10 @@ void FNTEBuildToolModule::BuildSelectedAssetsModPackage()
 		return;
 	}
 
-	FString ModsDir;
-	if (!NTEBuildTool::Editor::ChooseDirectoryWithTitle(
-		LOCTEXT("ChooseModsOutputDirectory", "Choose Mods Output Directory"),
-		NTEBuildTool::Settings::GetDefaultModsOutputDirectory(),
-		ModsDir))
-	{
-		return;
-	}
-
-	FString JobFilename;
-	if (!NTEBuildTool::Editor::ChooseSaveJsonFileWithTitle(
-		LOCTEXT("SaveModPackageJobJson", "Save NTE Mod Package Job JSON"),
-		TEXT("nte_mod_P.job.json"),
-		JobFilename))
-	{
-		return;
-	}
-
 	NTEBuildTool::Package::FNteModPackageJobCreateOptions CreateOptions;
-	CreateOptions.ModsDir = ModsDir;
-	CreateOptions.JobFilename = JobFilename;
+	CreateOptions.ModsDir = DialogResult.ModsDir;
+	CreateOptions.ModName = DialogResult.ModName;
+	CreateOptions.JobFilename = DialogResult.JobFilename;
 	CreateOptions.Packages = Packages;
 	CreateOptions.bCollectContentBrowserSelection = false;
 
@@ -316,6 +300,15 @@ void FNTEBuildToolModule::BuildSelectedAssetsModPackage()
 	if (!NTEBuildTool::Package::CreateModPackageJobFromSelection(CreateOptions, CreateResult, Error))
 	{
 		NTEBuildTool::Editor::ShowError(FText::FromString(Error));
+		return;
+	}
+
+	if (!DialogResult.bLaunchBuild)
+	{
+		NTEBuildTool::Editor::ShowInfo(FText::Format(
+			LOCTEXT("CreatedSelectedAssetsPackageJob", "Created package job with {0} packages. Job file: {1}"),
+			FText::AsNumber(CreateResult.PackageCount),
+			FText::FromString(CreateResult.JobFile)));
 		return;
 	}
 

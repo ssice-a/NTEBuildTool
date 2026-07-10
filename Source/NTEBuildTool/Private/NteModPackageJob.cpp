@@ -47,36 +47,6 @@ void AddUniqueGamePackage(TArray<FString>& Packages, const FString& PackageName)
 	}
 }
 
-FString SanitizeModName(FString ModName)
-{
-	ModName.TrimStartAndEndInline();
-	const FString InvalidChars(FPaths::GetInvalidFileSystemChars());
-	for (const TCHAR InvalidChar : InvalidChars)
-	{
-		ModName.ReplaceCharInline(InvalidChar, TEXT('_'));
-	}
-	return ModName;
-}
-
-FString DeriveModNameFromPackages(const TArray<FString>& Packages)
-{
-	if (Packages.IsEmpty())
-	{
-		return TEXT("nte_mod_P");
-	}
-
-	FString BaseName = FPackageName::GetShortName(Packages[0]);
-	if (BaseName.IsEmpty())
-	{
-		BaseName = TEXT("nte_mod");
-	}
-	if (!BaseName.EndsWith(TEXT("_P"), ESearchCase::IgnoreCase))
-	{
-		BaseName += TEXT("_P");
-	}
-	return SanitizeModName(BaseName);
-}
-
 void CollectSelectedAssetPackages(TArray<FString>& Packages)
 {
 	for (const FAssetData& AssetData : NTEBuildTool::Editor::GetSelectedContentBrowserAssets())
@@ -172,6 +142,36 @@ void NormalizeCookOptionsForRuntimeBlueprints(FNteModPackageJob& Job)
 }
 }
 
+FString SanitizeModPackageName(FString ModName)
+{
+	ModName.TrimStartAndEndInline();
+	const FString InvalidChars(FPaths::GetInvalidFileSystemChars());
+	for (const TCHAR InvalidChar : InvalidChars)
+	{
+		ModName.ReplaceCharInline(InvalidChar, TEXT('_'));
+	}
+	return ModName;
+}
+
+FString DeriveModPackageNameFromPackages(const TArray<FString>& Packages)
+{
+	if (Packages.IsEmpty())
+	{
+		return TEXT("nte_mod_P");
+	}
+
+	FString BaseName = FPackageName::GetShortName(Packages[0]);
+	if (BaseName.IsEmpty())
+	{
+		BaseName = TEXT("nte_mod");
+	}
+	if (!BaseName.EndsWith(TEXT("_P"), ESearchCase::IgnoreCase))
+	{
+		BaseName += TEXT("_P");
+	}
+	return SanitizeModPackageName(BaseName);
+}
+
 bool LoadModPackageJobJson(const FString& JobFilename, FNteModPackageJob& OutJob, FString& OutError)
 {
 	TSharedPtr<FJsonObject> Root;
@@ -250,7 +250,7 @@ bool CreateModPackageJobFromSelection(const FNteModPackageJobCreateOptions& Opti
 		return false;
 	}
 
-	const FString ModName = SanitizeModName(!Options.ModName.IsEmpty() ? Options.ModName : DeriveModNameFromPackages(Packages));
+	const FString ModName = SanitizeModPackageName(!Options.ModName.IsEmpty() ? Options.ModName : DeriveModPackageNameFromPackages(Packages));
 	if (ModName.IsEmpty())
 	{
 		OutError = TEXT("ModName is empty after sanitization.");

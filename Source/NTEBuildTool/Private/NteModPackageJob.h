@@ -7,6 +7,9 @@
 
 namespace NTEBuildTool::Package
 {
+FString SanitizeModPackageName(FString ModName);
+FString DeriveModPackageNameFromPackages(const TArray<FString>& Packages);
+
 bool LoadModPackageJobJson(const FString& JobFilename, FNteModPackageJob& OutJob, FString& OutError);
 bool SaveModPackageJobJson(const FNteModPackageJob& Job, const FString& JobFilename, FString& OutError);
 bool CreateModPackageJobFromSelection(const FNteModPackageJobCreateOptions& Options, FNteModPackageJobCreateResult& OutResult, FString& OutError);
