@@ -25,28 +25,56 @@ using namespace NTEBuildTool::Json;
 
 namespace
 {
-FInputChord InputChordFromJsonObject(const FJsonObject& Object)
+bool ReadInputChordFromJsonObject(const FJsonObject& Object, const FString& ContextName, FInputChord& OutChord, FString& OutError)
 {
-	FInputChord Chord;
+	OutChord = FInputChord();
 	const FString KeyName = GetStringAny(Object, TEXT("Key"));
-	if (!KeyName.IsEmpty())
+	if (!KeyName.IsEmpty() && !KeyName.Equals(TEXT("None"), ESearchCase::IgnoreCase))
 	{
-		Chord.Key = FKey(*KeyName);
+		OutChord.Key = FKey(*KeyName);
+		if (!OutChord.Key.IsValid())
+		{
+			OutError = FString::Printf(TEXT("%s uses unknown key '%s'. Use an Unreal key name such as Up, Down, F9, Slash, NumPadOne, or leave the key empty."), *ContextName, *KeyName);
+			return false;
+		}
 	}
 
-	bool bShift = Chord.bShift;
-	bool bCtrl = Chord.bCtrl;
-	bool bAlt = Chord.bAlt;
-	bool bCmd = Chord.bCmd;
+	bool bShift = OutChord.bShift;
+	bool bCtrl = OutChord.bCtrl;
+	bool bAlt = OutChord.bAlt;
+	bool bCmd = OutChord.bCmd;
 	GetBoolAny(Object, bShift, TEXT("Shift"));
 	GetBoolAny(Object, bCtrl, TEXT("Ctrl"));
 	GetBoolAny(Object, bAlt, TEXT("Alt"));
 	GetBoolAny(Object, bCmd, TEXT("Cmd"));
-	Chord.bShift = bShift;
-	Chord.bCtrl = bCtrl;
-	Chord.bAlt = bAlt;
-	Chord.bCmd = bCmd;
-	return Chord;
+	OutChord.bShift = bShift;
+	OutChord.bCtrl = bCtrl;
+	OutChord.bAlt = bAlt;
+	OutChord.bCmd = bCmd;
+	if (!OutChord.Key.IsValid() && (OutChord.bShift || OutChord.bCtrl || OutChord.bAlt || OutChord.bCmd))
+	{
+		OutError = FString::Printf(TEXT("%s has modifier keys but no key."), *ContextName);
+		return false;
+	}
+	return true;
+}
+
+bool ReadKeyShortcutFromJsonObject(const FJsonObject& Object, const FString& FieldName, const FString& ContextName, FInputChord& OutChord, FString& OutError)
+{
+	OutChord = FInputChord();
+	const FString KeyName = GetStringAny(Object, *FieldName);
+	if (KeyName.IsEmpty() || KeyName.Equals(TEXT("None"), ESearchCase::IgnoreCase))
+	{
+		return true;
+	}
+
+	OutChord.Key = FKey(*KeyName);
+	if (!OutChord.Key.IsValid())
+	{
+		OutError = FString::Printf(TEXT("%s uses unknown key '%s'. Use an Unreal key name such as Up, Down, F9, Slash, NumPadOne, or leave the key empty."), *ContextName, *KeyName);
+		return false;
+	}
+	return true;
 }
 
 TSharedRef<FJsonObject> InputChordToJsonObject(const FInputChord& Chord)
@@ -172,6 +200,12 @@ FString MakeChordIdentity(const FInputChord& Chord)
 
 bool ValidateToggleGroupsAgainstMaterialCount(const FString& TargetMeshPath, const int32 MaterialCount, const TArray<FNteMeshToggleGroup>& Groups, FString& OutError)
 {
+	if (Groups.IsEmpty())
+	{
+		OutError = TEXT("Mesh toggle setup requires at least one Toggle Item.");
+		return false;
+	}
+
 	TSet<FString> UsedKeys;
 	for (const FNteMeshToggleGroup& Group : Groups)
 	{
@@ -190,8 +224,16 @@ bool ValidateToggleGroupsAgainstMaterialCount(const FString& TargetMeshPath, con
 			OutError = FString::Printf(TEXT("Toggle group has no MaterialSlots: %s"), *Group.GroupId);
 			return false;
 		}
+		TSet<int32> UniqueSlots;
 		for (const int32 SlotIndex : Group.Slots)
 		{
+			if (UniqueSlots.Contains(SlotIndex))
+			{
+				OutError = FString::Printf(TEXT("Toggle group %s lists material slot %d more than once."), *Group.GroupId, SlotIndex);
+				return false;
+			}
+			UniqueSlots.Add(SlotIndex);
+
 			if (SlotIndex < 0 || SlotIndex >= MaterialCount)
 			{
 				OutError = FString::Printf(
@@ -201,6 +243,32 @@ bool ValidateToggleGroupsAgainstMaterialCount(const FString& TargetMeshPath, con
 					*TargetMeshPath,
 					MaterialCount);
 				return false;
+			}
+		}
+		if (!Group.SlotBindings.IsEmpty())
+		{
+			TSet<int32> BoundSlots;
+			for (const FNteMeshToggleSlotBinding& Binding : Group.SlotBindings)
+			{
+				if (!UniqueSlots.Contains(Binding.SlotIndex))
+				{
+					OutError = FString::Printf(TEXT("Toggle group %s has MaterialSlotBindings for slot %d, but MaterialSlots does not include it."), *Group.GroupId, Binding.SlotIndex);
+					return false;
+				}
+				if (BoundSlots.Contains(Binding.SlotIndex))
+				{
+					OutError = FString::Printf(TEXT("Toggle group %s has duplicate MaterialSlotBindings for slot %d."), *Group.GroupId, Binding.SlotIndex);
+					return false;
+				}
+				BoundSlots.Add(Binding.SlotIndex);
+			}
+			for (const int32 SlotIndex : UniqueSlots)
+			{
+				if (!BoundSlots.Contains(SlotIndex))
+				{
+					OutError = FString::Printf(TEXT("Toggle group %s has MaterialSlotBindings, but slot %d is missing a binding."), *Group.GroupId, SlotIndex);
+					return false;
+				}
 			}
 		}
 
@@ -406,7 +474,10 @@ bool LoadMeshToggleSetupOptionsFromJsonFile(const FString& ConfigFilename, FNteM
 	const TSharedPtr<FJsonObject>* UiChordObject = nullptr;
 	if (Root->TryGetObjectField(TEXT("UIInputChord"), UiChordObject) && UiChordObject && UiChordObject->IsValid())
 	{
-		OutOptions.UiChord = InputChordFromJsonObject(**UiChordObject);
+		if (!ReadInputChordFromJsonObject(**UiChordObject, TEXT("UIInputChord"), OutOptions.UiChord, OutError))
+		{
+			return false;
+		}
 	}
 
 	OutOptions.ToggleGroups.Reset();
@@ -418,7 +489,8 @@ bool LoadMeshToggleSetupOptionsFromJsonFile(const FString& ConfigFilename, FNteM
 			const TSharedPtr<FJsonObject> GroupObject = GroupValue.IsValid() && GroupValue->Type == EJson::Object ? GroupValue->AsObject() : nullptr;
 			if (!GroupObject.IsValid())
 			{
-				continue;
+				OutError = TEXT("Every entry in Groups must be a JSON object.");
+				return false;
 			}
 
 			FNteMeshToggleGroup Group;
@@ -430,14 +502,18 @@ bool LoadMeshToggleSetupOptionsFromJsonFile(const FString& ConfigFilename, FNteM
 			const TSharedPtr<FJsonObject>* InputChordObject = nullptr;
 			if (GroupObject->TryGetObjectField(TEXT("InputChord"), InputChordObject) && InputChordObject && InputChordObject->IsValid())
 			{
-				Group.Chord = InputChordFromJsonObject(**InputChordObject);
+				const FString ContextName = Group.GroupId.IsEmpty() ? TEXT("Toggle group InputChord") : FString::Printf(TEXT("Toggle group %s InputChord"), *Group.GroupId);
+				if (!ReadInputChordFromJsonObject(**InputChordObject, ContextName, Group.Chord, OutError))
+				{
+					return false;
+				}
 			}
 			else
 			{
-				const FString KeyName = GetStringAny(*GroupObject, TEXT("Key"));
-				if (!KeyName.IsEmpty())
+				const FString ContextName = Group.GroupId.IsEmpty() ? TEXT("Toggle group Key") : FString::Printf(TEXT("Toggle group %s Key"), *Group.GroupId);
+				if (!ReadKeyShortcutFromJsonObject(*GroupObject, TEXT("Key"), ContextName, Group.Chord, OutError))
 				{
-					Group.Chord.Key = FKey(*KeyName);
+					return false;
 				}
 			}
 
@@ -446,7 +522,19 @@ bool LoadMeshToggleSetupOptionsFromJsonFile(const FString& ConfigFilename, FNteM
 			{
 				for (const TSharedPtr<FJsonValue>& SlotValue : *SlotValues)
 				{
-					Group.Slots.Add(static_cast<int32>(SlotValue->AsNumber()));
+					if (!SlotValue.IsValid() || SlotValue->Type != EJson::Number)
+					{
+						OutError = FString::Printf(TEXT("MaterialSlots in toggle group %s must contain only integer numbers."), *Group.GroupId);
+						return false;
+					}
+					const double SlotNumber = SlotValue->AsNumber();
+					const int32 SlotIndex = static_cast<int32>(SlotNumber);
+					if (!FMath::IsNearlyEqual(SlotNumber, static_cast<double>(SlotIndex)))
+					{
+						OutError = FString::Printf(TEXT("MaterialSlots in toggle group %s contains non-integer value %.3f."), *Group.GroupId, SlotNumber);
+						return false;
+					}
+					Group.Slots.Add(SlotIndex);
 				}
 			}
 
@@ -456,10 +544,12 @@ bool LoadMeshToggleSetupOptionsFromJsonFile(const FString& ConfigFilename, FNteM
 				for (const TSharedPtr<FJsonValue>& BindingValue : *BindingValues)
 				{
 					const TSharedPtr<FJsonObject> BindingObject = BindingValue.IsValid() && BindingValue->Type == EJson::Object ? BindingValue->AsObject() : nullptr;
-					if (BindingObject.IsValid())
+					if (!BindingObject.IsValid())
 					{
-						Group.SlotBindings.Add(SlotBindingFromJsonObject(*BindingObject));
+						OutError = FString::Printf(TEXT("MaterialSlotBindings in toggle group %s must contain only JSON objects."), *Group.GroupId);
+						return false;
 					}
+					Group.SlotBindings.Add(SlotBindingFromJsonObject(*BindingObject));
 				}
 			}
 

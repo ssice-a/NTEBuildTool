@@ -731,6 +731,8 @@ bool ApplyModMaterialConfig(
 {
 	OutResult = FNteMaterialConfigApplyResult();
 	FNteMaterialInstanceOptions EffectiveOptions = Options;
+	const FJsonObject* EffectiveSourceTextureOverrides = SourceTextureOverrides ? SourceTextureOverrides : Options.SourceTextureOverrides.Get();
+	const FJsonObject* EffectiveTextureOverrides = TextureOverrides ? TextureOverrides : Options.TextureOverrides.Get();
 	OutResult.SourceMaterialJson = EffectiveOptions.SourceMaterialJson;
 	OutResult.OutputMaterialPath = EffectiveOptions.OutputMaterialPath;
 	OutResult.ParentMaterialPath = EffectiveOptions.ParentMaterialPath;
@@ -762,12 +764,12 @@ bool ApplyModMaterialConfig(
 	TSharedPtr<FJsonObject> ExpandedTextureOverrides;
 	int32 MatchedSourceTextureGroups = 0;
 	TArray<FString> UnmatchedSourceTextureOverrides;
-	if (SourceTextureOverrides)
+	if (EffectiveSourceTextureOverrides)
 	{
 		OutResult.SourceTextureUsage = BuildSourceTextureUsage(SourceTextures);
 		ExpandedTextureOverrides = ExpandSourceTextureOverridesToParameters(
 			OutResult.SourceTextureUsage,
-			SourceTextureOverrides,
+			EffectiveSourceTextureOverrides,
 			MatchedSourceTextureGroups,
 			&UnmatchedSourceTextureOverrides);
 	}
@@ -775,13 +777,13 @@ bool ApplyModMaterialConfig(
 	{
 		OutResult.SourceTextureUsage = BuildSourceTextureUsage(SourceTextures);
 	}
-	if (TextureOverrides)
+	if (EffectiveTextureOverrides)
 	{
 		if (!ExpandedTextureOverrides.IsValid())
 		{
 			ExpandedTextureOverrides = MakeShared<FJsonObject>();
 		}
-		AppendTextureParameters(*TextureOverrides, *ExpandedTextureOverrides);
+		AppendTextureParameters(*EffectiveTextureOverrides, *ExpandedTextureOverrides);
 	}
 
 	if (!CreateOrUpdateModMaterialInstance(

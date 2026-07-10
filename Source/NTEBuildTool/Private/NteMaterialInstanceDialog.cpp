@@ -7,7 +7,9 @@
 #include "NteNotificationUtils.h"
 
 #include "Engine/SkeletalMesh.h"
+#include "Engine/Texture.h"
 #include "Framework/Application/SlateApplication.h"
+#include "Materials/MaterialInterface.h"
 #include "Widgets/Input/SButton.h"
 #include "Widgets/Input/SCheckBox.h"
 #include "Widgets/Input/SEditableTextBox.h"
@@ -29,6 +31,13 @@ struct FSourceTextureRow
 	TSharedPtr<SEditableTextBox> ReplacementTextBox;
 };
 
+struct FMaterialSlotRow
+{
+	int32 SlotIndex = INDEX_NONE;
+	FString SlotName;
+	FString MaterialPath;
+};
+
 FString MakeParameterSummary(const TArray<FString>& ParameterNames)
 {
 	return FString::Join(ParameterNames, TEXT(", "));
@@ -46,6 +55,22 @@ bool TryGetSingleSelectedPackagePath(FString& OutPackagePath, FString& OutError)
 	OutPackagePath = SelectedAssets[0].PackageName.ToString();
 	return true;
 }
+
+bool TryGetSingleSelectedAssetPackagePathOfClass(UClass& RequiredClass, const TCHAR* RequiredLabel, FString& OutPackagePath, FString& OutError)
+{
+	if (!TryGetSingleSelectedPackagePath(OutPackagePath, OutError))
+	{
+		return false;
+	}
+
+	UObject* SelectedAsset = NTEBuildTool::Editor::LoadAnyAssetByPath(OutPackagePath);
+	if (!SelectedAsset || !SelectedAsset->IsA(&RequiredClass))
+	{
+		OutError = FString::Printf(TEXT("Select exactly one %s asset in the Content Browser."), RequiredLabel);
+		return false;
+	}
+	return true;
+}
 }
 
 bool ShowMaterialInstanceRecipeDialog(const FString& SourceMaterialJson, FNteMaterialInstanceOptions& OutOptions, TSharedPtr<FJsonObject>& OutSourceTextureOverrides)
@@ -58,13 +83,24 @@ bool ShowMaterialInstanceRecipeDialog(const FString& SourceMaterialJson, FNteMat
 		return false;
 	}
 
-	const FString ParentMaterialPath = DeriveParentMaterialPathFromFModelJson(SourceMaterialJson);
+	FString ParentMaterialPath = DeriveParentMaterialPathFromFModelJson(SourceMaterialJson);
 	FString OutputFolder = DeriveModMaterialFolderFromParentPath(ParentMaterialPath, NTEBuildTool::Editor::GetSelectedContentBrowserPath());
 	FString OutputMaterialPath = NTEBuildTool::Editor::JoinAssetPath(OutputFolder, MakeModMaterialNameFromFModelJson(SourceMaterialJson));
 	FString MeshPath;
+	TArray<TSharedPtr<FMaterialSlotRow>> SlotRows;
 	if (USkeletalMesh* SelectedMesh = NTEBuildTool::Editor::GetSingleSelectedSkeletalMesh())
 	{
 		MeshPath = NTEBuildTool::Editor::GetAssetPackagePath(SelectedMesh);
+		const TArray<FSkeletalMaterial>& Materials = SelectedMesh->GetMaterials();
+		for (int32 Index = 0; Index < Materials.Num(); ++Index)
+		{
+			const FSkeletalMaterial& Material = Materials[Index];
+			TSharedPtr<FMaterialSlotRow> Row = MakeShared<FMaterialSlotRow>();
+			Row->SlotIndex = Index;
+			Row->SlotName = Material.MaterialSlotName.ToString();
+			Row->MaterialPath = Material.MaterialInterface ? Material.MaterialInterface->GetPackage()->GetName() : FString();
+			SlotRows.Add(Row);
+		}
 	}
 	FString SlotText;
 	bool bAssignToMeshSlot = false;
@@ -82,6 +118,7 @@ bool ShowMaterialInstanceRecipeDialog(const FString& SourceMaterialJson, FNteMat
 	}
 
 	TSharedPtr<SEditableTextBox> OutputMaterialTextBox;
+	TSharedPtr<SEditableTextBox> ParentMaterialTextBox;
 	TSharedPtr<SEditableTextBox> MeshTextBox;
 	TSharedPtr<SEditableTextBox> SlotTextBox;
 	TSharedPtr<SCheckBox> AssignToMeshSlotCheckBox;
@@ -137,7 +174,7 @@ bool ShowMaterialInstanceRecipeDialog(const FString& SourceMaterialJson, FNteMat
 					{
 						FString PackagePath;
 						FString Error;
-						if (!TryGetSingleSelectedPackagePath(PackagePath, Error))
+						if (!TryGetSingleSelectedAssetPackagePathOfClass(*UTexture::StaticClass(), TEXT("Texture"), PackagePath, Error))
 						{
 							NTEBuildTool::Editor::ShowError(FText::FromString(Error));
 							return FReply::Handled();
@@ -179,9 +216,90 @@ bool ShowMaterialInstanceRecipeDialog(const FString& SourceMaterialJson, FNteMat
 			];
 	}
 
+	TSharedRef<SVerticalBox> SlotPickerRows = SNew(SVerticalBox);
+	if (!SlotRows.IsEmpty())
+	{
+		SlotPickerRows->AddSlot()
+			.AutoHeight()
+			.Padding(0, 0, 0, 4)
+			[
+				SNew(SHorizontalBox)
+				+ SHorizontalBox::Slot().FillWidth(0.18f).Padding(0, 0, 8, 0)[SNew(STextBlock).Text(LOCTEXT("MaterialSlotPickerSlotHeader", "Slot"))]
+				+ SHorizontalBox::Slot().FillWidth(0.30f).Padding(0, 0, 8, 0)[SNew(STextBlock).Text(LOCTEXT("MaterialSlotPickerMaterialHeader", "Current Material"))]
+				+ SHorizontalBox::Slot().AutoWidth().Padding(0, 0, 8, 0)[SNew(STextBlock).Text(FText::GetEmpty())]
+				+ SHorizontalBox::Slot().AutoWidth()[SNew(STextBlock).Text(FText::GetEmpty())]
+			];
+
+		for (const TSharedPtr<FMaterialSlotRow>& Row : SlotRows)
+		{
+			SlotPickerRows->AddSlot()
+				.AutoHeight()
+				.Padding(0, 2)
+				[
+					SNew(SHorizontalBox)
+					+ SHorizontalBox::Slot()
+					.FillWidth(0.18f)
+					.Padding(0, 0, 8, 0)
+					.VAlign(VAlign_Center)
+					[
+						SNew(STextBlock)
+						.Text(FText::FromString(FString::Printf(TEXT("%d  %s"), Row->SlotIndex, *Row->SlotName)))
+					]
+					+ SHorizontalBox::Slot()
+					.FillWidth(0.30f)
+					.Padding(0, 0, 8, 0)
+					.VAlign(VAlign_Center)
+					[
+						SNew(STextBlock)
+						.Text(FText::FromString(Row->MaterialPath.IsEmpty() ? TEXT("<none>") : Row->MaterialPath))
+					]
+					+ SHorizontalBox::Slot()
+					.AutoWidth()
+					.Padding(0, 0, 8, 0)
+					.VAlign(VAlign_Center)
+					[
+						SNew(SButton)
+						.Text(LOCTEXT("UseSlotForAssignment", "Assign Slot"))
+						.OnClicked_Lambda([Row, MeshPath, &MeshTextBox, &SlotTextBox, &AssignToMeshSlotCheckBox]()
+						{
+							if (MeshTextBox.IsValid())
+							{
+								MeshTextBox->SetText(FText::FromString(MeshPath));
+							}
+							if (SlotTextBox.IsValid())
+							{
+								SlotTextBox->SetText(FText::AsNumber(Row->SlotIndex));
+							}
+							if (AssignToMeshSlotCheckBox.IsValid())
+							{
+								AssignToMeshSlotCheckBox->SetIsChecked(ECheckBoxState::Checked);
+							}
+							return FReply::Handled();
+						})
+					]
+					+ SHorizontalBox::Slot()
+					.AutoWidth()
+					.VAlign(VAlign_Center)
+					[
+						SNew(SButton)
+						.Text(LOCTEXT("UseSlotMaterialAsParent", "Use As Parent"))
+						.IsEnabled(!Row->MaterialPath.IsEmpty())
+						.OnClicked_Lambda([Row, &ParentMaterialTextBox]()
+						{
+							if (ParentMaterialTextBox.IsValid())
+							{
+								ParentMaterialTextBox->SetText(FText::FromString(Row->MaterialPath));
+							}
+							return FReply::Handled();
+						})
+					]
+				];
+		}
+	}
+
 	SAssignNew(Window, SWindow)
 		.Title(LOCTEXT("MaterialRecipeDialogTitle", "NTE Material Instance Recipe"))
-		.ClientSize(FVector2D(1120, 760))
+		.ClientSize(FVector2D(1120, 820))
 		.SupportsMaximize(false)
 		.SupportsMinimize(false)
 		[
@@ -197,8 +315,37 @@ bool ShowMaterialInstanceRecipeDialog(const FString& SourceMaterialJson, FNteMat
 			.AutoHeight()
 			.Padding(16, 4)
 			[
-				SNew(STextBlock)
-				.Text(FText::FromString(FString::Printf(TEXT("Parent: %s"), *ParentMaterialPath)))
+				SNew(SHorizontalBox)
+				+ SHorizontalBox::Slot()
+				.FillWidth(1.0f)
+				.Padding(0, 0, 8, 0)
+				[
+					SNew(SVerticalBox)
+					+ SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(LOCTEXT("ParentMaterialLabel", "Parent Material"))]
+					+ SVerticalBox::Slot().AutoHeight().Padding(0, 3, 0, 0)[SAssignNew(ParentMaterialTextBox, SEditableTextBox).Text(FText::FromString(ParentMaterialPath))]
+				]
+				+ SHorizontalBox::Slot()
+				.AutoWidth()
+				.VAlign(VAlign_Bottom)
+				[
+					SNew(SButton)
+					.Text(LOCTEXT("UseSelectedParentMaterial", "Use Selected"))
+					.OnClicked_Lambda([&ParentMaterialTextBox]()
+					{
+						FString PackagePath;
+						FString Error;
+						if (!TryGetSingleSelectedAssetPackagePathOfClass(*UMaterialInterface::StaticClass(), TEXT("Material or MaterialInstance"), PackagePath, Error))
+						{
+							NTEBuildTool::Editor::ShowError(FText::FromString(Error));
+							return FReply::Handled();
+						}
+						if (ParentMaterialTextBox.IsValid())
+						{
+							ParentMaterialTextBox->SetText(FText::FromString(PackagePath));
+						}
+						return FReply::Handled();
+					})
+				]
 			]
 			+ SVerticalBox::Slot()
 			.AutoHeight()
@@ -280,6 +427,19 @@ bool ShowMaterialInstanceRecipeDialog(const FString& SourceMaterialJson, FNteMat
 			.AutoHeight()
 			.Padding(16, 8, 16, 4)
 			[
+				SNew(STextBlock)
+				.Text(LOCTEXT("SelectedMeshSlotsLabel", "Selected Mesh Slots"))
+			]
+			+ SVerticalBox::Slot()
+			.AutoHeight()
+			.Padding(16, 0, 16, 8)
+			[
+				SlotPickerRows
+			]
+			+ SVerticalBox::Slot()
+			.AutoHeight()
+			.Padding(16, 8, 16, 4)
+			[
 				SNew(SHorizontalBox)
 				+ SHorizontalBox::Slot().FillWidth(0.36f).Padding(0, 0, 8, 0)[SNew(STextBlock).Text(LOCTEXT("SourceTextureHeader", "Source Texture"))]
 				+ SHorizontalBox::Slot().FillWidth(0.24f).Padding(0, 0, 8, 0)[SNew(STextBlock).Text(LOCTEXT("SourceTextureParamsHeader", "Parameters"))]
@@ -338,7 +498,7 @@ bool ShowMaterialInstanceRecipeDialog(const FString& SourceMaterialJson, FNteMat
 
 	OutOptions = FNteMaterialInstanceOptions();
 	OutOptions.SourceMaterialJson = SourceMaterialJson;
-	OutOptions.ParentMaterialPath = ParentMaterialPath;
+	OutOptions.ParentMaterialPath = NTEBuildTool::Editor::NormalizeAssetPathForText(ParentMaterialTextBox->GetText().ToString());
 	OutOptions.OutputMaterialPath = NTEBuildTool::Editor::NormalizeAssetPathForText(OutputMaterialTextBox->GetText().ToString());
 	OutOptions.MeshPath = NTEBuildTool::Editor::NormalizeAssetPathForText(MeshTextBox->GetText().ToString());
 	OutOptions.bAssignToMeshSlot = AssignToMeshSlotCheckBox.IsValid() && AssignToMeshSlotCheckBox->IsChecked();
@@ -369,6 +529,11 @@ bool ShowMaterialInstanceRecipeDialog(const FString& SourceMaterialJson, FNteMat
 		const FString ReplacementTexturePath = NTEBuildTool::Editor::NormalizeAssetPathForText(Row->ReplacementTexturePath);
 		if (!ReplacementTexturePath.IsEmpty())
 		{
+			if (!NTEBuildTool::Editor::LoadAssetByPath<UTexture>(ReplacementTexturePath))
+			{
+				NTEBuildTool::Editor::ShowError(FText::FromString(FString::Printf(TEXT("Replacement texture does not load as a Texture asset: %s"), *ReplacementTexturePath)));
+				return false;
+			}
 			OutSourceTextureOverrides->SetStringField(Row->Usage.SourceTexturePath, ReplacementTexturePath);
 		}
 	}

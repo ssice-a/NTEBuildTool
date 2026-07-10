@@ -361,13 +361,8 @@ void PatchShowMaterialSectionNode(FRuntimeBuildContext& Context, UEdGraphNode& N
 	}
 }
 
-void WarnAboutUnpatchedMaterialSlots(FRuntimeBuildContext& Context)
+bool ValidatePatchedMaterialSlots(FRuntimeBuildContext& Context, FString& OutError)
 {
-	if (!Context.Result)
-	{
-		return;
-	}
-
 	for (int32 GroupIndex = 0; GroupIndex < Context.Options.ToggleGroups.Num(); ++GroupIndex)
 	{
 		const int32 TemplateGroupOrdinal = GroupIndex + 1;
@@ -380,23 +375,28 @@ void WarnAboutUnpatchedMaterialSlots(FRuntimeBuildContext& Context)
 			{
 				UnpatchedSlots.Add(FString::FromInt(Group.Slots[SlotOrdinal]));
 			}
-			Context.Result->Warnings.Add(FString::Printf(
-				TEXT("Template group %d has %d ShowMaterialSection node(s), but setup item '%s' binds %d slot(s). These slots will not be controlled: %s."),
+			OutError = FString::Printf(
+				TEXT("Template group %d has %d ShowMaterialSection node(s), but setup item '%s' binds %d slot(s). These slots would not be controlled: %s. Add enough ShowMaterialSection nodes to the template or reduce this Toggle Item's slots."),
 				TemplateGroupOrdinal,
 				PatchedNodeCount,
 				*Group.Label,
 				Group.Slots.Num(),
-				*FString::Join(UnpatchedSlots, TEXT(","))));
+				*FString::Join(UnpatchedSlots, TEXT(",")));
+			return false;
 		}
 		else if (Group.Slots.Num() > 1 && PatchedNodeCount % Group.Slots.Num() != 0)
 		{
-			Context.Result->Warnings.Add(FString::Printf(
-				TEXT("Template group %d has %d ShowMaterialSection node(s) for %d configured slots. Slots were assigned cyclically, but the final pass is partial; verify the template graph layout."),
-				TemplateGroupOrdinal,
-				PatchedNodeCount,
-				Group.Slots.Num()));
+			if (Context.Result)
+			{
+				Context.Result->Warnings.Add(FString::Printf(
+					TEXT("Template group %d has %d ShowMaterialSection node(s) for %d configured slots. Slots were assigned cyclically, but the final pass is partial; verify the template graph layout."),
+					TemplateGroupOrdinal,
+					PatchedNodeCount,
+					Group.Slots.Num()));
+			}
 		}
 	}
+	return true;
 }
 
 bool IsModifierKey(const FString& KeyName);
@@ -1740,7 +1740,10 @@ bool BuildMeshToggleRuntimeBlueprints(
 		return false;
 	}
 	PatchPostProcessBlueprintGraph(Context);
-	WarnAboutUnpatchedMaterialSlots(Context);
+	if (!ValidatePatchedMaterialSlots(Context, OutError))
+	{
+		return false;
+	}
 
 	InOutResult.PostProcessAnimBlueprint = Context.PostProcessAnimBlueprint;
 	InOutResult.WidgetBlueprint = Context.WidgetBlueprint;
