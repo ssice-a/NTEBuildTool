@@ -156,7 +156,7 @@ TSharedRef<SWidget> MakeLabeledTextBox(const FText& Label, const TSharedRef<SEdi
 		];
 }
 
-TSharedRef<SWidget> MakeSlotRow(const TSharedPtr<FMeshToggleSlotRow>& Row)
+TSharedRef<SWidget> MakeSlotRow(const TSharedPtr<FMeshToggleSlotRow>& Row, const FSimpleDelegate& OnAddToggle)
 {
 	return SNew(SHorizontalBox)
 		+ SHorizontalBox::Slot()
@@ -166,6 +166,18 @@ TSharedRef<SWidget> MakeSlotRow(const TSharedPtr<FMeshToggleSlotRow>& Row)
 		[
 			SNew(STextBlock)
 			.Text(FText::FromString(FString::Printf(TEXT("%d  %s"), Row->SlotIndex, *Row->SlotName)))
+		]
+		+ SHorizontalBox::Slot()
+		.AutoWidth()
+		.VAlign(VAlign_Center)
+		[
+			SNew(SButton)
+			.Text(LOCTEXT("AddToggleFromSlot", "Add Toggle"))
+			.OnClicked_Lambda([OnAddToggle]()
+			{
+				OnAddToggle.ExecuteIfBound();
+				return FReply::Handled();
+			})
 		];
 }
 
@@ -352,17 +364,6 @@ bool ShowMeshToggleSetupDialog(USkeletalMesh& SkeletalMesh, FNteMeshToggleSetupO
 	TArray<TSharedPtr<FMeshToggleGroupRow>> GroupRows;
 	TSharedPtr<SVerticalBox> GroupList;
 
-	TSharedRef<SVerticalBox> SlotList = SNew(SVerticalBox);
-	for (const TSharedPtr<FMeshToggleSlotRow>& Row : Rows)
-	{
-		SlotList->AddSlot()
-			.AutoHeight()
-			.Padding(0, 2)
-			[
-				MakeSlotRow(Row)
-			];
-	}
-
 	const auto AddGroupRowFromValues = [&GroupRows](const FString& Label, const FString& KeyName, const FString& SlotsText, const bool bDefaultVisible)
 	{
 		TSharedPtr<FMeshToggleGroupRow> Row = MakeShared<FMeshToggleGroupRow>();
@@ -428,6 +429,47 @@ bool ShowMeshToggleSetupDialog(USkeletalMesh& SkeletalMesh, FNteMeshToggleSetupO
 				];
 		}
 	};
+
+	const auto AddToggleGroupFromSlot = [&GroupRows, &AddGroupRowFromValues, &RebuildGroupList](const TSharedPtr<FMeshToggleSlotRow>& SlotRow)
+	{
+		if (!SlotRow.IsValid())
+		{
+			return;
+		}
+
+		const FString Label = SlotRow->SlotName.IsEmpty()
+			? FString::Printf(TEXT("Slot %d"), SlotRow->SlotIndex)
+			: SlotRow->SlotName;
+		const FString SlotsText = FString::FromInt(SlotRow->SlotIndex);
+		if (GroupRows.Num() == 1
+			&& GroupRows[0].IsValid()
+			&& GroupRows[0]->SlotsText.TrimStartAndEnd().IsEmpty()
+			&& GroupRows[0]->KeyName.TrimStartAndEnd().IsEmpty())
+		{
+			GroupRows[0]->Label = Label;
+			GroupRows[0]->SlotsText = SlotsText;
+			GroupRows[0]->bDefaultVisible = true;
+		}
+		else
+		{
+			AddGroupRowFromValues(Label, FString(), SlotsText, true);
+		}
+		RebuildGroupList();
+	};
+
+	TSharedRef<SVerticalBox> SlotList = SNew(SVerticalBox);
+	for (const TSharedPtr<FMeshToggleSlotRow>& Row : Rows)
+	{
+		SlotList->AddSlot()
+			.AutoHeight()
+			.Padding(0, 2)
+			[
+				MakeSlotRow(Row, FSimpleDelegate::CreateLambda([Row, &AddToggleGroupFromSlot]()
+				{
+					AddToggleGroupFromSlot(Row);
+				}))
+			];
+	}
 
 	SAssignNew(Window, SWindow)
 		.Title(LOCTEXT("MeshToggleSetupDialogTitle", "NTE Mesh Toggle Runtime"))
