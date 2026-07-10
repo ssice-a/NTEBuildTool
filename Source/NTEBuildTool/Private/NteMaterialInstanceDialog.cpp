@@ -71,9 +71,24 @@ bool TryGetSingleSelectedAssetPackagePathOfClass(UClass& RequiredClass, const TC
 	}
 	return true;
 }
+
+USkeletalMesh* ResolveInitialSkeletalMesh(const FNteMaterialInstanceOptions& InitialOptions)
+{
+	if (!InitialOptions.MeshPath.IsEmpty())
+	{
+		return NTEBuildTool::Editor::LoadAssetByPath<USkeletalMesh>(InitialOptions.MeshPath);
+	}
+
+	return NTEBuildTool::Editor::GetSingleSelectedSkeletalMesh();
+}
 }
 
 bool ShowMaterialInstanceRecipeDialog(const FString& SourceMaterialJson, FNteMaterialInstanceOptions& OutOptions, TSharedPtr<FJsonObject>& OutSourceTextureOverrides)
+{
+	return ShowMaterialInstanceRecipeDialog(SourceMaterialJson, FNteMaterialInstanceOptions(), OutOptions, OutSourceTextureOverrides);
+}
+
+bool ShowMaterialInstanceRecipeDialog(const FString& SourceMaterialJson, const FNteMaterialInstanceOptions& InitialOptions, FNteMaterialInstanceOptions& OutOptions, TSharedPtr<FJsonObject>& OutSourceTextureOverrides)
 {
 	TSharedPtr<FJsonObject> SourceMaterial;
 	FString Error;
@@ -83,12 +98,14 @@ bool ShowMaterialInstanceRecipeDialog(const FString& SourceMaterialJson, FNteMat
 		return false;
 	}
 
-	FString ParentMaterialPath = DeriveParentMaterialPathFromFModelJson(SourceMaterialJson);
+	FString ParentMaterialPath = InitialOptions.ParentMaterialPath.IsEmpty() ? DeriveParentMaterialPathFromFModelJson(SourceMaterialJson) : InitialOptions.ParentMaterialPath;
 	FString OutputFolder = DeriveModMaterialFolderFromParentPath(ParentMaterialPath, NTEBuildTool::Editor::GetSelectedContentBrowserPath());
-	FString OutputMaterialPath = NTEBuildTool::Editor::JoinAssetPath(OutputFolder, MakeModMaterialNameFromFModelJson(SourceMaterialJson));
-	FString MeshPath;
+	FString OutputMaterialPath = InitialOptions.OutputMaterialPath.IsEmpty()
+		? NTEBuildTool::Editor::JoinAssetPath(OutputFolder, MakeModMaterialNameFromFModelJson(SourceMaterialJson))
+		: InitialOptions.OutputMaterialPath;
+	FString MeshPath = InitialOptions.MeshPath;
 	TArray<TSharedPtr<FMaterialSlotRow>> SlotRows;
-	if (USkeletalMesh* SelectedMesh = NTEBuildTool::Editor::GetSingleSelectedSkeletalMesh())
+	if (USkeletalMesh* SelectedMesh = ResolveInitialSkeletalMesh(InitialOptions))
 	{
 		MeshPath = NTEBuildTool::Editor::GetAssetPackagePath(SelectedMesh);
 		const TArray<FSkeletalMaterial>& Materials = SelectedMesh->GetMaterials();
@@ -102,10 +119,10 @@ bool ShowMaterialInstanceRecipeDialog(const FString& SourceMaterialJson, FNteMat
 			SlotRows.Add(Row);
 		}
 	}
-	FString SlotText;
-	bool bAssignToMeshSlot = false;
-	bool bResetForPakTextureOnly = true;
-	bool bEnsureParentPlaceholder = true;
+	FString SlotText = InitialOptions.SlotIndex != INDEX_NONE ? FString::FromInt(InitialOptions.SlotIndex) : FString();
+	bool bAssignToMeshSlot = InitialOptions.bAssignToMeshSlot || (!MeshPath.IsEmpty() && InitialOptions.SlotIndex != INDEX_NONE);
+	bool bResetForPakTextureOnly = InitialOptions.bResetForPakTextureOnly;
+	bool bEnsureParentPlaceholder = InitialOptions.bEnsureParentPlaceholder;
 	bool bAccepted = false;
 
 	const FJsonObject* SourceTextures = FindSourceMaterialParameterObject(SourceMaterial.Get(), TEXT("Textures"));

@@ -36,6 +36,84 @@ bool ChooseJsonFile(FString& OutFilename)
 		TEXT("player_051_female_skin_PhysicsAsset.json"),
 		OutFilename);
 }
+
+FString MakeDefaultWorkspaceMaterialInstancePath(USkeletalMesh* Mesh, const int32 SlotIndex)
+{
+	if (!Mesh)
+	{
+		return FString();
+	}
+
+	const FString MeshPath = NTEBuildTool::Editor::GetAssetPackagePath(Mesh);
+	if (!NTEBuildTool::Editor::IsGamePackageName(MeshPath))
+	{
+		return FString();
+	}
+
+	FString MaterialName = TEXT("MI_mod_") + FPackageName::GetShortName(MeshPath);
+	if (SlotIndex != INDEX_NONE)
+	{
+		MaterialName += FString::Printf(TEXT("_slot%d"), SlotIndex);
+	}
+	return NTEBuildTool::Editor::JoinAssetPath(FPackageName::GetLongPackagePath(MeshPath) / TEXT("mod/Materials"), MaterialName);
+}
+
+NTEBuildTool::Material::FNteMaterialInstanceOptions MakeWorkspaceMaterialDefaults(
+	USkeletalMesh* SelectedMesh,
+	const NTEBuildTool::Workspace::FNteMeshModWorkspaceResult& WorkspaceResult)
+{
+	NTEBuildTool::Material::FNteMaterialInstanceOptions Options;
+	Options.MeshPath = WorkspaceResult.MeshPath.IsEmpty() && SelectedMesh
+		? NTEBuildTool::Editor::GetAssetPackagePath(SelectedMesh)
+		: WorkspaceResult.MeshPath;
+	Options.SlotIndex = WorkspaceResult.SlotIndex;
+	Options.bAssignToMeshSlot = !Options.MeshPath.IsEmpty() && Options.SlotIndex != INDEX_NONE;
+	Options.ParentMaterialPath = WorkspaceResult.MaterialPath;
+	Options.OutputMaterialPath = MakeDefaultWorkspaceMaterialInstancePath(SelectedMesh, WorkspaceResult.SlotIndex);
+	return Options;
+}
+
+void RunCreateModMaterialInstanceFromSourceJson(const NTEBuildTool::Material::FNteMaterialInstanceOptions& InitialOptions)
+{
+	FString SourceMaterialJson;
+	if (!NTEBuildTool::Editor::ChooseJsonFileWithTitle(
+		LOCTEXT("ChooseFModelMaterialJson", "Choose FModel Material JSON"),
+		TEXT("MI_source_material.json"),
+		SourceMaterialJson))
+	{
+		return;
+	}
+
+	NTEBuildTool::Material::FNteMaterialInstanceOptions Options;
+	TSharedPtr<FJsonObject> SourceTextureOverrides;
+	if (!NTEBuildTool::Material::ShowMaterialInstanceRecipeDialog(SourceMaterialJson, InitialOptions, Options, SourceTextureOverrides))
+	{
+		return;
+	}
+
+	FString Error;
+	NTEBuildTool::Material::FNteMaterialConfigApplyResult Result;
+	const FScopedTransaction Transaction(LOCTEXT("CreateModMaterialInstanceFromSourceTransaction", "Create Mod Material Instance From FModel Source"));
+	if (!NTEBuildTool::Material::ApplyModMaterialConfig(
+		Options,
+		SourceTextureOverrides.IsValid() ? SourceTextureOverrides.Get() : nullptr,
+		nullptr,
+		nullptr,
+		nullptr,
+		nullptr,
+		Result,
+		Error))
+	{
+		NTEBuildTool::Editor::ShowError(FText::FromString(Error));
+		return;
+	}
+
+	NTEBuildTool::Editor::ShowSuccessNotification(FText::Format(
+		LOCTEXT("CreatedModMaterialInstanceFromSource", "Created/updated {0}. Source texture groups: {1}. Report: {2}"),
+		FText::FromString(Result.OutputMaterialPath),
+		FText::AsNumber(Result.CreateResult.ApplySummary.SourceTextureOverrideGroups),
+		FText::FromString(Result.ReportFilename)));
+}
 }
 
 void FNTEBuildToolModule::StartupModule()
@@ -103,16 +181,16 @@ void FNTEBuildToolModule::RegisterMenus()
 void FNTEBuildToolModule::OpenMeshModWorkspace()
 {
 	USkeletalMesh* SelectedSkeletalMesh = NTEBuildTool::Editor::GetSingleSelectedSkeletalMesh();
-	NTEBuildTool::Workspace::ENteMeshModWorkspaceAction Action = NTEBuildTool::Workspace::ENteMeshModWorkspaceAction::None;
-	if (!NTEBuildTool::Workspace::ShowMeshModWorkspaceDialog(SelectedSkeletalMesh, Action))
+	NTEBuildTool::Workspace::FNteMeshModWorkspaceResult WorkspaceResult;
+	if (!NTEBuildTool::Workspace::ShowMeshModWorkspaceDialog(SelectedSkeletalMesh, WorkspaceResult))
 	{
 		return;
 	}
 
-	switch (Action)
+	switch (WorkspaceResult.Action)
 	{
 	case NTEBuildTool::Workspace::ENteMeshModWorkspaceAction::CreateMaterialInstance:
-		CreateModMaterialInstanceFromSourceJson();
+		RunCreateModMaterialInstanceFromSourceJson(MakeWorkspaceMaterialDefaults(SelectedSkeletalMesh, WorkspaceResult));
 		break;
 	case NTEBuildTool::Workspace::ENteMeshModWorkspaceAction::ConfigureToggleRuntime:
 		CreateMeshToggleUiSetup();
@@ -172,44 +250,7 @@ void FNTEBuildToolModule::ImportFModelPhysicsAssetJson()
 
 void FNTEBuildToolModule::CreateModMaterialInstanceFromSourceJson()
 {
-	FString SourceMaterialJson;
-	if (!NTEBuildTool::Editor::ChooseJsonFileWithTitle(
-		LOCTEXT("ChooseFModelMaterialJson", "Choose FModel Material JSON"),
-		TEXT("MI_source_material.json"),
-		SourceMaterialJson))
-	{
-		return;
-	}
-
-	NTEBuildTool::Material::FNteMaterialInstanceOptions Options;
-	TSharedPtr<FJsonObject> SourceTextureOverrides;
-	if (!NTEBuildTool::Material::ShowMaterialInstanceRecipeDialog(SourceMaterialJson, Options, SourceTextureOverrides))
-	{
-		return;
-	}
-
-	FString Error;
-	NTEBuildTool::Material::FNteMaterialConfigApplyResult Result;
-	const FScopedTransaction Transaction(LOCTEXT("CreateModMaterialInstanceFromSourceTransaction", "Create Mod Material Instance From FModel Source"));
-	if (!NTEBuildTool::Material::ApplyModMaterialConfig(
-		Options,
-		SourceTextureOverrides.IsValid() ? SourceTextureOverrides.Get() : nullptr,
-		nullptr,
-		nullptr,
-		nullptr,
-		nullptr,
-		Result,
-		Error))
-	{
-		NTEBuildTool::Editor::ShowError(FText::FromString(Error));
-		return;
-	}
-
-	NTEBuildTool::Editor::ShowSuccessNotification(FText::Format(
-		LOCTEXT("CreatedModMaterialInstanceFromSource", "Created/updated {0}. Source texture groups: {1}. Report: {2}"),
-		FText::FromString(Result.OutputMaterialPath),
-		FText::AsNumber(Result.CreateResult.ApplySummary.SourceTextureOverrideGroups),
-		FText::FromString(Result.ReportFilename)));
+	RunCreateModMaterialInstanceFromSourceJson(NTEBuildTool::Material::FNteMaterialInstanceOptions());
 }
 
 void FNTEBuildToolModule::CreateModMaterialInstanceFromConfig()

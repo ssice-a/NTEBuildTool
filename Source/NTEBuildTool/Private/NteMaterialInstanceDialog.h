@@ -8,4 +8,5 @@
 namespace NTEBuildTool::Material
 {
 bool ShowMaterialInstanceRecipeDialog(const FString& SourceMaterialJson, FNteMaterialInstanceOptions& OutOptions, TSharedPtr<FJsonObject>& OutSourceTextureOverrides);
+bool ShowMaterialInstanceRecipeDialog(const FString& SourceMaterialJson, const FNteMaterialInstanceOptions& InitialOptions, FNteMaterialInstanceOptions& OutOptions, TSharedPtr<FJsonObject>& OutSourceTextureOverrides);
 }

@@ -16,5 +16,15 @@ enum class ENteMeshModWorkspaceAction
 	BuildPackage
 };
 
+struct FNteMeshModWorkspaceResult
+{
+	ENteMeshModWorkspaceAction Action = ENteMeshModWorkspaceAction::None;
+	FString MeshPath;
+	int32 SlotIndex = INDEX_NONE;
+	FString SlotName;
+	FString MaterialPath;
+};
+
 bool ShowMeshModWorkspaceDialog(USkeletalMesh* SelectedMesh, ENteMeshModWorkspaceAction& OutAction);
+bool ShowMeshModWorkspaceDialog(USkeletalMesh* SelectedMesh, FNteMeshModWorkspaceResult& OutResult);
 }

@@ -50,7 +50,27 @@ TSharedRef<SWidget> MakeSettingsSummary()
 		];
 }
 
-TSharedRef<SWidget> MakeMaterialSlotList(USkeletalMesh* Mesh)
+void CloseWithAction(
+	const TSharedPtr<SWindow>& Window,
+	FNteMeshModWorkspaceResult& Result,
+	const ENteMeshModWorkspaceAction Action,
+	USkeletalMesh* Mesh,
+	const int32 SlotIndex = INDEX_NONE,
+	const FString& SlotName = FString(),
+	const FString& MaterialPath = FString())
+{
+	Result.Action = Action;
+	Result.MeshPath = Mesh ? Mesh->GetPackage()->GetName() : FString();
+	Result.SlotIndex = SlotIndex;
+	Result.SlotName = SlotName;
+	Result.MaterialPath = MaterialPath;
+	if (Window.IsValid())
+	{
+		Window->RequestDestroyWindow();
+	}
+}
+
+TSharedRef<SWidget> MakeMaterialSlotList(USkeletalMesh* Mesh, TSharedPtr<SWindow>& Window, FNteMeshModWorkspaceResult& OutResult)
 {
 	TSharedRef<SVerticalBox> Rows = SNew(SVerticalBox);
 	if (!Mesh)
@@ -79,24 +99,40 @@ TSharedRef<SWidget> MakeMaterialSlotList(USkeletalMesh* Mesh)
 	for (int32 Index = 0; Index < Materials.Num(); ++Index)
 	{
 		const FSkeletalMaterial& Material = Materials[Index];
-		const FString MaterialPath = Material.MaterialInterface ? Material.MaterialInterface->GetPackage()->GetName() : TEXT("<none>");
+		const FString SlotName = Material.MaterialSlotName.ToString();
+		const FString MaterialPath = Material.MaterialInterface ? Material.MaterialInterface->GetPackage()->GetName() : FString();
 		Rows->AddSlot()
 			.AutoHeight()
 			.Padding(0, 2)
 			[
 				SNew(SHorizontalBox)
 				+ SHorizontalBox::Slot()
-				.FillWidth(0.22f)
+				.FillWidth(0.20f)
 				.Padding(0, 0, 8, 0)
+				.VAlign(VAlign_Center)
 				[
 					SNew(STextBlock)
-					.Text(FText::FromString(FString::Printf(TEXT("%d  %s"), Index, *Material.MaterialSlotName.ToString())))
+					.Text(FText::FromString(FString::Printf(TEXT("%d  %s"), Index, *SlotName)))
 				]
 				+ SHorizontalBox::Slot()
-				.FillWidth(0.78f)
+				.FillWidth(0.70f)
+				.Padding(0, 0, 8, 0)
+				.VAlign(VAlign_Center)
 				[
 					SNew(STextBlock)
-					.Text(FText::FromString(MaterialPath))
+					.Text(FText::FromString(MaterialPath.IsEmpty() ? TEXT("<none>") : MaterialPath))
+				]
+				+ SHorizontalBox::Slot()
+				.AutoWidth()
+				.VAlign(VAlign_Center)
+				[
+					SNew(SButton)
+					.Text(LOCTEXT("WorkspaceSlotMaterialButton", "Material"))
+					.OnClicked_Lambda([&Window, &OutResult, Mesh, Index, SlotName, MaterialPath]()
+					{
+						CloseWithAction(Window, OutResult, ENteMeshModWorkspaceAction::CreateMaterialInstance, Mesh, Index, SlotName, MaterialPath);
+						return FReply::Handled();
+					})
 				]
 			];
 	}
@@ -107,7 +143,15 @@ TSharedRef<SWidget> MakeMaterialSlotList(USkeletalMesh* Mesh)
 
 bool ShowMeshModWorkspaceDialog(USkeletalMesh* SelectedMesh, ENteMeshModWorkspaceAction& OutAction)
 {
-	OutAction = ENteMeshModWorkspaceAction::None;
+	FNteMeshModWorkspaceResult Result;
+	const bool bAccepted = ShowMeshModWorkspaceDialog(SelectedMesh, Result);
+	OutAction = Result.Action;
+	return bAccepted;
+}
+
+bool ShowMeshModWorkspaceDialog(USkeletalMesh* SelectedMesh, FNteMeshModWorkspaceResult& OutResult)
+{
+	OutResult = FNteMeshModWorkspaceResult();
 
 	TSharedPtr<SWindow> Window;
 	SAssignNew(Window, SWindow)
@@ -144,7 +188,7 @@ bool ShowMeshModWorkspaceDialog(USkeletalMesh* SelectedMesh, ENteMeshModWorkspac
 				SNew(SScrollBox)
 				+ SScrollBox::Slot()
 				[
-					MakeMaterialSlotList(SelectedMesh)
+					MakeMaterialSlotList(SelectedMesh, Window, OutResult)
 				]
 			]
 			+ SVerticalBox::Slot()
@@ -159,10 +203,9 @@ bool ShowMeshModWorkspaceDialog(USkeletalMesh* SelectedMesh, ENteMeshModWorkspac
 					SNew(SButton)
 					.Text(LOCTEXT("WorkspaceMaterialButton", "Material"))
 					.IsEnabled(SelectedMesh != nullptr)
-					.OnClicked_Lambda([&OutAction, &Window]()
+					.OnClicked_Lambda([&OutResult, &Window, SelectedMesh]()
 					{
-						OutAction = ENteMeshModWorkspaceAction::CreateMaterialInstance;
-						Window->RequestDestroyWindow();
+						CloseWithAction(Window, OutResult, ENteMeshModWorkspaceAction::CreateMaterialInstance, SelectedMesh);
 						return FReply::Handled();
 					})
 				]
@@ -173,10 +216,9 @@ bool ShowMeshModWorkspaceDialog(USkeletalMesh* SelectedMesh, ENteMeshModWorkspac
 					SNew(SButton)
 					.Text(LOCTEXT("WorkspaceToggleButton", "Toggle"))
 					.IsEnabled(SelectedMesh != nullptr)
-					.OnClicked_Lambda([&OutAction, &Window]()
+					.OnClicked_Lambda([&OutResult, &Window, SelectedMesh]()
 					{
-						OutAction = ENteMeshModWorkspaceAction::ConfigureToggleRuntime;
-						Window->RequestDestroyWindow();
+						CloseWithAction(Window, OutResult, ENteMeshModWorkspaceAction::ConfigureToggleRuntime, SelectedMesh);
 						return FReply::Handled();
 					})
 				]
@@ -186,10 +228,9 @@ bool ShowMeshModWorkspaceDialog(USkeletalMesh* SelectedMesh, ENteMeshModWorkspac
 				[
 					SNew(SButton)
 					.Text(LOCTEXT("WorkspacePackageButton", "Package"))
-					.OnClicked_Lambda([&OutAction, &Window]()
+					.OnClicked_Lambda([&OutResult, &Window, SelectedMesh]()
 					{
-						OutAction = ENteMeshModWorkspaceAction::BuildPackage;
-						Window->RequestDestroyWindow();
+						CloseWithAction(Window, OutResult, ENteMeshModWorkspaceAction::BuildPackage, SelectedMesh);
 						return FReply::Handled();
 					})
 				]
@@ -198,10 +239,13 @@ bool ShowMeshModWorkspaceDialog(USkeletalMesh* SelectedMesh, ENteMeshModWorkspac
 				[
 					SNew(SButton)
 					.Text(LOCTEXT("WorkspaceCloseButton", "Close"))
-					.OnClicked_Lambda([&OutAction, &Window]()
+					.OnClicked_Lambda([&OutResult, &Window]()
 					{
-						OutAction = ENteMeshModWorkspaceAction::None;
-						Window->RequestDestroyWindow();
+						OutResult.Action = ENteMeshModWorkspaceAction::None;
+						if (Window.IsValid())
+						{
+							Window->RequestDestroyWindow();
+						}
 						return FReply::Handled();
 					})
 				]
@@ -209,7 +253,7 @@ bool ShowMeshModWorkspaceDialog(USkeletalMesh* SelectedMesh, ENteMeshModWorkspac
 		];
 
 	FSlateApplication::Get().AddModalWindow(Window.ToSharedRef(), nullptr);
-	return OutAction != ENteMeshModWorkspaceAction::None;
+	return OutResult.Action != ENteMeshModWorkspaceAction::None;
 }
 }
 
