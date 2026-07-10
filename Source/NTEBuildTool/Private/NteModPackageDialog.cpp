@@ -90,7 +90,7 @@ bool ShowPackagePlanDialog(FNtePackagePlan& Plan)
 			.Padding(16, 14, 16, 8)
 			[
 				SNew(STextBlock)
-				.Text(LOCTEXT("PackagePlanHeader", "Review package candidates before creating the package job. Source and proxy candidates are visible but off by default."))
+				.Text(LOCTEXT("PackagePlanHeader", "Review package candidates before creating the package job. Source, Skeleton, Physics, and proxy candidates are visible but off by default unless directly selected."))
 			]
 			+ SVerticalBox::Slot()
 			.AutoHeight()

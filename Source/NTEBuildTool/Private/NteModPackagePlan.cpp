@@ -8,7 +8,9 @@
 #include "AssetRegistry/IAssetRegistry.h"
 #include "Materials/Material.h"
 #include "Materials/MaterialInstanceConstant.h"
+#include "Animation/Skeleton.h"
 #include "Misc/PackageName.h"
+#include "PhysicsEngine/PhysicsAsset.h"
 
 namespace NTEBuildTool::Package
 {
@@ -57,6 +59,12 @@ bool IsLikelyEditorOnlyProxy(const FString& PackageName)
 	return false;
 }
 
+bool IsAssetClass(const FString& PackageName, const UClass* ExpectedClass)
+{
+	UObject* Asset = NTEBuildTool::Editor::LoadAnyAssetByPath(PackageName);
+	return Asset && ExpectedClass && Asset->IsA(ExpectedClass);
+}
+
 ENtePackagePlanCandidateKind ClassifyPackage(const FString& PackageName, const bool bSeed)
 {
 	if (IsLikelyEditorOnlyProxy(PackageName))
@@ -75,6 +83,14 @@ ENtePackagePlanCandidateKind ClassifyPackage(const FString& PackageName, const b
 	{
 		return ENtePackagePlanCandidateKind::SelectedAsset;
 	}
+	if (IsAssetClass(PackageName, USkeleton::StaticClass()))
+	{
+		return ENtePackagePlanCandidateKind::SkeletonAsset;
+	}
+	if (IsAssetClass(PackageName, UPhysicsAsset::StaticClass()))
+	{
+		return ENtePackagePlanCandidateKind::PhysicsAsset;
+	}
 	return ENtePackagePlanCandidateKind::SourceGameDependency;
 }
 
@@ -87,6 +103,8 @@ bool ShouldIncludeByDefault(ENtePackagePlanCandidateKind Kind)
 	case ENtePackagePlanCandidateKind::GeneratedRuntimeAsset:
 	case ENtePackagePlanCandidateKind::ModAuthoredAsset:
 		return true;
+	case ENtePackagePlanCandidateKind::SkeletonAsset:
+	case ENtePackagePlanCandidateKind::PhysicsAsset:
 	case ENtePackagePlanCandidateKind::EditorOnlyProxy:
 	case ENtePackagePlanCandidateKind::SourceGameDependency:
 	case ENtePackagePlanCandidateKind::HardDependency:
@@ -163,6 +181,10 @@ FString PackagePlanCandidateKindToString(const ENtePackagePlanCandidateKind Kind
 		return TEXT("Runtime");
 	case ENtePackagePlanCandidateKind::ModAuthoredAsset:
 		return TEXT("Mod");
+	case ENtePackagePlanCandidateKind::SkeletonAsset:
+		return TEXT("Skeleton");
+	case ENtePackagePlanCandidateKind::PhysicsAsset:
+		return TEXT("Physics");
 	case ENtePackagePlanCandidateKind::SourceGameDependency:
 		return TEXT("Source");
 	case ENtePackagePlanCandidateKind::EditorOnlyProxy:

@@ -2,6 +2,7 @@
 
 #include "NteMeshToggleDialog.h"
 
+#include "NteBuildToolSettings.h"
 #include "NteEditorAssetUtils.h"
 #include "NteMeshToggleConfig.h"
 #include "NteNotificationUtils.h"
@@ -130,7 +131,7 @@ bool ParseChord(FString Text, FInputChord& OutChord, FString& OutError)
 	const FKey Key(*KeyText);
 	if (!Key.IsValid())
 	{
-		OutError = FString::Printf(TEXT("Unknown key '%s'. Use Unreal key names such as Up, Down, NumPadEight, NumPadTwo, F9, Slash."), *KeyText);
+		OutError = FString::Printf(TEXT("Unknown key '%s'. Use an Unreal key name such as Up, Down, F9, Slash, or NumPadOne."), *KeyText);
 		return false;
 	}
 
@@ -314,9 +315,9 @@ bool ShowMeshToggleSetupDialog(USkeletalMesh& SkeletalMesh, FNteMeshToggleSetupO
 
 	FString OutputFolder = FPackageName::GetLongPackagePath(MeshPath) / TEXT("mod/Runtime");
 	FString UiChordText = TEXT("Ctrl+Slash");
-	FString TemplatePostProcess;
-	FString TemplateWidget;
-	FString TemplateSaveGame;
+	FString TemplatePostProcess = NTEBuildTool::Settings::GetDefaultTemplatePostProcessAnimBlueprintPath();
+	FString TemplateWidget = NTEBuildTool::Settings::GetDefaultTemplateWidgetBlueprintPath();
+	FString TemplateSaveGame = NTEBuildTool::Settings::GetDefaultTemplateSaveGameBlueprintPath();
 	FString PostProcessAnimBlueprintName = TEXT("ABP_NTE_ModToggle_PostProcess");
 	FString WidgetBlueprintName = TEXT("WBP_NTE_ModToggleMenu");
 	FString SaveGameBlueprintName = TEXT("BP_NTE_ModToggleSaveGame");

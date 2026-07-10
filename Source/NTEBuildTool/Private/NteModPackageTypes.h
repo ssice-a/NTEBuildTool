@@ -19,7 +19,7 @@ struct FNteModPackageJob
 	FString ProjectFile;
 	FString ProjectName;
 	FString EngineRoot;
-	FString GameMountName = TEXT("HT");
+	FString GameMountName;
 	FString ModsDir;
 	FString ModName;
 	ENteModPackageMode Mode = ENteModPackageMode::CookAndPack;
@@ -41,7 +41,7 @@ struct FNteModPackageJobCreateOptions
 	FString JobFilename;
 	FString ModsDir;
 	FString ModName;
-	FString GameMountName = TEXT("HT");
+	FString GameMountName;
 	ENteModPackageMode Mode = ENteModPackageMode::CookAndPack;
 	TArray<FString> Packages;
 	TArray<FString> NeverPackPackagePrefixes;
@@ -65,6 +65,8 @@ enum class ENtePackagePlanCandidateKind
 	HardDependency,
 	GeneratedRuntimeAsset,
 	ModAuthoredAsset,
+	SkeletonAsset,
+	PhysicsAsset,
 	SourceGameDependency,
 	EditorOnlyProxy,
 	Unknown

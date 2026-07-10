@@ -6,6 +6,7 @@
 #include "NteJsonFileUtils.h"
 #include "NteNotificationUtils.h"
 
+#include "Engine/SkeletalMesh.h"
 #include "Framework/Application/SlateApplication.h"
 #include "Widgets/Input/SButton.h"
 #include "Widgets/Input/SCheckBox.h"
@@ -32,6 +33,19 @@ FString MakeParameterSummary(const TArray<FString>& ParameterNames)
 {
 	return FString::Join(ParameterNames, TEXT(", "));
 }
+
+bool TryGetSingleSelectedPackagePath(FString& OutPackagePath, FString& OutError)
+{
+	const TArray<FAssetData> SelectedAssets = NTEBuildTool::Editor::GetSelectedContentBrowserAssets();
+	if (SelectedAssets.Num() != 1)
+	{
+		OutError = TEXT("Select exactly one asset in the Content Browser.");
+		return false;
+	}
+
+	OutPackagePath = SelectedAssets[0].PackageName.ToString();
+	return true;
+}
 }
 
 bool ShowMaterialInstanceRecipeDialog(const FString& SourceMaterialJson, FNteMaterialInstanceOptions& OutOptions, TSharedPtr<FJsonObject>& OutSourceTextureOverrides)
@@ -48,6 +62,10 @@ bool ShowMaterialInstanceRecipeDialog(const FString& SourceMaterialJson, FNteMat
 	FString OutputFolder = DeriveModMaterialFolderFromParentPath(ParentMaterialPath, NTEBuildTool::Editor::GetSelectedContentBrowserPath());
 	FString OutputMaterialPath = NTEBuildTool::Editor::JoinAssetPath(OutputFolder, MakeModMaterialNameFromFModelJson(SourceMaterialJson));
 	FString MeshPath;
+	if (USkeletalMesh* SelectedMesh = NTEBuildTool::Editor::GetSingleSelectedSkeletalMesh())
+	{
+		MeshPath = NTEBuildTool::Editor::GetAssetPackagePath(SelectedMesh);
+	}
 	FString SlotText;
 	bool bAssignToMeshSlot = false;
 	bool bResetForPakTextureOnly = true;
@@ -106,6 +124,31 @@ bool ShowMaterialInstanceRecipeDialog(const FString& SourceMaterialJson, FNteMat
 					.OnTextCommitted_Lambda([Row](const FText& NewText, ETextCommit::Type)
 					{
 						Row->ReplacementTexturePath = NewText.ToString();
+					})
+				]
+				+ SHorizontalBox::Slot()
+				.AutoWidth()
+				.Padding(0, 0, 8, 0)
+				.VAlign(VAlign_Center)
+				[
+					SNew(SButton)
+					.Text(LOCTEXT("UseSelectedReplacementTexture", "Use Selected"))
+					.OnClicked_Lambda([Row]()
+					{
+						FString PackagePath;
+						FString Error;
+						if (!TryGetSingleSelectedPackagePath(PackagePath, Error))
+						{
+							NTEBuildTool::Editor::ShowError(FText::FromString(Error));
+							return FReply::Handled();
+						}
+
+						Row->ReplacementTexturePath = PackagePath;
+						if (Row->ReplacementTextBox.IsValid())
+						{
+							Row->ReplacementTextBox->SetText(FText::FromString(Row->ReplacementTexturePath));
+						}
+						return FReply::Handled();
 					})
 				]
 				+ SHorizontalBox::Slot()

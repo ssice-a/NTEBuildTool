@@ -3,9 +3,11 @@
 #include "NTEBuildTool.h"
 
 #include "FModelPhysicsAssetImporter.h"
+#include "NteBuildToolSettings.h"
 #include "NteEditorAssetUtils.h"
 #include "NteMaterialInstanceDialog.h"
 #include "NteMaterialInstanceTool.h"
+#include "NteMeshModWorkspaceDialog.h"
 #include "NteMeshToggleConfig.h"
 #include "NteMeshToggleDialog.h"
 #include "NteModPackageDialog.h"
@@ -55,6 +57,12 @@ void FNTEBuildToolModule::RegisterMenus()
 	UToolMenu* Menu = UToolMenus::Get()->ExtendMenu(TEXT("LevelEditor.MainMenu.Tools"));
 	FToolMenuSection& Section = Menu->AddSection(TEXT("NTEBuildTool"), LOCTEXT("NTEBuildToolSection", "NTE Build Tool"));
 	Section.AddEntry(FToolMenuEntry::InitMenuEntry(
+		TEXT("NTEBuildTool_OpenMeshModWorkspace"),
+		LOCTEXT("OpenMeshModWorkspaceLabel", "Open Mesh Mod Workspace"),
+		LOCTEXT("OpenMeshModWorkspaceTooltip", "Start from the selected mesh, then create materials, toggle runtime assets, or a package plan."),
+		FSlateIcon(),
+		FUIAction(FExecuteAction::CreateRaw(this, &FNTEBuildToolModule::OpenMeshModWorkspace))));
+	Section.AddEntry(FToolMenuEntry::InitMenuEntry(
 		TEXT("NTEBuildTool_ImportFModelPhysicsAsset"),
 		LOCTEXT("ImportFModelPhysicsAssetLabel", "Import FModel PhysicsAsset JSON"),
 		LOCTEXT("ImportFModelPhysicsAssetTooltip", "Analyze a FModel PhysicsAsset JSON, create a matching PhysicsAsset, and assign it to the selected SkeletalMesh."),
@@ -90,6 +98,31 @@ void FNTEBuildToolModule::RegisterMenus()
 		LOCTEXT("BuildModPackageFromJobJsonTooltip", "Choose an existing NTE mod package job JSON and launch the cook/package pipeline."),
 		FSlateIcon(),
 		FUIAction(FExecuteAction::CreateRaw(this, &FNTEBuildToolModule::BuildModPackageFromJobJson))));
+}
+
+void FNTEBuildToolModule::OpenMeshModWorkspace()
+{
+	USkeletalMesh* SelectedSkeletalMesh = NTEBuildTool::Editor::GetSingleSelectedSkeletalMesh();
+	NTEBuildTool::Workspace::ENteMeshModWorkspaceAction Action = NTEBuildTool::Workspace::ENteMeshModWorkspaceAction::None;
+	if (!NTEBuildTool::Workspace::ShowMeshModWorkspaceDialog(SelectedSkeletalMesh, Action))
+	{
+		return;
+	}
+
+	switch (Action)
+	{
+	case NTEBuildTool::Workspace::ENteMeshModWorkspaceAction::CreateMaterialInstance:
+		CreateModMaterialInstanceFromSourceJson();
+		break;
+	case NTEBuildTool::Workspace::ENteMeshModWorkspaceAction::ConfigureToggleRuntime:
+		CreateMeshToggleUiSetup();
+		break;
+	case NTEBuildTool::Workspace::ENteMeshModWorkspaceAction::BuildPackage:
+		BuildSelectedAssetsModPackage();
+		break;
+	default:
+		break;
+	}
 }
 
 void FNTEBuildToolModule::ImportFModelPhysicsAssetJson()
@@ -258,7 +291,7 @@ void FNTEBuildToolModule::BuildSelectedAssetsModPackage()
 	FString ModsDir;
 	if (!NTEBuildTool::Editor::ChooseDirectoryWithTitle(
 		LOCTEXT("ChooseModsOutputDirectory", "Choose Mods Output Directory"),
-		FPaths::ProjectSavedDir() / TEXT("NTEBuildTool/Mods"),
+		NTEBuildTool::Settings::GetDefaultModsOutputDirectory(),
 		ModsDir))
 	{
 		return;

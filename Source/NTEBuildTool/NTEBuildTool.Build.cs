@@ -19,6 +19,7 @@ public class NTEBuildTool : ModuleRules
 			"AssetRegistry",
 			"BlueprintGraph",
 			"ContentBrowser",
+			"DeveloperSettings",
 			"DesktopPlatform",
 			"LevelEditor",
 			"PhysicsUtilities",

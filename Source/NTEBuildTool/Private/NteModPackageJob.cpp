@@ -3,6 +3,7 @@
 #include "NteModPackageJob.h"
 
 #include "NTEBuildTool.h"
+#include "NteBuildToolSettings.h"
 #include "NteEditorAssetUtils.h"
 #include "NteJsonFileUtils.h"
 
@@ -205,7 +206,7 @@ bool LoadModPackageJobJson(const FString& JobFilename, FNteModPackageJob& OutJob
 
 	if (OutJob.GameMountName.IsEmpty())
 	{
-		OutJob.GameMountName = TEXT("HT");
+		OutJob.GameMountName = NTEBuildTool::Settings::GetGameMountName();
 	}
 
 	return true;
@@ -264,8 +265,8 @@ bool CreateModPackageJobFromSelection(const FNteModPackageJobCreateOptions& Opti
 	Job.ProjectName = FApp::GetProjectName();
 	Job.EngineRoot = FPaths::ConvertRelativePathToFull(FPaths::EngineDir() / TEXT(".."));
 	FPaths::NormalizeFilename(Job.EngineRoot);
-	Job.GameMountName = Options.GameMountName.IsEmpty() ? TEXT("HT") : Options.GameMountName;
-	Job.ModsDir = Options.ModsDir;
+	Job.GameMountName = Options.GameMountName.IsEmpty() ? NTEBuildTool::Settings::GetGameMountName() : Options.GameMountName;
+	Job.ModsDir = Options.ModsDir.IsEmpty() ? NTEBuildTool::Settings::GetDefaultModsOutputDirectory() : Options.ModsDir;
 	Job.ModName = ModName;
 	Job.Mode = Options.Mode;
 	Job.Packages = Packages;
@@ -547,7 +548,7 @@ bool LaunchModPackageBuildJob(const FString& JobFilename, FNteModPackageLaunchRe
 	}
 	if (Job.GameMountName.IsEmpty())
 	{
-		Job.GameMountName = TEXT("HT");
+		Job.GameMountName = NTEBuildTool::Settings::GetGameMountName();
 	}
 	Job.bSkipCook = Job.bSkipCook || Job.Mode == ENteModPackageMode::PackOnly;
 	NormalizeCookOptionsForRuntimeBlueprints(Job);

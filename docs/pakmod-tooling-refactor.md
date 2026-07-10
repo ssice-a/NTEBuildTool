@@ -8,8 +8,8 @@ The target product is a modular editor plugin for fast NTE pakmod production:
 
 - create or update mod `MaterialInstanceConstant` assets from FModel JSON and material recipes;
 - generate hotkey and UI driven material-slot visibility toggles;
-- cook and package selected assets into `.pak/.utoc/.ucas` with the correct `HT` mount paths;
-- support the current five mod targets in `F:\NTE\PhyLab`;
+- cook and package selected assets into `.pak/.utoc/.ucas` with the configured game mount path;
+- support the current five verification mod targets in `F:\NTE\PhyLab` through external recipes, toggle setups, and package jobs instead of plugin-source hardcoding;
 - keep code modules deep enough that each feature can be tested and changed locally.
 
 ## Evidence From The PhyLab Plugin
@@ -141,10 +141,10 @@ The workspace is an orchestration interface. It should call the material module,
 
 The workspace should provide these panes or steps:
 
-- **Mesh Overview**: selected mesh path, original game path confidence, skeleton/physics references, current Post Process Anim Blueprint, material slot table, and LOD section-to-slot summary.
+- **Mesh Overview**: selected mesh package path, current references, current Post Process Anim Blueprint, material slot table, and LOD section-to-slot summary. The workspace displays what is selected; it does not try to prove that the package path is the intended original game path.
 - **Material Slots**: one row per material slot with slot index, slot name, current material, material class, package status, and actions. The common action is a Slot Material Operation: choose a target slot, choose a source slot or FModel material JSON, choose replacement textures with asset pickers, then apply and assign the generated MaterialInstanceConstant.
 - **Toggle Items**: user-authored UI label, captured hotkey chord, default visible state, and checked material slots. The user should not type standard template asset paths in the common workflow. Default template assets should come from plugin/project settings, with an advanced override.
-- **Package Workspace**: editable Package Plan grouped by selected mesh, generated runtime assets, material instances, replacement textures, source-game dependencies, editor-only Material Proxies, and excluded assets. The user can add assets from Content Browser, remove candidates, and then build.
+- **Package Workspace**: editable Package Plan grouped by selected mesh, generated runtime assets, material instances, replacement textures, Skeleton/PhysicsAsset candidates, source-game dependencies, editor-only Material Proxies, and excluded assets. The user can add assets from Content Browser, remove candidates, change inclusion state, and then build.
 
 This does not remove the existing advanced adapters:
 
@@ -316,15 +316,15 @@ Responsibilities:
 
 - read/write package profiles and package jobs;
 - build an editable Package Plan from selected assets, starting from common shortcuts such as "selected mesh and its dependencies";
-- show why each candidate package is present and whether it looks like a mod asset, source game dependency, runtime asset, texture override, or editor-only proxy;
+- show why each candidate package is present and whether it looks like a mod asset, source game dependency, runtime asset, Skeleton/PhysicsAsset candidate, texture override, or editor-only proxy;
 - validate project, engine, game mount, package names, and output directories;
 - preview hard dependencies and `NeverPack` conflicts;
 - save dirty packages before build;
 - launch cook/package as an external process;
 - collect logs and outputs under `Saved/NTEBuildTool/Packages/<ModName>`;
-- create `.pak/.utoc/.ucas` using `UnrealPak` and the correct `HT` mount path.
+- create `.pak/.utoc/.ucas` using `UnrealPak` and the configured game mount path.
 
-The Package Plan is a convenience, not an authority. Users can manually add or remove packages before the Package Job is written. The default should favor mod-authored assets and generated runtime assets while making source game dependencies visible but easy to exclude when they are already provided by the base game.
+The Package Plan is a convenience, not an authority. Users can manually add or remove packages before the Package Job is written. Skeleton and PhysicsAsset packages are not globally included or excluded by policy; they are candidates whose inclusion depends on the mod. The default should favor mod-authored assets and generated runtime assets while making source game dependencies visible but easy to exclude when they are already provided by the base game.
 
 The package job remains the stable interface shared by UI, CLI, and future automation.
 
@@ -332,17 +332,17 @@ Current implementation checkpoint:
 
 - `Build Mod Package` first creates a Package Plan from the Content Browser selection.
 - Selected assets, `/mod/` assets, and generated runtime assets are checked by default.
-- Source-game hard dependencies and likely editor-only Material Proxy assets are shown but unchecked by default.
+- Source-game hard dependencies and likely editor-only Material Proxy assets are shown but unchecked by default; Skeleton and PhysicsAsset candidates stay visible so the user can include them when the mod requires it.
 - The user confirms the plan before the package job JSON is written.
 - The commandlet path still consumes a stable Package Job directly, so manual JSON packaging remains supported.
 
 Next UX target:
 
 - replace the flat package candidate list with the Package Workspace pane;
-- group candidates by role: selected mesh, generated runtime assets, material instances, replacement textures, mod-authored assets, source-game dependencies, editor-only Material Proxies, and excluded assets;
+- group candidates by role: selected mesh, generated runtime assets, material instances, replacement textures, Skeleton/PhysicsAsset candidates, mod-authored assets, source-game dependencies, editor-only Material Proxies, and excluded assets;
 - show package path, class, size when available, reason, and default inclusion state;
-- provide buttons for `Add Selected Assets`, `Add Folder`, `Include Runtime`, `Include Material Slots`, `Exclude Source Dependencies`, and `Exclude Proxies`;
-- validate before build that generated runtime assets referenced by the selected mesh are included, while editor-only Material Proxies are excluded;
+- provide buttons for `Add Selected Assets`, `Add Folder`, `Include Runtime`, `Include Material Slots`, `Include Skeleton/Physics`, `Exclude Source Dependencies`, and `Exclude Proxies`;
+- warn before build when generated runtime assets referenced by the selected mesh are not included, or when editor-only Material Proxies are included as if they were real replaced assets;
 - show output directory, ModName, GameMount, mode, and final artifact names in the same confirmation window before launching cook/package;
 - write and display the Package Job path after build so automation can repeat the same package later.
 
@@ -746,6 +746,27 @@ Packaging now normalizes cook options when a job contains generated runtime Blue
 - C++ job creation/launch disables `bUnversioned` before saving the normalized work-root job.
 - `BuildNteMod.ps1` also disables `-Unversioned` when run directly with generated runtime Blueprint packages.
 - Ordinary mesh/material/texture packages are unaffected.
+
+## 2026-07-10 Settings And Workspace Shell
+
+This checkpoint starts moving common usage away from disconnected path-entry dialogs without embedding current mod targets in plugin code.
+
+- `UNteBuildToolSettings` centralizes project defaults for `GameMountName`, default Mods output directory, FModel export root, and standard toggle runtime templates.
+- Package job creation and the package menu now read defaults from settings instead of assuming a hardcoded mount/output location.
+- The toggle setup dialog pre-fills standard template paths from settings while keeping the JSON adapter available for automation.
+- `Open Mesh Mod Workspace` now provides the first mesh-centered orchestration surface: selected mesh summary, material slot list, settings summary, and entry points into material, toggle, and package workflows.
+- The material source-texture dialog can pre-fill the selected mesh path and fill replacement texture paths from the currently selected Content Browser asset, reducing manual `/Game/...` path entry.
+- Package Plan classification now exposes Skeleton and PhysicsAsset dependencies as explicit user-controlled candidate kinds.
+- Documentation now treats Source Asset inspection as analysis-side tooling, not a prerequisite in the main creation chain.
+- Package Plan wording has been corrected: Skeleton and PhysicsAsset packages are user-controlled candidates, not globally excluded or included by policy.
+
+Verification run:
+
+```powershell
+& 'F:\ue5.6.1\UE_5.6\Engine\Build\BatchFiles\RunUAT.bat' BuildPlugin -Plugin='F:\NTE\NTEBuildTool\NTEBuildTool.uplugin' -Package='F:\NTE\NTEBuildTool\.scratch\PluginBuild_WorkspaceSettings' -TargetPlatforms=Win64 -StrictIncludes
+```
+
+Result: `BUILD SUCCESSFUL`.
 
 ## Git Strategy
 
