@@ -271,6 +271,8 @@ Verified:
 - `RunUAT BuildPlugin -StrictIncludes` passes for `.scratch/PluginBuild_CharacterWorkspaceSpecPersistence`.
 - Character Workspace Runtime Action UI now creates/updates `CharacterModSpec.RuntimeActions` for first-slice `MaterialSlotVisibility` entries and saves the updated spec, instead of routing through the legacy mesh-only PostProcess toggle generator.
 - `RunUAT BuildPlugin -StrictIncludes` passes for `.scratch/PluginBuild_CharacterWorkspaceRuntimeActionUi`.
+- Character Workspace Package action now saves confirmed package settings back to the active `CharacterModSpec` before creating or launching the package job.
+- `RunUAT BuildPlugin -StrictIncludes` passes for `.scratch/PluginBuild_CharacterWorkspacePackageSpecSave`.
 
 Latest verification reports:
 

@@ -46,6 +46,7 @@ Implemented:
 - `NteCharacterModSpec -WritePackageJob`
 - `NteCharacterModSpec -BuildPackage` and `CharacterModSpec.Package.BuildAfterCreate` launch the existing package build path after writing the job.
 - Character Workspace Package action uses `CharacterModSpec` package plan/job creation.
+- Character Workspace Package action saves confirmed `ModName`, `ModsDir`, `JobFilename`, and `BuildAfterCreate` settings back into the active spec before creating or launching the package job.
 - Character package jobs set `RequiresHTGameStub=true`.
 - `LaunchModPackageBuildJob` fails early if the Mirror Project explicitly prevents `NTEBuildTool` from loading in the Game target.
 - `Config/FilterPlugin.ini` prevents `RunUAT BuildPlugin` from copying `.scratch`, previous plugin builds, binaries, intermediate outputs, saved data, and DDC into plugin packages.
@@ -53,6 +54,7 @@ Implemented:
 Verified:
 
 - `RunUAT BuildPlugin -StrictIncludes`.
+- `RunUAT BuildPlugin -StrictIncludes` for `.scratch/PluginBuild_CharacterWorkspacePackageSpecSave`.
 - `PhyLabEditor` build after plugin sync.
 - `.scratch/character-mod-workspace/004_lacrimosa_character_package_plan_api.report.json` shows the generated MeshAsset as a default-included `Mod` candidate with reason `from CharacterModSpec`.
 - `.scratch/character-mod-workspace/004_lacrimosa_write_package_job.report.json` writes `F:/NTE/PhyLab/Saved/NTEBuildTool/Packages/lacrimosa004_character_writer_noloadspam_P/lacrimosa004_character_writer_noloadspam_P.job.json`.

@@ -349,8 +349,9 @@ void RunCharacterRuntimeActionSetup(const NTEBuildTool::Workspace::FNteMeshModWo
 		FText::FromString(SavedSpecFilename.IsEmpty() ? TEXT("<not saved>") : SavedSpecFilename)));
 }
 
-void RunCharacterModPackageFromSpec(NTEBuildTool::Character::FNteCharacterModSpec CharacterSpec)
+void RunCharacterModPackageFromSpec(const NTEBuildTool::Workspace::FNteMeshModWorkspaceResult& WorkspaceResult)
 {
+	NTEBuildTool::Character::FNteCharacterModSpec CharacterSpec = WorkspaceResult.CharacterSpec;
 	FString Error;
 	NTEBuildTool::Package::FNtePackagePlan Plan;
 	if (!NTEBuildTool::Package::BuildPackagePlanFromCharacterModSpec(CharacterSpec, Plan, Error))
@@ -370,6 +371,8 @@ void RunCharacterModPackageFromSpec(NTEBuildTool::Character::FNteCharacterModSpe
 	CharacterSpec.Package.JobFilename = DialogResult.JobFilename;
 	CharacterSpec.Package.bBuildAfterCreate = DialogResult.bLaunchBuild;
 
+	const FString SavedSpecFilename = SaveCharacterSpecAfterWorkspaceAction(CharacterSpec, WorkspaceResult.SpecFilename);
+
 	NTEBuildTool::Package::FNteModPackageJobCreateResult CreateResult;
 	if (!NTEBuildTool::Package::CreateModPackageJobFromCharacterModSpec(CharacterSpec, Plan, CreateResult, Error))
 	{
@@ -380,9 +383,10 @@ void RunCharacterModPackageFromSpec(NTEBuildTool::Character::FNteCharacterModSpe
 	if (!DialogResult.bLaunchBuild)
 	{
 		NTEBuildTool::Editor::ShowInfo(FText::Format(
-			LOCTEXT("CreatedCharacterModPackageJob", "Created CharacterModSpec package job with {0} packages. Job file: {1}"),
+			LOCTEXT("CreatedCharacterModPackageJob", "Created CharacterModSpec package job with {0} packages. Job file: {1}\nSpec: {2}"),
 			FText::AsNumber(CreateResult.PackageCount),
-			FText::FromString(CreateResult.JobFile)));
+			FText::FromString(CreateResult.JobFile),
+			FText::FromString(SavedSpecFilename.IsEmpty() ? TEXT("<not saved>") : SavedSpecFilename)));
 		return;
 	}
 
@@ -394,9 +398,10 @@ void RunCharacterModPackageFromSpec(NTEBuildTool::Character::FNteCharacterModSpe
 	}
 
 	NTEBuildTool::Editor::ShowInfo(FText::Format(
-		LOCTEXT("BuildCharacterModPackageFinished", "Created CharacterModSpec package job with {0} packages and finished build. Job file: {1}"),
+		LOCTEXT("BuildCharacterModPackageFinished", "Created CharacterModSpec package job with {0} packages and finished build. Job file: {1}\nSpec: {2}"),
 		FText::AsNumber(CreateResult.PackageCount),
-		FText::FromString(LaunchResult.JobFile)));
+		FText::FromString(LaunchResult.JobFile),
+		FText::FromString(SavedSpecFilename.IsEmpty() ? TEXT("<not saved>") : SavedSpecFilename)));
 }
 }
 
@@ -480,7 +485,7 @@ void FNTEBuildToolModule::OpenCharacterModWorkspace()
 		RunCharacterRuntimeActionSetup(WorkspaceResult);
 		break;
 	case NTEBuildTool::Workspace::ENteMeshModWorkspaceAction::BuildPackage:
-		RunCharacterModPackageFromSpec(WorkspaceResult.CharacterSpec);
+		RunCharacterModPackageFromSpec(WorkspaceResult);
 		break;
 	default:
 		break;
