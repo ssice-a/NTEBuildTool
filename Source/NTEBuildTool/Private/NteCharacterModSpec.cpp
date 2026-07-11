@@ -337,6 +337,110 @@ FNteCharacterRuntimeActionSpec RuntimeActionFromJson(const FJsonObject& Object)
 	return Action;
 }
 
+TSharedRef<FJsonObject> KawaiiAdditionalRootBoneToJson(const FNteCharacterKawaiiAdditionalRootBoneSpec& RootBone)
+{
+	TSharedRef<FJsonObject> Object = MakeShared<FJsonObject>();
+	SetStringIfNotEmpty(Object, TEXT("RootBone"), RootBone.RootBone);
+	Object->SetArrayField(TEXT("OverrideExcludeBones"), Json::StringArrayToJsonValues(RootBone.OverrideExcludeBones));
+	Object->SetBoolField(TEXT("UseOverrideExcludeBones"), RootBone.bUseOverrideExcludeBones);
+	return Object;
+}
+
+FNteCharacterKawaiiAdditionalRootBoneSpec KawaiiAdditionalRootBoneFromJson(const FJsonObject& Object)
+{
+	FNteCharacterKawaiiAdditionalRootBoneSpec RootBone;
+	RootBone.RootBone = GetStringField(Object, TEXT("RootBone"));
+	RootBone.OverrideExcludeBones = GetStringArrayField(Object, TEXT("OverrideExcludeBones"));
+	RootBone.bUseOverrideExcludeBones = GetBoolField(Object, TEXT("UseOverrideExcludeBones"), false);
+	return RootBone;
+}
+
+TArray<TSharedPtr<FJsonValue>> KawaiiAdditionalRootBonesToJsonValues(const TArray<FNteCharacterKawaiiAdditionalRootBoneSpec>& RootBones)
+{
+	TArray<TSharedPtr<FJsonValue>> Values;
+	for (const FNteCharacterKawaiiAdditionalRootBoneSpec& RootBone : RootBones)
+	{
+		Values.Add(MakeShared<FJsonValueObject>(KawaiiAdditionalRootBoneToJson(RootBone)));
+	}
+	return Values;
+}
+
+TSharedRef<FJsonObject> KawaiiPhysicsSettingsToJson(const FNteCharacterKawaiiPhysicsSettingsSpec& Settings)
+{
+	TSharedRef<FJsonObject> Object = MakeShared<FJsonObject>();
+	Object->SetNumberField(TEXT("Damping"), Settings.Damping);
+	Object->SetNumberField(TEXT("Stiffness"), Settings.Stiffness);
+	Object->SetNumberField(TEXT("WorldDampingLocation"), Settings.WorldDampingLocation);
+	Object->SetNumberField(TEXT("WorldDampingRotation"), Settings.WorldDampingRotation);
+	Object->SetNumberField(TEXT("Radius"), Settings.Radius);
+	Object->SetNumberField(TEXT("LimitAngle"), Settings.LimitAngle);
+	Object->SetNumberField(TEXT("ForwardMoveOffset"), Settings.ForwardMoveOffset);
+	Object->SetBoolField(TEXT("HasForwardMoveOffset"), Settings.bHasForwardMoveOffset);
+	return Object;
+}
+
+FNteCharacterKawaiiPhysicsSettingsSpec KawaiiPhysicsSettingsFromJson(const FJsonObject& Object)
+{
+	FNteCharacterKawaiiPhysicsSettingsSpec Settings;
+	Settings.Damping = GetFloatField(Object, TEXT("Damping"));
+	Settings.Stiffness = GetFloatField(Object, TEXT("Stiffness"));
+	Settings.WorldDampingLocation = GetFloatField(Object, TEXT("WorldDampingLocation"));
+	Settings.WorldDampingRotation = GetFloatField(Object, TEXT("WorldDampingRotation"));
+	Settings.Radius = GetFloatField(Object, TEXT("Radius"));
+	Settings.LimitAngle = GetFloatField(Object, TEXT("LimitAngle"));
+	Settings.ForwardMoveOffset = GetFloatField(Object, TEXT("ForwardMoveOffset"));
+	Settings.bHasForwardMoveOffset = GetBoolField(Object, TEXT("HasForwardMoveOffset"), false);
+	return Settings;
+}
+
+TSharedRef<FJsonObject> KawaiiLimitToJson(const FNteCharacterKawaiiLimitSpec& Limit)
+{
+	TSharedRef<FJsonObject> Object = MakeShared<FJsonObject>();
+	SetStringIfNotEmpty(Object, TEXT("LimitKind"), Limit.LimitKind);
+	SetStringIfNotEmpty(Object, TEXT("DrivingBone"), Limit.DrivingBone);
+	Object->SetObjectField(TEXT("OffsetLocation"), VectorToJson(Limit.OffsetLocation));
+	Object->SetObjectField(TEXT("OffsetRotation"), RotatorToJson(Limit.OffsetRotation));
+	Object->SetNumberField(TEXT("Radius"), Limit.Radius);
+	Object->SetNumberField(TEXT("Length"), Limit.Length);
+	Object->SetNumberField(TEXT("SphereRadius"), Limit.SphereRadius);
+	SetStringIfNotEmpty(Object, TEXT("LimitType"), Limit.LimitType);
+	SetStringIfNotEmpty(Object, TEXT("SourceType"), Limit.SourceType);
+	Object->SetBoolField(TEXT("Enable"), Limit.bEnable);
+	return Object;
+}
+
+FNteCharacterKawaiiLimitSpec KawaiiLimitFromJson(const FJsonObject& Object)
+{
+	FNteCharacterKawaiiLimitSpec Limit;
+	Limit.LimitKind = GetStringField(Object, TEXT("LimitKind"));
+	Limit.DrivingBone = GetStringField(Object, TEXT("DrivingBone"));
+	ReadObjectField(Object, TEXT("OffsetLocation"), [&Limit](const FJsonObject& Child)
+	{
+		Limit.OffsetLocation = VectorFromJson(Child, FVector::ZeroVector);
+	});
+	ReadObjectField(Object, TEXT("OffsetRotation"), [&Limit](const FJsonObject& Child)
+	{
+		Limit.OffsetRotation = RotatorFromJson(Child, FRotator::ZeroRotator);
+	});
+	Limit.Radius = GetFloatField(Object, TEXT("Radius"));
+	Limit.Length = GetFloatField(Object, TEXT("Length"));
+	Limit.SphereRadius = GetFloatField(Object, TEXT("SphereRadius"));
+	Limit.LimitType = GetStringField(Object, TEXT("LimitType"));
+	Limit.SourceType = GetStringField(Object, TEXT("SourceType"));
+	Limit.bEnable = GetBoolField(Object, TEXT("Enable"), true);
+	return Limit;
+}
+
+TArray<TSharedPtr<FJsonValue>> KawaiiLimitsToJsonValues(const TArray<FNteCharacterKawaiiLimitSpec>& Limits)
+{
+	TArray<TSharedPtr<FJsonValue>> Values;
+	for (const FNteCharacterKawaiiLimitSpec& Limit : Limits)
+	{
+		Values.Add(MakeShared<FJsonValueObject>(KawaiiLimitToJson(Limit)));
+	}
+	return Values;
+}
+
 TSharedRef<FJsonObject> KawaiiPresetToJson(const FNteCharacterKawaiiPresetSpec& Preset)
 {
 	TSharedRef<FJsonObject> Object = MakeShared<FJsonObject>();
@@ -344,9 +448,27 @@ TSharedRef<FJsonObject> KawaiiPresetToJson(const FNteCharacterKawaiiPresetSpec& 
 	SetStringIfNotEmpty(Object, TEXT("Label"), Preset.Label);
 	SetStringIfNotEmpty(Object, TEXT("TargetMeshId"), Preset.TargetMeshId);
 	SetStringIfNotEmpty(Object, TEXT("SourceAnimBlueprintJson"), Preset.SourceAnimBlueprintJson);
+	SetStringIfNotEmpty(Object, TEXT("SourceNodeName"), Preset.SourceNodeName);
+	SetStringIfNotEmpty(Object, TEXT("SchemaStatus"), Preset.SchemaStatus);
 	SetStringIfNotEmpty(Object, TEXT("RootBone"), Preset.RootBone);
-	Object->SetArrayField(TEXT("AdditionalRootBones"), Json::StringArrayToJsonValues(Preset.AdditionalRootBones));
 	Object->SetArrayField(TEXT("ExcludeBones"), Json::StringArrayToJsonValues(Preset.ExcludeBones));
+	Object->SetArrayField(TEXT("AdditionalRootBones"), KawaiiAdditionalRootBonesToJsonValues(Preset.AdditionalRootBones));
+	Object->SetObjectField(TEXT("PhysicsSettings"), KawaiiPhysicsSettingsToJson(Preset.PhysicsSettings));
+	Object->SetNumberField(TEXT("DummyBoneLength"), Preset.DummyBoneLength);
+	SetStringIfNotEmpty(Object, TEXT("BoneForwardAxis"), Preset.BoneForwardAxis);
+	SetStringIfNotEmpty(Object, TEXT("PlanarConstraint"), Preset.PlanarConstraint);
+	SetStringIfNotEmpty(Object, TEXT("LimitsDataAssetPath"), Preset.LimitsDataAssetPath);
+	SetStringIfNotEmpty(Object, TEXT("PhysicsAssetForLimitsPath"), Preset.PhysicsAssetForLimitsPath);
+	SetStringIfNotEmpty(Object, TEXT("BoneConstraintsDataAssetPath"), Preset.BoneConstraintsDataAssetPath);
+	Object->SetArrayField(TEXT("CollisionLimits"), KawaiiLimitsToJsonValues(Preset.CollisionLimits));
+	Object->SetObjectField(TEXT("Gravity"), VectorToJson(Preset.Gravity));
+	Object->SetBoolField(TEXT("EnableWind"), Preset.bEnableWind);
+	Object->SetNumberField(TEXT("WindScale"), Preset.WindScale);
+	Object->SetBoolField(TEXT("UseRelativeMove"), Preset.bUseRelativeMove);
+	Object->SetArrayField(TEXT("IgnoreBones"), Json::StringArrayToJsonValues(Preset.IgnoreBones));
+	Object->SetArrayField(TEXT("IgnoreBoneNamePrefix"), Json::StringArrayToJsonValues(Preset.IgnoreBoneNamePrefix));
+	SetStringIfNotEmpty(Object, TEXT("KawaiiPhysicsTag"), Preset.KawaiiPhysicsTag);
+	Object->SetArrayField(TEXT("UnsupportedSourceFields"), Json::StringArrayToJsonValues(Preset.UnsupportedSourceFields));
 	return Object;
 }
 
@@ -357,9 +479,39 @@ FNteCharacterKawaiiPresetSpec KawaiiPresetFromJson(const FJsonObject& Object)
 	Preset.Label = GetStringField(Object, TEXT("Label"));
 	Preset.TargetMeshId = GetStringField(Object, TEXT("TargetMeshId"));
 	Preset.SourceAnimBlueprintJson = GetStringField(Object, TEXT("SourceAnimBlueprintJson"));
+	Preset.SourceNodeName = GetStringField(Object, TEXT("SourceNodeName"));
+	Preset.SchemaStatus = GetStringField(Object, TEXT("SchemaStatus"));
 	Preset.RootBone = GetStringField(Object, TEXT("RootBone"));
-	Preset.AdditionalRootBones = GetStringArrayField(Object, TEXT("AdditionalRootBones"));
 	Preset.ExcludeBones = GetStringArrayField(Object, TEXT("ExcludeBones"));
+	ReadObjectArrayField(Object, TEXT("AdditionalRootBones"), [&Preset](const FJsonObject& Child)
+	{
+		Preset.AdditionalRootBones.Add(KawaiiAdditionalRootBoneFromJson(Child));
+	});
+	ReadObjectField(Object, TEXT("PhysicsSettings"), [&Preset](const FJsonObject& Child)
+	{
+		Preset.PhysicsSettings = KawaiiPhysicsSettingsFromJson(Child);
+	});
+	Preset.DummyBoneLength = GetFloatField(Object, TEXT("DummyBoneLength"));
+	Preset.BoneForwardAxis = GetStringField(Object, TEXT("BoneForwardAxis"));
+	Preset.PlanarConstraint = GetStringField(Object, TEXT("PlanarConstraint"));
+	Preset.LimitsDataAssetPath = GetStringField(Object, TEXT("LimitsDataAssetPath"));
+	Preset.PhysicsAssetForLimitsPath = GetStringField(Object, TEXT("PhysicsAssetForLimitsPath"));
+	Preset.BoneConstraintsDataAssetPath = GetStringField(Object, TEXT("BoneConstraintsDataAssetPath"));
+	ReadObjectArrayField(Object, TEXT("CollisionLimits"), [&Preset](const FJsonObject& Child)
+	{
+		Preset.CollisionLimits.Add(KawaiiLimitFromJson(Child));
+	});
+	ReadObjectField(Object, TEXT("Gravity"), [&Preset](const FJsonObject& Child)
+	{
+		Preset.Gravity = VectorFromJson(Child, FVector::ZeroVector);
+	});
+	Preset.bEnableWind = GetBoolField(Object, TEXT("EnableWind"), false);
+	Preset.WindScale = GetFloatField(Object, TEXT("WindScale"), 1.0f);
+	Preset.bUseRelativeMove = GetBoolField(Object, TEXT("UseRelativeMove"), false);
+	Preset.IgnoreBones = GetStringArrayField(Object, TEXT("IgnoreBones"));
+	Preset.IgnoreBoneNamePrefix = GetStringArrayField(Object, TEXT("IgnoreBoneNamePrefix"));
+	Preset.KawaiiPhysicsTag = GetStringField(Object, TEXT("KawaiiPhysicsTag"));
+	Preset.UnsupportedSourceFields = GetStringArrayField(Object, TEXT("UnsupportedSourceFields"));
 	return Preset;
 }
 
@@ -849,6 +1001,34 @@ FNteCharacterModSpecValidationResult ValidateCharacterModSpec(const FNteCharacte
 		{
 			Result.Warnings.Add(FString::Printf(TEXT("Kawaii preset '%s' has no RootBone."), *Preset.Id));
 		}
+		for (const FNteCharacterKawaiiAdditionalRootBoneSpec& AdditionalRootBone : Preset.AdditionalRootBones)
+		{
+			if (AdditionalRootBone.RootBone.IsEmpty())
+			{
+				Result.Errors.Add(FString::Printf(TEXT("Kawaii preset '%s' has an AdditionalRootBones entry with no RootBone."), *Preset.Id));
+			}
+			if (AdditionalRootBone.bUseOverrideExcludeBones && AdditionalRootBone.OverrideExcludeBones.IsEmpty())
+			{
+				Result.Warnings.Add(FString::Printf(TEXT("Kawaii preset '%s' additional root '%s' enables override exclude bones but has no OverrideExcludeBones."), *Preset.Id, *AdditionalRootBone.RootBone));
+			}
+		}
+		for (const FNteCharacterKawaiiLimitSpec& Limit : Preset.CollisionLimits)
+		{
+			if (Limit.LimitKind.IsEmpty())
+			{
+				Result.Errors.Add(FString::Printf(TEXT("Kawaii preset '%s' has a CollisionLimits entry with no LimitKind."), *Preset.Id));
+			}
+			if (Limit.DrivingBone.IsEmpty())
+			{
+				Result.Warnings.Add(FString::Printf(TEXT("Kawaii preset '%s' %s limit has no DrivingBone."), *Preset.Id, *Limit.LimitKind));
+			}
+		}
+		if (!Preset.SchemaStatus.IsEmpty()
+			&& !Preset.SchemaStatus.Equals(TEXT("Compatible"), ESearchCase::IgnoreCase)
+			&& !Preset.SchemaStatus.Equals(TEXT("Unknown"), ESearchCase::IgnoreCase))
+		{
+			Result.Warnings.Add(FString::Printf(TEXT("Kawaii preset '%s' schema status is '%s'; generated AnimBP application should not proceed until compatibility is resolved."), *Preset.Id, *Preset.SchemaStatus));
+		}
 	}
 	AddDuplicateIdErrors(TEXT("Kawaii preset"), KawaiiPresetIds, Result);
 
@@ -884,6 +1064,13 @@ TArray<FString> CollectCharacterModSpecPackageSeeds(const FNteCharacterModSpec& 
 	for (const FNteCharacterRuntimeActionSpec& Action : Spec.RuntimeActions)
 	{
 		AddPackageSeed(Seeds, Action.MaterialPath);
+	}
+
+	for (const FNteCharacterKawaiiPresetSpec& Preset : Spec.KawaiiPresets)
+	{
+		AddPackageSeed(Seeds, Preset.LimitsDataAssetPath);
+		AddPackageSeed(Seeds, Preset.PhysicsAssetForLimitsPath);
+		AddPackageSeed(Seeds, Preset.BoneConstraintsDataAssetPath);
 	}
 
 	Seeds.Sort();

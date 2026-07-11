@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: in-progress
 
 # Kawaii preset import and editor workflow
 
@@ -16,11 +16,50 @@ Support UE-side editing of KawaiiPhysics parameters for main and attached meshes
 
 ## Implementation outline
 
-1. Read Kawaii nodes from `Default__*_C.Properties.AnimGraphNode_KawaiiPhysics*`.
-2. Preserve editable fields such as RootBone, ExcludeBones, curves, limits, collision references, gravity, wind, and NTE-specific fields.
+1. Done for the domain layer: `CharacterModSpec.KawaiiPresets` can preserve editable fields such as RootBone, ExcludeBones, additional root bones, physics settings, limits, collision references, gravity, wind, and NTE-specific source-field notes.
+2. Read Kawaii nodes from `Default__*_C.Properties.AnimGraphNode_KawaiiPhysics*`.
 3. Report fields that cannot be applied to the installed mirror Kawaii plugin.
-4. Provide a Kawaii preset object/model that can be assigned by `CharacterModSpec`.
+4. Provide a UE editor panel/object model that edits the same `CharacterModSpec` fields.
 5. Apply presets to generated attached mesh AnimBPs after schema compatibility is confirmed.
+
+## 2026-07-11 checkpoint
+
+Implemented:
+
+- `CharacterModSpec.KawaiiPresets` now stores:
+  - `SourceAnimBlueprintJson`
+  - `SourceNodeName`
+  - `SchemaStatus`
+  - `RootBone`
+  - `ExcludeBones`
+  - structured `AdditionalRootBones`
+  - `PhysicsSettings`
+  - `DummyBoneLength`
+  - `BoneForwardAxis`
+  - `PlanarConstraint`
+  - `LimitsDataAssetPath`
+  - `PhysicsAssetForLimitsPath`
+  - `BoneConstraintsDataAssetPath`
+  - structured `CollisionLimits`
+  - `Gravity`
+  - `EnableWind`
+  - `WindScale`
+  - `UseRelativeMove`
+  - `IgnoreBones`
+  - `IgnoreBoneNamePrefix`
+  - `KawaiiPhysicsTag`
+  - `UnsupportedSourceFields`
+- Package seeds include Kawaii limit/physics/bone-constraint asset references.
+- Added focused validation spec:
+  - `.scratch/character-mod-workspace/004_lacrimosa_kawaii_preset_validation.spec.json`
+- Validation report:
+  - `.scratch/character-mod-workspace/004_lacrimosa_kawaii_preset_validation.report.json`
+
+Not done yet:
+
+- automatic conversion from `FFModelKawaiiAnimLayerAnalysis` into `CharacterModSpec.KawaiiPresets`;
+- UE details panel / visual editing;
+- actual Kawaii AnimGraph node generation/application.
 
 ## Tests
 

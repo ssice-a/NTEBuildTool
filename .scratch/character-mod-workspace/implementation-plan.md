@@ -283,3 +283,9 @@ Runtime action checkpoint:
 - `CharacterModSpec.RuntimeActions` now has a typed target/action schema for material slot visibility, attached mesh visibility, material swap, scalar/vector parameters, and morph targets.
 - Runtime validation now requires tag-based lookup data for attached mesh visibility, so later Blueprint generation can stay data-driven instead of guessing component names.
 - `.scratch/character-mod-workspace/004_lacrimosa_runtime_actions_validation.spec.json` is the focused spec for this data-layer regression.
+
+Kawaii preset checkpoint:
+
+- `CharacterModSpec.KawaiiPresets` now has structured fields for UE-edited root bones, additional root bones, physics settings, collision limits, limit/physics/bone-constraint assets, gravity/wind, ignore bones, source node names, and schema status.
+- Package seeds include Kawaii asset references, but no AnimBP Kawaii node generation is claimed yet.
+- `.scratch/character-mod-workspace/004_lacrimosa_kawaii_preset_validation.spec.json` is the focused spec for this data-layer regression.

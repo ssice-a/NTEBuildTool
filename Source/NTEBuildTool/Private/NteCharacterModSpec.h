@@ -64,15 +64,66 @@ struct FNteCharacterRuntimeActionSpec
 	bool bDefaultEnabled = true;
 };
 
+struct FNteCharacterKawaiiAdditionalRootBoneSpec
+{
+	FString RootBone;
+	TArray<FString> OverrideExcludeBones;
+	bool bUseOverrideExcludeBones = false;
+};
+
+struct FNteCharacterKawaiiPhysicsSettingsSpec
+{
+	float Damping = 0.0f;
+	float Stiffness = 0.0f;
+	float WorldDampingLocation = 0.0f;
+	float WorldDampingRotation = 0.0f;
+	float Radius = 0.0f;
+	float LimitAngle = 0.0f;
+	float ForwardMoveOffset = 0.0f;
+	bool bHasForwardMoveOffset = false;
+};
+
+struct FNteCharacterKawaiiLimitSpec
+{
+	FString LimitKind;
+	FString DrivingBone;
+	FVector OffsetLocation = FVector::ZeroVector;
+	FRotator OffsetRotation = FRotator::ZeroRotator;
+	float Radius = 0.0f;
+	float Length = 0.0f;
+	float SphereRadius = 0.0f;
+	FString LimitType;
+	FString SourceType;
+	bool bEnable = true;
+};
+
 struct FNteCharacterKawaiiPresetSpec
 {
 	FString Id;
 	FString Label;
 	FString TargetMeshId;
 	FString SourceAnimBlueprintJson;
+	FString SourceNodeName;
+	FString SchemaStatus;
 	FString RootBone;
-	TArray<FString> AdditionalRootBones;
 	TArray<FString> ExcludeBones;
+	TArray<FNteCharacterKawaiiAdditionalRootBoneSpec> AdditionalRootBones;
+	FNteCharacterKawaiiPhysicsSettingsSpec PhysicsSettings;
+	float DummyBoneLength = 0.0f;
+	FString BoneForwardAxis;
+	FString PlanarConstraint;
+	FString LimitsDataAssetPath;
+	FString PhysicsAssetForLimitsPath;
+	FString BoneConstraintsDataAssetPath;
+	TArray<FNteCharacterKawaiiLimitSpec> CollisionLimits;
+	FVector Gravity = FVector::ZeroVector;
+	bool bEnableWind = false;
+	float WindScale = 1.0f;
+	bool bUseRelativeMove = false;
+	TArray<FString> IgnoreBones;
+	TArray<FString> IgnoreBoneNamePrefix;
+	FString KawaiiPhysicsTag;
+	TArray<FString> UnsupportedSourceFields;
 };
 
 struct FNteCharacterPackageSpec
