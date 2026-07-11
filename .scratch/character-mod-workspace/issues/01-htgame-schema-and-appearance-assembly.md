@@ -18,8 +18,19 @@ The code now has:
 - package seed collection
 - `FNteAppearanceAssemblyPlan`
 - commandlet report output for `AppearanceAssemblyPlan`
+- a plugin runtime module named `HTGame`, producing `/Script/HTGame`
+- minimal reflected stubs for:
+  - `UHTPlayerAppearance`
+  - `FHTFashionMeshData`
+  - `FHTFashionAttachedMeshData`
+  - `UHTSkeletalMeshComponentBudgeted`
+- `FNteAppearanceAssemblyWriter`
+- `-ApplyAppearance` support in `NteCharacterModSpec`
+- `NteAssetInspection` support for `HTPlayerAppearance` field reports
 
-The Mirror Project currently does not contain `/Script/HTGame` stubs for `HTPlayerAppearance` or `HTSkeletalMeshComponentBudgeted`. This means the tool can plan appearance edits but must not pretend it can safely cook final MeshAsset/UIShow replacements yet.
+The Mirror Project now compiles the plugin-provided `/Script/HTGame` stubs. MeshAsset creation/update is implemented for the minimal reflected field set.
+
+`PlayerUIShow` SCS sync is implemented for existing Blueprint assets that can be loaded and edited. It deliberately does not create a missing UIShow Blueprint with a guessed parent class.
 
 ## Evidence
 
@@ -34,29 +45,64 @@ The 071 mask gameplay chain is not sufficient as the attached mesh model. It is 
 
 ## Implementation outline
 
-1. Generate or hand-author minimal HTGame editor stubs required to compile/cook:
+1. Done: generate or hand-author minimal HTGame editor stubs required to compile/cook:
    - `UHTPlayerAppearance`
    - `FHTFashionMeshData` or equivalent reflected struct
    - `FHTFashionAttachedMeshData` or equivalent reflected struct
    - `UHTSkeletalMeshComponentBudgeted`
-2. Match serialized field names and types to the game usmap/FModel JSON, not guessed UE-friendly names.
-3. Add an Appearance Assembly writer that consumes `FNteAppearanceAssemblyPlan`.
-4. Writer output:
+2. Done for the current minimal field set: match serialized field names and broad types to FModel JSON evidence.
+3. Done: add an Appearance Assembly writer that consumes `FNteAppearanceAssemblyPlan`.
+4. Done for MeshAsset runtime appearance data:
    - creates/updates `MeshAsset_PlayerXXX`;
    - writes main `FashionMeshData`;
    - writes `ArrayFashionAttachedMeshData`;
-   - creates/updates `PlayerUIShow_XXX` SCS child components from the same attached mesh plan.
-5. Add commandlet support:
+   - updates existing loadable `PlayerUIShow_XXX` SCS child components from the same attached mesh plan.
+5. Done: add commandlet support:
    - load `CharacterModSpec`;
    - validate;
    - write appearance assets when `-ApplyAppearance` is passed;
    - otherwise only emit the plan.
-6. Add package plan integration so `MeshAsset`, `PlayerUIShow`, attached meshes, runtime AnimBPs, material instances, and textures are included as candidates from the same spec.
+6. Done: package seed/report integration uses the dedicated `BuildPackagePlanFromCharacterModSpec` API.
 
 ## Tests
 
-- BuildPlugin with `-StrictIncludes`.
-- `PhyLabEditor` build after plugin sync.
-- Commandlet plan-only report for example spec.
-- Asset-level inspection after writing a real example once HTGame stubs exist.
+- Done: BuildPlugin with `-StrictIncludes`.
+- Done: `PhyLabEditor` build after plugin sync.
+- Done: commandlet plan-only report for example spec.
+- Done: MeshAsset smoke apply with 004 Lacrimosa:
+  - spec: `.scratch/character-mod-workspace/004_lacrimosa_apply_meshasset_noloadspam.spec.json`
+  - report: `.scratch/character-mod-workspace/004_lacrimosa_apply_meshasset_noloadspam.report.json`
+  - generated asset: `/Game/Characters/Player/004_lacrimosa/mod/Generated/MeshAsset_Player004_NTE_NoLoadSpam`
+  - inspection: `.scratch/character-mod-workspace/004_lacrimosa_generated_meshasset_inspection_detailed.json`
 - Cook/package test only after generated `HTPlayerAppearance` and `PlayerUIShow` load in the Mirror Project.
+
+## 2026-07-11 checkpoint
+
+Verified:
+
+- `RunUAT BuildPlugin -StrictIncludes` succeeds with the new `HTGame` module.
+- `PhyLabEditor` builds with the mirrored plugin.
+- `NteCharacterModSpec` plan-only report for the 071 example returns 0 errors / 0 warnings.
+- `NteCharacterModSpec -ApplyAppearance` writes a new `HTPlayerAppearance` asset for the 004 smoke spec.
+- First-create `LoadPackage: SkipPackage` noise was removed from the writer by checking `FPackageName::DoesPackageExist` before loading a future package.
+- `NteAssetInspection` loads the generated asset and reports:
+  - `Class = HTPlayerAppearance`
+  - `FashionMeshData.CharacterMesh = /Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin`
+  - `FashionMeshData.AnimInstanceClass = /Game/Characters/Player/004_lacrimosa/mod/Runtime/ABP_NTE_ModToggle_PostProcess.ABP_NTE_ModToggle_PostProcess_C`
+
+Remaining:
+
+- Validate `PlayerUIShow` SCS sync against a real existing UIShow Blueprint in the Mirror Project.
+- Broaden the HTGame stub only when new usmap/FModel evidence requires more fields.
+
+## 2026-07-11 attached mesh checkpoint
+
+Verified with `.scratch/character-mod-workspace/004_lacrimosa_apply_attached_mesh.spec.json`:
+
+- `NteCharacterModSpec -ApplyAppearance` writes one attached mesh entry.
+- `NteAssetInspection` confirms:
+  - `Class = HTPlayerAppearance`
+  - `AttachedMeshCount = 1`
+  - `SocketName = Bip001-Head`
+  - `MeshComponentOwnedTags = ["NTE.ToggleTarget", "NTE.Attached.smoke_attach"]`
+- `NteCharacterModSpec -ApplyAppearance -BuildPackage` packages the generated MeshAsset and dependencies successfully after the Mirror Project exposes `NTEBuildTool` to the Game target.

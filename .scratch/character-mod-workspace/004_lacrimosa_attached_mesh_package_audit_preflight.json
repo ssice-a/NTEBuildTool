@@ -1,0 +1,58 @@
+﻿{
+	"Format": "NTE.PakModAuditReport",
+	"Version": 1,
+	"Config": "F:/NTE/NTEBuildTool/.scratch/material_toggle_review_audit.json",
+	"ErrorCount": 0,
+	"WarningCount": 0,
+	"Findings": [],
+	"PackageJobs": [
+		{
+			"JobFile": "F:/NTE/PhyLab/Saved/NTEBuildTool/Packages/lacrimosa004_character_attached_smoke_P/lacrimosa004_character_attached_smoke_P.job.json",
+			"ModName": "lacrimosa004_character_attached_smoke_P",
+			"ModsDir": "F:/Neverness To Everness/Client/WindowsNoEditor/HT/Content/Paks/Mods",
+			"PackageCount": 6,
+			"Packages": [
+				{
+					"Package": "/Game/Characters/Player/004_lacrimosa/mod/Generated/MeshAsset_Player004_NTE_AttachedSmoke",
+					"ValidPackageName": true,
+					"Loads": true
+				},
+				{
+					"Package": "/Game/Characters/Player/004_lacrimosa/mod/Materials/MI_mod_body",
+					"ValidPackageName": true,
+					"Loads": true
+				},
+				{
+					"Package": "/Game/Characters/Player/004_lacrimosa/mod/Runtime/ABP_NTE_ModToggle_PostProcess",
+					"ValidPackageName": true,
+					"Loads": true
+				},
+				{
+					"Package": "/Game/Characters/Player/004_lacrimosa/mod/Runtime/BP_NTE_ModToggleSaveGame",
+					"ValidPackageName": true,
+					"Loads": true
+				},
+				{
+					"Package": "/Game/Characters/Player/004_lacrimosa/mod/Runtime/WBP_NTE_ModToggleMenu",
+					"ValidPackageName": true,
+					"Loads": true
+				},
+				{
+					"Package": "/Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+					"ValidPackageName": true,
+					"Loads": true
+				}
+			]
+		}
+	],
+	"MaterialRecipes": [],
+	"ToggleSetups": [],
+	"AllJobPackages": [
+		"/Game/Characters/Player/004_lacrimosa/mod/Generated/MeshAsset_Player004_NTE_AttachedSmoke",
+		"/Game/Characters/Player/004_lacrimosa/mod/Materials/MI_mod_body",
+		"/Game/Characters/Player/004_lacrimosa/mod/Runtime/ABP_NTE_ModToggle_PostProcess",
+		"/Game/Characters/Player/004_lacrimosa/mod/Runtime/BP_NTE_ModToggleSaveGame",
+		"/Game/Characters/Player/004_lacrimosa/mod/Runtime/WBP_NTE_ModToggleMenu",
+		"/Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin"
+	]
+}

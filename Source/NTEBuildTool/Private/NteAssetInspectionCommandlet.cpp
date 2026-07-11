@@ -3,6 +3,7 @@
 #include "NteAssetInspectionCommandlet.h"
 
 #include "NTEBuildTool.h"
+#include "HTPlayerAppearance.h"
 #include "NteEditorAssetUtils.h"
 #include "NteJsonFileUtils.h"
 #include "NteMeshToggleStandardTemplateModel.h"
@@ -16,13 +17,17 @@
 #include "Components/ContentWidget.h"
 #include "Components/HorizontalBoxSlot.h"
 #include "Components/PanelWidget.h"
+#include "Components/SceneComponent.h"
 #include "Components/ScrollBoxSlot.h"
 #include "Components/SizeBoxSlot.h"
+#include "Components/SkeletalMeshComponent.h"
 #include "Components/TextBlock.h"
 #include "Components/VerticalBoxSlot.h"
 #include "Components/Widget.h"
 #include "Dom/JsonObject.h"
 #include "Engine/Blueprint.h"
+#include "Engine/SCS_Node.h"
+#include "Engine/SimpleConstructionScript.h"
 #include "Engine/SkeletalMesh.h"
 #include "Engine/StaticMesh.h"
 #include "EdGraph/EdGraph.h"
@@ -48,6 +53,39 @@
 
 namespace
 {
+TSharedRef<FJsonObject> MakeVectorObject(const FVector& Value)
+{
+	const TSharedRef<FJsonObject> Object = MakeShared<FJsonObject>();
+	Object->SetNumberField(TEXT("X"), Value.X);
+	Object->SetNumberField(TEXT("Y"), Value.Y);
+	Object->SetNumberField(TEXT("Z"), Value.Z);
+	return Object;
+}
+
+TSharedRef<FJsonObject> MakeRotatorObject(const FRotator& Value)
+{
+	const TSharedRef<FJsonObject> Object = MakeShared<FJsonObject>();
+	Object->SetNumberField(TEXT("Pitch"), Value.Pitch);
+	Object->SetNumberField(TEXT("Yaw"), Value.Yaw);
+	Object->SetNumberField(TEXT("Roll"), Value.Roll);
+	return Object;
+}
+
+FString ObjectPackagePath(const UObject* Object)
+{
+	return Object ? Object->GetPackage()->GetName() : FString();
+}
+
+FString ObjectPath(const UObject* Object)
+{
+	return Object ? Object->GetPathName() : FString();
+}
+
+FString ClassPath(const UClass* Class)
+{
+	return Class ? Class->GetPathName() : FString();
+}
+
 TArray<FString> SplitAssetList(FString AssetsText)
 {
 	AssetsText.TrimStartAndEndInline();
@@ -364,6 +402,106 @@ void AddBlueprintGraphInfo(const UBlueprint& Blueprint, FJsonObject& Object)
 	Object.SetArrayField(TEXT("Graphs"), Graphs);
 }
 
+TArray<TSharedPtr<FJsonValue>> NamesToJsonValues(const TArray<FName>& Names)
+{
+	TArray<TSharedPtr<FJsonValue>> Result;
+	for (const FName& Name : Names)
+	{
+		Result.Add(MakeShared<FJsonValueString>(Name.ToString()));
+	}
+	return Result;
+}
+
+TArray<TSharedPtr<FJsonValue>> SCSChildNamesToJsonValues(const USCS_Node& Node)
+{
+	TArray<TSharedPtr<FJsonValue>> Result;
+	for (const USCS_Node* ChildNode : Node.GetChildNodes())
+	{
+		if (ChildNode)
+		{
+			Result.Add(MakeShared<FJsonValueString>(ChildNode->GetVariableName().ToString()));
+		}
+	}
+	return Result;
+}
+
+void AddSCSNodeInfo(const USCS_Node& Node, const TMap<const USCS_Node*, FString>& ParentVariableNames, FJsonObject& Object)
+{
+	const UActorComponent* ComponentTemplate = Node.ComponentTemplate;
+	Object.SetStringField(TEXT("VariableName"), Node.GetVariableName().ToString());
+	Object.SetStringField(TEXT("ParentVariableName"), ParentVariableNames.FindRef(&Node));
+	Object.SetStringField(TEXT("AttachToName"), Node.AttachToName.ToString());
+	Object.SetStringField(TEXT("ComponentTemplateName"), ComponentTemplate ? ComponentTemplate->GetName() : FString());
+	Object.SetStringField(TEXT("ComponentClass"), ComponentTemplate ? ComponentTemplate->GetClass()->GetPathName() : FString());
+	Object.SetArrayField(TEXT("Children"), SCSChildNamesToJsonValues(Node));
+
+	if (!ComponentTemplate)
+	{
+		return;
+	}
+
+	Object.SetArrayField(TEXT("ComponentTags"), NamesToJsonValues(ComponentTemplate->ComponentTags));
+
+	if (const USceneComponent* SceneComponent = Cast<USceneComponent>(ComponentTemplate))
+	{
+		Object.SetObjectField(TEXT("RelativeLocation"), MakeVectorObject(SceneComponent->GetRelativeLocation()));
+		Object.SetObjectField(TEXT("RelativeRotation"), MakeRotatorObject(SceneComponent->GetRelativeRotation()));
+		Object.SetObjectField(TEXT("RelativeScale3D"), MakeVectorObject(SceneComponent->GetRelativeScale3D()));
+	}
+
+	if (const USkeletalMeshComponent* SkeletalMeshComponent = Cast<USkeletalMeshComponent>(ComponentTemplate))
+	{
+		Object.SetStringField(TEXT("SkeletalMesh"), ObjectPackagePath(SkeletalMeshComponent->GetSkeletalMeshAsset()));
+		Object.SetStringField(TEXT("SkeletalMeshObjectPath"), ObjectPath(SkeletalMeshComponent->GetSkeletalMeshAsset()));
+		Object.SetStringField(TEXT("AnimClass"), ClassPath(SkeletalMeshComponent->AnimClass.Get()));
+		Object.SetStringField(TEXT("AnimationMode"), StaticEnum<EAnimationMode::Type>()->GetNameStringByValue(static_cast<int64>(SkeletalMeshComponent->GetAnimationMode())));
+	}
+}
+
+void AddBlueprintSCSInfo(const UBlueprint& Blueprint, FJsonObject& Object)
+{
+	const USimpleConstructionScript* SimpleConstructionScript = Blueprint.SimpleConstructionScript;
+	Object.SetBoolField(TEXT("HasSimpleConstructionScript"), SimpleConstructionScript != nullptr);
+	if (!SimpleConstructionScript)
+	{
+		return;
+	}
+
+	TArray<USCS_Node*> AllNodes = SimpleConstructionScript->GetAllNodes();
+	TMap<const USCS_Node*, FString> ParentVariableNames;
+	for (const USCS_Node* Node : AllNodes)
+	{
+		if (!Node)
+		{
+			continue;
+		}
+
+		for (const USCS_Node* ChildNode : Node->GetChildNodes())
+		{
+			if (ChildNode)
+			{
+				ParentVariableNames.Add(ChildNode, Node->GetVariableName().ToString());
+			}
+		}
+	}
+
+	TArray<TSharedPtr<FJsonValue>> Nodes;
+	for (const USCS_Node* Node : AllNodes)
+	{
+		if (!Node)
+		{
+			continue;
+		}
+
+		const TSharedRef<FJsonObject> NodeObject = MakeShared<FJsonObject>();
+		AddSCSNodeInfo(*Node, ParentVariableNames, *NodeObject);
+		Nodes.Add(MakeShared<FJsonValueObject>(NodeObject));
+	}
+
+	Object.SetNumberField(TEXT("SCSNodeCount"), Nodes.Num());
+	Object.SetArrayField(TEXT("SimpleConstructionScriptNodes"), Nodes);
+}
+
 TSharedRef<FJsonObject> MakeWidgetInfoObject(const UWidget& Widget)
 {
 	const auto MarginToString = [](const FMargin& Margin)
@@ -589,6 +727,56 @@ void AddStaticMeshInfo(const UStaticMesh& StaticMesh, FJsonObject& Object)
 	Object.SetArrayField(TEXT("LodSections"), LodSections);
 }
 
+TSharedRef<FJsonObject> MakeFashionMeshDataObject(const FHTFashionMeshData& MeshData)
+{
+	const TSharedRef<FJsonObject> Object = MakeShared<FJsonObject>();
+	Object->SetStringField(TEXT("CharacterMesh"), ObjectPackagePath(MeshData.CharacterMesh.Get()));
+	Object->SetStringField(TEXT("CharacterMeshObjectPath"), ObjectPath(MeshData.CharacterMesh.Get()));
+	Object->SetStringField(TEXT("AnimInstanceClass"), ClassPath(MeshData.AnimInstance.Get()));
+	return Object;
+}
+
+TSharedRef<FJsonObject> MakeFashionAttachedMeshDataObject(const FHTFashionAttachedMeshData& MeshData)
+{
+	const TSharedRef<FJsonObject> Object = MakeShared<FJsonObject>();
+	Object->SetStringField(TEXT("CharacterMesh"), ObjectPackagePath(MeshData.CharacterMesh.Get()));
+	Object->SetStringField(TEXT("CharacterMeshObjectPath"), ObjectPath(MeshData.CharacterMesh.Get()));
+	Object->SetStringField(TEXT("AnimInstanceClass"), ClassPath(MeshData.AnimInstance.Get()));
+	Object->SetStringField(TEXT("MobileAnimInstanceClass"), ClassPath(MeshData.MobileAnimInstance.Get()));
+	Object->SetStringField(TEXT("SocketName"), MeshData.SocketName.ToString());
+	Object->SetArrayField(TEXT("MeshComponentOwnedTags"), NTEBuildTool::Json::StringArrayToJsonValues([&MeshData]()
+	{
+		TArray<FString> Tags;
+		for (const FName& Tag : MeshData.MeshComponentOwnedTags)
+		{
+			Tags.Add(Tag.ToString());
+		}
+		return Tags;
+	}()));
+	Object->SetObjectField(TEXT("RelativeLocation"), MakeVectorObject(MeshData.RelativeLocation));
+	Object->SetObjectField(TEXT("RelativeRotation"), MakeRotatorObject(MeshData.RelativeRotation));
+	Object->SetObjectField(TEXT("RelativeScale3D"), MakeVectorObject(MeshData.RelativeScale3D));
+	return Object;
+}
+
+void AddHTPlayerAppearanceInfo(const UHTPlayerAppearance& Appearance, FJsonObject& Object)
+{
+	Object.SetObjectField(TEXT("FashionMeshData"), MakeFashionMeshDataObject(Appearance.FashionMeshData));
+	Object.SetNumberField(TEXT("CapsuleHalfHeight"), Appearance.CapsuleHalfHeight);
+	Object.SetNumberField(TEXT("CapsuleRadius"), Appearance.CapsuleRadius);
+	Object.SetObjectField(TEXT("RelativeLocation"), MakeVectorObject(Appearance.RelativeLocation));
+	Object.SetNumberField(TEXT("FPSCameraCapsuleTopOffset"), Appearance.FPSCameraCapsuleTopOffset);
+	Object.SetStringField(TEXT("UltraSkillSequenceClass"), ClassPath(Appearance.UltraSkillSequence.Get()));
+
+	TArray<TSharedPtr<FJsonValue>> AttachedMeshes;
+	for (const FHTFashionAttachedMeshData& AttachedMesh : Appearance.ArrayFashionAttachedMeshData)
+	{
+		AttachedMeshes.Add(MakeShared<FJsonValueObject>(MakeFashionAttachedMeshDataObject(AttachedMesh)));
+	}
+	Object.SetArrayField(TEXT("ArrayFashionAttachedMeshData"), AttachedMeshes);
+	Object.SetNumberField(TEXT("AttachedMeshCount"), Appearance.ArrayFashionAttachedMeshData.Num());
+}
+
 TSharedRef<FJsonObject> InspectAsset(const FString& AssetPath)
 {
 	const TSharedRef<FJsonObject> Object = MakeShared<FJsonObject>();
@@ -603,7 +791,11 @@ TSharedRef<FJsonObject> InspectAsset(const FString& AssetPath)
 
 	Object->SetStringField(TEXT("Class"), Asset->GetClass()->GetName());
 	Object->SetStringField(TEXT("ObjectPath"), Asset->GetPathName());
-	if (const USkeletalMesh* SkeletalMesh = Cast<USkeletalMesh>(Asset))
+	if (const UHTPlayerAppearance* Appearance = Cast<UHTPlayerAppearance>(Asset))
+	{
+		AddHTPlayerAppearanceInfo(*Appearance, *Object);
+	}
+	else if (const USkeletalMesh* SkeletalMesh = Cast<USkeletalMesh>(Asset))
 	{
 		AddSkeletalMeshInfo(*SkeletalMesh, *Object);
 	}
@@ -646,6 +838,7 @@ TSharedRef<FJsonObject> InspectAsset(const FString& AssetPath)
 		Object->SetObjectField(TEXT("StandardTemplateModel"), TemplateModelObject);
 		AddBlueprintBinaryPatternInfo(*Blueprint, *Object);
 		AddBlueprintGraphInfo(*Blueprint, *Object);
+		AddBlueprintSCSInfo(*Blueprint, *Object);
 	}
 
 	return Object;

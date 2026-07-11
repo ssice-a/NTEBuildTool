@@ -27,6 +27,7 @@ struct FNteModPackageJob
 	TArray<FString> NeverPackPackagePrefixes;
 	bool bUnversioned = false;
 	bool bSkipCook = false;
+	bool bRequiresHTGameStub = false;
 };
 
 struct FNteModPackageLaunchResult
@@ -48,6 +49,7 @@ struct FNteModPackageJobCreateOptions
 	bool bUnversioned = false;
 	bool bSkipCook = false;
 	bool bCollectContentBrowserSelection = true;
+	bool bRequiresHTGameStub = false;
 };
 
 struct FNteModPackageJobCreateResult

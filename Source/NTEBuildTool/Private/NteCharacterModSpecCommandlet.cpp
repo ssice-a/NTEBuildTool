@@ -4,8 +4,10 @@
 
 #include "NTEBuildTool.h"
 #include "NteAppearanceAssemblyPlan.h"
+#include "NteAppearanceAssemblyWriter.h"
 #include "NteCharacterModSpec.h"
 #include "NteJsonFileUtils.h"
+#include "NteModPackageJob.h"
 #include "NteModPackagePlan.h"
 #include "NteModPackageTypes.h"
 
@@ -60,6 +62,30 @@ TSharedRef<FJsonObject> PackagePlanToJson(const NTEBuildTool::Package::FNtePacka
 	Object->SetArrayField(TEXT("IncludedPackages"), StringArrayToJsonValues(NTEBuildTool::Package::GetIncludedPackageNames(Plan)));
 	return Object;
 }
+
+TSharedRef<FJsonObject> PackageJobCreateResultToJson(const NTEBuildTool::Package::FNteModPackageJobCreateResult& Result)
+{
+	const TSharedRef<FJsonObject> Object = MakeShared<FJsonObject>();
+	Object->SetStringField(TEXT("JobFile"), Result.JobFile);
+	Object->SetStringField(TEXT("ModName"), Result.ModName);
+	Object->SetNumberField(TEXT("PackageCount"), Result.PackageCount);
+	Object->SetArrayField(TEXT("Packages"), StringArrayToJsonValues(Result.Job.Packages));
+	Object->SetStringField(TEXT("ModsDir"), Result.Job.ModsDir);
+	Object->SetStringField(TEXT("GameMountName"), Result.Job.GameMountName);
+	Object->SetBoolField(TEXT("Unversioned"), Result.Job.bUnversioned);
+	Object->SetBoolField(TEXT("SkipCook"), Result.Job.bSkipCook);
+	Object->SetBoolField(TEXT("RequiresHTGameStub"), Result.Job.bRequiresHTGameStub);
+	return Object;
+}
+
+TSharedRef<FJsonObject> PackageBuildLaunchResultToJson(const NTEBuildTool::Package::FNteModPackageLaunchResult& Result)
+{
+	const TSharedRef<FJsonObject> Object = MakeShared<FJsonObject>();
+	Object->SetStringField(TEXT("JobFile"), Result.JobFile);
+	Object->SetStringField(TEXT("WorkRoot"), Result.WorkRoot);
+	Object->SetStringField(TEXT("CommandLine"), Result.CommandLine);
+	return Object;
+}
 }
 
 UNteCharacterModSpecCommandlet::UNteCharacterModSpecCommandlet()
@@ -71,7 +97,7 @@ UNteCharacterModSpecCommandlet::UNteCharacterModSpecCommandlet()
 	ShowErrorCount = true;
 	UseCommandletResultAsExitCode = true;
 	HelpDescription = TEXT("Validates an NTE CharacterModSpec JSON and writes a report.");
-	HelpUsage = TEXT("UnrealEditor-Cmd.exe <Project>.uproject -run=NteCharacterModSpec -Spec=<json> [-Output=<json>] [-FailOnWarnings]");
+	HelpUsage = TEXT("UnrealEditor-Cmd.exe <Project>.uproject -run=NteCharacterModSpec -Spec=<json> [-Output=<json>] [-ApplyAppearance] [-WritePackageJob] [-BuildPackage] [-FailOnWarnings]");
 }
 
 int32 UNteCharacterModSpecCommandlet::Main(const FString& Params)
@@ -97,10 +123,32 @@ int32 UNteCharacterModSpecCommandlet::Main(const FString& Params)
 	const TArray<FString> PackageSeeds = NTEBuildTool::Character::CollectCharacterModSpecPackageSeeds(Spec);
 	const NTEBuildTool::Character::FNteAppearanceAssemblyPlan AppearancePlan =
 		NTEBuildTool::Character::BuildAppearanceAssemblyPlanFromSpec(Spec);
+	const bool bApplyAppearance = FParse::Param(*Params, TEXT("ApplyAppearance"));
+	NTEBuildTool::Character::FNteAppearanceAssemblyWriteResult AppearanceWriteResult;
+	if (bApplyAppearance && !Validation.HasErrors())
+	{
+		AppearanceWriteResult = NTEBuildTool::Character::WriteAppearanceAssembly(AppearancePlan);
+	}
 
 	FString PackagePlanError;
 	NTEBuildTool::Package::FNtePackagePlan PackagePlan;
-	const bool bHasPackagePlan = NTEBuildTool::Package::BuildPackagePlanFromPackages(PackageSeeds, PackagePlan, PackagePlanError);
+	const bool bHasPackagePlan = NTEBuildTool::Package::BuildPackagePlanFromCharacterModSpec(Spec, PackagePlan, PackagePlanError);
+	const bool bBuildPackage = FParse::Param(*Params, TEXT("BuildPackage")) || Spec.Package.bBuildAfterCreate;
+	const bool bWritePackageJob = FParse::Param(*Params, TEXT("WritePackageJob")) || bBuildPackage;
+	FString PackageJobError;
+	NTEBuildTool::Package::FNteModPackageJobCreateResult PackageJobResult;
+	bool bHasPackageJob = false;
+	if (bWritePackageJob && bHasPackagePlan && !Validation.HasErrors())
+	{
+		bHasPackageJob = NTEBuildTool::Package::CreateModPackageJobFromCharacterModSpec(Spec, PackagePlan, PackageJobResult, PackageJobError);
+	}
+	FString PackageBuildError;
+	NTEBuildTool::Package::FNteModPackageLaunchResult PackageBuildResult;
+	bool bHasPackageBuild = false;
+	if (bBuildPackage && bHasPackageJob)
+	{
+		bHasPackageBuild = NTEBuildTool::Package::LaunchModPackageBuildJob(PackageJobResult.JobFile, PackageBuildResult, PackageBuildError);
+	}
 
 	FString OutputFilename;
 	if (!FParse::Value(*Params, TEXT("Output="), OutputFilename) || OutputFilename.IsEmpty())
@@ -120,6 +168,11 @@ int32 UNteCharacterModSpecCommandlet::Main(const FString& Params)
 	Root->SetArrayField(TEXT("Warnings"), StringArrayToJsonValues(Validation.Warnings));
 	Root->SetArrayField(TEXT("PackageSeeds"), StringArrayToJsonValues(PackageSeeds));
 	Root->SetObjectField(TEXT("AppearanceAssemblyPlan"), NTEBuildTool::Character::AppearanceAssemblyPlanToJson(AppearancePlan));
+	Root->SetBoolField(TEXT("ApplyAppearance"), bApplyAppearance);
+	if (bApplyAppearance)
+	{
+		Root->SetObjectField(TEXT("AppearanceAssemblyWriteResult"), NTEBuildTool::Character::AppearanceAssemblyWriteResultToJson(AppearanceWriteResult));
+	}
 	if (bHasPackagePlan)
 	{
 		Root->SetObjectField(TEXT("PackagePlan"), PackagePlanToJson(PackagePlan));
@@ -127,6 +180,30 @@ int32 UNteCharacterModSpecCommandlet::Main(const FString& Params)
 	else
 	{
 		Root->SetStringField(TEXT("PackagePlanError"), PackagePlanError);
+	}
+	Root->SetBoolField(TEXT("WritePackageJob"), bWritePackageJob);
+	if (bWritePackageJob)
+	{
+		if (bHasPackageJob)
+		{
+			Root->SetObjectField(TEXT("PackageJob"), PackageJobCreateResultToJson(PackageJobResult));
+		}
+		else
+		{
+			Root->SetStringField(TEXT("PackageJobError"), PackageJobError);
+		}
+	}
+	Root->SetBoolField(TEXT("BuildPackage"), bBuildPackage);
+	if (bBuildPackage)
+	{
+		if (bHasPackageBuild)
+		{
+			Root->SetObjectField(TEXT("PackageBuild"), PackageBuildLaunchResultToJson(PackageBuildResult));
+		}
+		else
+		{
+			Root->SetStringField(TEXT("PackageBuildError"), PackageBuildError);
+		}
 	}
 	Root->SetObjectField(TEXT("NormalizedSpec"), NTEBuildTool::Character::CharacterModSpecToJson(Spec));
 
@@ -144,6 +221,25 @@ int32 UNteCharacterModSpecCommandlet::Main(const FString& Params)
 	{
 		UE_LOG(LogNTEBuildTool, Error, TEXT("%s"), *ValidationError);
 	}
+	if (bApplyAppearance)
+	{
+		for (const FString& Warning : AppearanceWriteResult.Warnings)
+		{
+			UE_LOG(LogNTEBuildTool, Warning, TEXT("%s"), *Warning);
+		}
+		for (const FString& WriteError : AppearanceWriteResult.Errors)
+		{
+			UE_LOG(LogNTEBuildTool, Error, TEXT("%s"), *WriteError);
+		}
+	}
+	if (bWritePackageJob && !bHasPackageJob && !PackageJobError.IsEmpty())
+	{
+		UE_LOG(LogNTEBuildTool, Error, TEXT("%s"), *PackageJobError);
+	}
+	if (bBuildPackage && !bHasPackageBuild && !PackageBuildError.IsEmpty())
+	{
+		UE_LOG(LogNTEBuildTool, Error, TEXT("%s"), *PackageBuildError);
+	}
 
 	UE_LOG(
 		LogNTEBuildTool,
@@ -154,7 +250,11 @@ int32 UNteCharacterModSpecCommandlet::Main(const FString& Params)
 		Validation.Warnings.Num());
 
 	const bool bFailOnWarnings = FParse::Param(*Params, TEXT("FailOnWarnings"));
-	if (Validation.HasErrors() || (bFailOnWarnings && Validation.HasWarnings()))
+	if (Validation.HasErrors()
+		|| (bApplyAppearance && AppearanceWriteResult.HasErrors())
+		|| (bWritePackageJob && !bHasPackageJob)
+		|| (bBuildPackage && !bHasPackageBuild)
+		|| (bFailOnWarnings && (Validation.HasWarnings() || (bApplyAppearance && AppearanceWriteResult.Warnings.Num() > 0))))
 	{
 		return 4;
 	}

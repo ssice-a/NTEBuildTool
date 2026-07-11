@@ -844,3 +844,45 @@ The PRD for this work is tracked at:
 ```text
 .scratch/character-mod-workspace/PRD.md
 ```
+
+The executable implementation plan is tracked at:
+
+```text
+.scratch/character-mod-workspace/implementation-plan.md
+```
+
+The accepted architecture decision is tracked at:
+
+```text
+docs/adr/0001-character-mod-workspace.md
+```
+
+The next engineering slice is the `/Script/HTGame` schema/stub and appearance assembly writer. It should use source-game field evidence from `MeshAsset_Player004_lacrimosa_fashion4` and related UIShow assets, not guessed class layouts.
+
+## 2026-07-11 CharacterModSpec package checkpoint
+
+The first Character Mod Workspace vertical slice is now compiling and smoke-tested:
+
+- The plugin contains a runtime `HTGame` module so Mirror Project assets can save with `/Script/HTGame` class paths.
+- Minimal stubs exist for `HTPlayerAppearance`, fashion mesh data, fashion attached mesh data, and `HTSkeletalMeshComponentBudgeted`.
+- `NteCharacterModSpec -ApplyAppearance` can write `HTPlayerAppearance` assets from `CharacterModSpec`.
+- `NteAssetInspection` reports `HTPlayerAppearance` fields, including `FashionMeshData`, attached mesh arrays, `MeshComponentOwnedTags`, and Blueprint SCS nodes.
+- A 004 Lacrimosa attached-mesh smoke spec generated `/Game/Characters/Player/004_lacrimosa/mod/Generated/MeshAsset_Player004_NTE_AttachedSmoke` and inspection confirmed it loads as `HTPlayerAppearance`.
+- The generated asset contains one attached mesh entry on socket `Bip001-Head` with tags `NTE.ToggleTarget` and `NTE.Attached.smoke_attach`.
+- The appearance writer avoids loading future packages before creation, preventing the `LoadPackage: SkipPackage` warning that previously appeared when probing not-yet-generated package paths.
+- `BuildPackagePlanFromCharacterModSpec` now builds package candidates directly from `CharacterModSpec`; seed candidates report the reason `from CharacterModSpec`.
+- `CreateModPackageJobFromCharacterModSpec` now writes `NTE.ModPackageJob` JSON from `CharacterModSpec.Package`; Character package jobs set `RequiresHTGameStub=true` and keep `Unversioned=false`.
+- The Character Workspace Package button now follows the `CharacterModSpec` package path instead of selected Content Browser assets.
+- `Config/FilterPlugin.ini` excludes `.scratch`, build outputs, binaries, intermediate files, saved data, and DDC from plugin package builds.
+- `NteCharacterModSpec -ApplyAppearance -BuildPackage` produced pak/utoc/ucas for `lacrimosa004_character_attached_smoke_P` in the game Mods directory.
+
+Mirror Project requirement:
+
+- Character packages cook generated `HTPlayerAppearance` assets that import `/Script/HTGame`. Therefore the Mirror Project must let the `NTEBuildTool` plugin load for the Game target. If the `.uproject` plugin entry uses `TargetAllowList`, it must include `Game` or be removed.
+
+Remaining work:
+
+- validate `PlayerUIShow` SCS sync against a real existing UIShow Blueprint;
+- implement generated runtime action assets that use `MeshComponentOwnedTags` to find material-slot and attached-mesh targets;
+- build the Kawaii preset editor/data model;
+- replace remaining mesh-only UI fragments with spec-first Character Workspace panels.

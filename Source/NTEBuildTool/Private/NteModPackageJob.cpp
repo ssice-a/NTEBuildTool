@@ -4,8 +4,10 @@
 
 #include "NTEBuildTool.h"
 #include "NteBuildToolSettings.h"
+#include "NteCharacterModSpec.h"
 #include "NteEditorAssetUtils.h"
 #include "NteJsonFileUtils.h"
+#include "NteModPackagePlan.h"
 
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "AssetRegistry/IAssetRegistry.h"
@@ -140,6 +142,117 @@ void NormalizeCookOptionsForRuntimeBlueprints(FNteModPackageJob& Job)
 		*Job.ModName,
 		*RuntimeBlueprintPackage);
 }
+
+bool StringArrayContainsIgnoreCase(const TArray<FString>& Values, const FString& Expected)
+{
+	for (const FString& Value : Values)
+	{
+		if (Value.Equals(Expected, ESearchCase::IgnoreCase))
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+FString JoinStringArray(const TArray<FString>& Values)
+{
+	FString Result;
+	for (const FString& Value : Values)
+	{
+		if (!Result.IsEmpty())
+		{
+			Result += TEXT(", ");
+		}
+		Result += Value;
+	}
+	return Result;
+}
+
+bool ValidateNTEBuildToolPluginReferenceForGameTarget(
+	const FJsonObject& PluginReference,
+	const FString& ProjectFile,
+	FString& OutError)
+{
+	bool bEnabled = true;
+	PluginReference.TryGetBoolField(TEXT("Enabled"), bEnabled);
+	if (!bEnabled)
+	{
+		OutError = FString::Printf(
+			TEXT("Character package cook requires the NTEBuildTool plugin so the mirror project can load the HTGame schema stubs, but the plugin is disabled in %s."),
+			*ProjectFile);
+		return false;
+	}
+
+	const TArray<FString> TargetDenyList = GetStringArrayAny(PluginReference, TEXT("TargetDenyList"), TEXT("BlacklistTargets"));
+	if (StringArrayContainsIgnoreCase(TargetDenyList, TEXT("Game")))
+	{
+		OutError = FString::Printf(
+			TEXT("Character package cook requires the NTEBuildTool plugin for the Game target, but %s denies Game in the NTEBuildTool plugin entry TargetDenyList/BlacklistTargets."),
+			*ProjectFile);
+		return false;
+	}
+
+	const TArray<FString> TargetAllowList = GetStringArrayAny(PluginReference, TEXT("TargetAllowList"), TEXT("WhitelistTargets"));
+	if (!TargetAllowList.IsEmpty() && !StringArrayContainsIgnoreCase(TargetAllowList, TEXT("Game")))
+	{
+		OutError = FString::Printf(
+			TEXT("Character package cook requires the NTEBuildTool plugin for the Game target because generated HTPlayerAppearance assets import /Script/HTGame. The NTEBuildTool plugin entry in %s has TargetAllowList/WhitelistTargets=[%s]. Remove that allow-list or include Game."),
+			*ProjectFile,
+			*JoinStringArray(TargetAllowList));
+		return false;
+	}
+
+	return true;
+}
+
+bool ValidateHTGameStubCookPrerequisites(const FNteModPackageJob& Job, FString& OutError)
+{
+	if (!Job.bRequiresHTGameStub || Job.bSkipCook || Job.Mode == ENteModPackageMode::PackOnly)
+	{
+		return true;
+	}
+
+	TSharedPtr<FJsonObject> ProjectRootObject;
+	FString LoadError;
+	if (!LoadJsonObjectFromFile(Job.ProjectFile, ProjectRootObject, LoadError))
+	{
+		OutError = FString::Printf(
+			TEXT("Character package cook requires checking the mirror project's NTEBuildTool plugin target visibility, but the project file could not be read. %s"),
+			*LoadError);
+		return false;
+	}
+
+	const TArray<TSharedPtr<FJsonValue>>* Plugins = nullptr;
+	if (!ProjectRootObject->TryGetArrayField(TEXT("Plugins"), Plugins) || !Plugins)
+	{
+		return true;
+	}
+
+	for (const TSharedPtr<FJsonValue>& PluginValue : *Plugins)
+	{
+		if (!PluginValue.IsValid())
+		{
+			continue;
+		}
+
+		const TSharedPtr<FJsonObject> PluginReference = PluginValue->AsObject();
+		if (!PluginReference.IsValid())
+		{
+			continue;
+		}
+
+		FString PluginName;
+		if (PluginReference->TryGetStringField(TEXT("Name"), PluginName)
+			&& PluginName.Equals(TEXT("NTEBuildTool"), ESearchCase::IgnoreCase))
+		{
+			return ValidateNTEBuildToolPluginReferenceForGameTarget(*PluginReference, Job.ProjectFile, OutError);
+		}
+	}
+
+	return true;
+}
 }
 
 FString SanitizeModPackageName(FString ModName)
@@ -199,6 +312,7 @@ bool LoadModPackageJobJson(const FString& JobFilename, FNteModPackageJob& OutJob
 	OutJob.NeverPackPackagePrefixes = GetStringArrayAny(*Root, TEXT("NeverPackPackagePrefixes"), TEXT("neverPackPackagePrefixes"));
 	GetBoolAny(*Root, OutJob.bUnversioned, TEXT("Unversioned"), TEXT("unversioned"));
 	GetBoolAny(*Root, OutJob.bSkipCook, TEXT("SkipCook"), TEXT("skipCook"));
+	GetBoolAny(*Root, OutJob.bRequiresHTGameStub, TEXT("RequiresHTGameStub"), TEXT("requiresHTGameStub"));
 	if (OutJob.bSkipCook && OutJob.Mode == ENteModPackageMode::CookAndPack)
 	{
 		OutJob.Mode = ENteModPackageMode::PackOnly;
@@ -229,6 +343,7 @@ bool SaveModPackageJobJson(const FNteModPackageJob& Job, const FString& JobFilen
 	Root->SetArrayField(TEXT("NeverPackPackagePrefixes"), StringArrayToJsonValues(Job.NeverPackPackagePrefixes));
 	Root->SetBoolField(TEXT("Unversioned"), Job.bUnversioned);
 	Root->SetBoolField(TEXT("SkipCook"), Job.bSkipCook || Job.Mode == ENteModPackageMode::PackOnly);
+	Root->SetBoolField(TEXT("RequiresHTGameStub"), Job.bRequiresHTGameStub);
 	return SaveJsonObjectToFile(Root, JobFilename, OutError);
 }
 
@@ -273,6 +388,7 @@ bool CreateModPackageJobFromSelection(const FNteModPackageJobCreateOptions& Opti
 	Job.NeverPackPackagePrefixes = Options.NeverPackPackagePrefixes;
 	Job.bUnversioned = Options.bUnversioned;
 	Job.bSkipCook = Options.bSkipCook || Options.Mode == ENteModPackageMode::PackOnly;
+	Job.bRequiresHTGameStub = Options.bRequiresHTGameStub;
 	NormalizeCookOptionsForRuntimeBlueprints(Job);
 
 	if (!ValidatePackageJob(Job, OutError))
@@ -298,6 +414,25 @@ bool CreateModPackageJobFromSelection(const FNteModPackageJobCreateOptions& Opti
 	OutResult.PackageCount = Packages.Num();
 	OutResult.Job = Job;
 	return true;
+}
+
+bool CreateModPackageJobFromCharacterModSpec(
+	const NTEBuildTool::Character::FNteCharacterModSpec& Spec,
+	const FNtePackagePlan& Plan,
+	FNteModPackageJobCreateResult& OutResult,
+	FString& OutError)
+{
+	FNteModPackageJobCreateOptions Options;
+	Options.JobFilename = Spec.Package.JobFilename;
+	Options.ModsDir = Spec.Package.ModsDir;
+	Options.ModName = Spec.Package.ModName;
+	Options.GameMountName = NTEBuildTool::Settings::GetGameMountName();
+	Options.Packages = GetIncludedPackageNames(Plan);
+	Options.bCollectContentBrowserSelection = false;
+	Options.bUnversioned = false;
+	Options.bSkipCook = false;
+	Options.bRequiresHTGameStub = true;
+	return CreateModPackageJobFromSelection(Options, OutResult, OutError);
 }
 
 bool ValidatePackageJob(const FNteModPackageJob& Job, FString& OutError)
@@ -330,6 +465,10 @@ bool ValidatePackageJob(const FNteModPackageJob& Job, FString& OutError)
 	if (Job.Packages.IsEmpty())
 	{
 		OutError = TEXT("Package job has no Packages.");
+		return false;
+	}
+	if (!ValidateHTGameStubCookPrerequisites(Job, OutError))
+	{
 		return false;
 	}
 

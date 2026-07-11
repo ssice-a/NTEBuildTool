@@ -9,6 +9,11 @@
 	"Installed": false,
 	"Modules": [
 		{
+			"Name": "HTGame",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		},
+		{
 			"Name": "NTEBuildTool",
 			"Type": "Editor",
 			"LoadingPhase": "Default"

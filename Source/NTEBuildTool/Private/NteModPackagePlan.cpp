@@ -2,6 +2,7 @@
 
 #include "NteModPackagePlan.h"
 
+#include "NteCharacterModSpec.h"
 #include "NteEditorAssetUtils.h"
 
 #include "AssetRegistry/AssetRegistryModule.h"
@@ -193,6 +194,73 @@ TArray<FString> CollectSelectedPackages()
 	Packages.Sort();
 	return Packages;
 }
+
+bool BuildPackagePlanFromPackagesInternal(
+	const TArray<FString>& SeedPackages,
+	const FString& SeedReason,
+	FNtePackagePlan& OutPlan,
+	FString& OutError)
+{
+	OutPlan = FNtePackagePlan();
+	if (SeedPackages.IsEmpty())
+	{
+		OutError = TEXT("Select at least one Content Browser asset or /Game folder before creating a package plan.");
+		return false;
+	}
+
+	FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
+	IAssetRegistry& AssetRegistry = AssetRegistryModule.Get();
+	TSet<FString> SeedSet(SeedPackages);
+
+	for (const FString& SeedPackage : SeedPackages)
+	{
+		FNtePackagePlanCandidate Candidate;
+		Candidate.PackageName = SeedPackage;
+		Candidate.Kind = ClassifyPackage(SeedPackage, true);
+		Candidate.Reason = SeedReason;
+		Candidate.bDefaultIncluded = ShouldIncludeByDefault(Candidate.Kind);
+		AddOrMergeCandidate(OutPlan.Candidates, MoveTemp(Candidate));
+
+		TArray<FName> DependencyNames;
+		AssetRegistry.GetDependencies(FName(*SeedPackage), DependencyNames, UE::AssetRegistry::EDependencyCategory::Package);
+		for (const FName& DependencyName : DependencyNames)
+		{
+			const FString DependencyPackage = DependencyName.ToString();
+			if (!DependencyPackage.StartsWith(TEXT("/Game/")) || DependencyPackage == SeedPackage)
+			{
+				continue;
+			}
+
+			FNtePackagePlanCandidate DependencyCandidate;
+			DependencyCandidate.PackageName = DependencyPackage;
+			DependencyCandidate.Kind = ClassifyPackage(DependencyPackage, SeedSet.Contains(DependencyPackage));
+			if (DependencyCandidate.Kind == ENtePackagePlanCandidateKind::SelectedAsset)
+			{
+				DependencyCandidate.Reason = SeedReason;
+			}
+			else
+			{
+				DependencyCandidate.Reason = FString::Printf(TEXT("hard dependency of %s"), *SeedPackage);
+			}
+			DependencyCandidate.bDefaultIncluded = ShouldIncludeByDefault(DependencyCandidate.Kind);
+			AddOrMergeCandidate(OutPlan.Candidates, MoveTemp(DependencyCandidate));
+		}
+	}
+
+	OutPlan.Candidates.Sort([](const FNtePackagePlanCandidate& A, const FNtePackagePlanCandidate& B)
+	{
+		if (A.bDefaultIncluded != B.bDefaultIncluded)
+		{
+			return A.bDefaultIncluded;
+		}
+		if (A.Kind != B.Kind)
+		{
+			return static_cast<int32>(A.Kind) < static_cast<int32>(B.Kind);
+		}
+		return A.PackageName < B.PackageName;
+	});
+	return true;
+}
 }
 
 FString PackagePlanCandidateKindToString(const ENtePackagePlanCandidateKind Kind)
@@ -229,65 +297,21 @@ bool BuildPackagePlanFromSelection(FNtePackagePlan& OutPlan, FString& OutError)
 
 bool BuildPackagePlanFromPackages(const TArray<FString>& SeedPackages, FNtePackagePlan& OutPlan, FString& OutError)
 {
-	OutPlan = FNtePackagePlan();
+	return BuildPackagePlanFromPackagesInternal(SeedPackages, TEXT("selected by user"), OutPlan, OutError);
+}
+
+bool BuildPackagePlanFromCharacterModSpec(
+	const NTEBuildTool::Character::FNteCharacterModSpec& Spec,
+	FNtePackagePlan& OutPlan,
+	FString& OutError)
+{
+	const TArray<FString> SeedPackages = NTEBuildTool::Character::CollectCharacterModSpecPackageSeeds(Spec);
 	if (SeedPackages.IsEmpty())
 	{
-		OutError = TEXT("Select at least one Content Browser asset or /Game folder before creating a package plan.");
+		OutError = TEXT("CharacterModSpec produced no /Game package seeds.");
 		return false;
 	}
-
-	FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
-	IAssetRegistry& AssetRegistry = AssetRegistryModule.Get();
-	TSet<FString> SeedSet(SeedPackages);
-
-	for (const FString& SeedPackage : SeedPackages)
-	{
-		FNtePackagePlanCandidate Candidate;
-		Candidate.PackageName = SeedPackage;
-		Candidate.Kind = ClassifyPackage(SeedPackage, true);
-		Candidate.Reason = TEXT("selected by user");
-		Candidate.bDefaultIncluded = ShouldIncludeByDefault(Candidate.Kind);
-		AddOrMergeCandidate(OutPlan.Candidates, MoveTemp(Candidate));
-
-		TArray<FName> DependencyNames;
-		AssetRegistry.GetDependencies(FName(*SeedPackage), DependencyNames, UE::AssetRegistry::EDependencyCategory::Package);
-		for (const FName& DependencyName : DependencyNames)
-		{
-			const FString DependencyPackage = DependencyName.ToString();
-			if (!DependencyPackage.StartsWith(TEXT("/Game/")) || DependencyPackage == SeedPackage)
-			{
-				continue;
-			}
-
-			FNtePackagePlanCandidate DependencyCandidate;
-			DependencyCandidate.PackageName = DependencyPackage;
-			DependencyCandidate.Kind = ClassifyPackage(DependencyPackage, SeedSet.Contains(DependencyPackage));
-			if (DependencyCandidate.Kind == ENtePackagePlanCandidateKind::SelectedAsset)
-			{
-				DependencyCandidate.Reason = TEXT("selected by user");
-			}
-			else
-			{
-				DependencyCandidate.Reason = FString::Printf(TEXT("hard dependency of %s"), *SeedPackage);
-			}
-			DependencyCandidate.bDefaultIncluded = ShouldIncludeByDefault(DependencyCandidate.Kind);
-			AddOrMergeCandidate(OutPlan.Candidates, MoveTemp(DependencyCandidate));
-		}
-	}
-
-	OutPlan.Candidates.Sort([](const FNtePackagePlanCandidate& A, const FNtePackagePlanCandidate& B)
-	{
-		if (A.bDefaultIncluded != B.bDefaultIncluded)
-		{
-			return A.bDefaultIncluded;
-		}
-		if (A.Kind != B.Kind)
-		{
-			return static_cast<int32>(A.Kind) < static_cast<int32>(B.Kind);
-		}
-		return A.PackageName < B.PackageName;
-	});
-	return true;
+	return BuildPackagePlanFromPackagesInternal(SeedPackages, TEXT("from CharacterModSpec"), OutPlan, OutError);
 }
 
 TArray<FString> GetIncludedPackageNames(const FNtePackagePlan& Plan)

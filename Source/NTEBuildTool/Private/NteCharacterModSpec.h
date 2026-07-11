@@ -24,6 +24,7 @@ struct FNteCharacterAttachedMeshSpec
 	FString UIAnimBlueprintPath;
 	FString RuntimeAnimBlueprintPath;
 	FString SocketName;
+	TArray<FString> MeshComponentOwnedTags;
 	FVector RelativeLocation = FVector::ZeroVector;
 	FRotator RelativeRotation = FRotator::ZeroRotator;
 	FVector RelativeScale = FVector::OneVector;

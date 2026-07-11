@@ -1,0 +1,51 @@
+{
+  "Format": "NTE.CharacterModSpec",
+  "Version": 1,
+  "WorkspaceName": "004_lacrimosa_attached_mesh_writer_smoke",
+  "Appearance": {
+    "AppearanceRowName": "Player004",
+    "PlayerAppearanceAssetPath": "/Game/Characters/Player/004_lacrimosa/mod/Generated/MeshAsset_Player004_NTE_AttachedSmoke",
+    "UIActorClassPath": ""
+  },
+  "MainMeshPath": "/Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+  "MainAnimBlueprintPath": "/Game/Characters/Player/004_lacrimosa/mod/Runtime/ABP_NTE_ModToggle_PostProcess",
+  "AttachedMeshes": [
+    {
+      "Id": "smoke_attach",
+      "Label": "Smoke Attached Mesh",
+      "MeshPath": "/Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+      "AnimBlueprintPath": "/Game/Characters/Player/004_lacrimosa/mod/Runtime/ABP_NTE_ModToggle_PostProcess",
+      "SocketName": "Bip001-Head",
+      "MeshComponentOwnedTags": [
+        "NTE.ToggleTarget",
+        "NTE.Attached.smoke_attach"
+      ],
+      "RelativeLocation": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": 0.0
+      },
+      "RelativeRotation": {
+        "Pitch": 0.0,
+        "Yaw": 0.0,
+        "Roll": 0.0
+      },
+      "RelativeScale": {
+        "X": 1.0,
+        "Y": 1.0,
+        "Z": 1.0
+      },
+      "SyncToUIShow": false,
+      "EnableRuntimeActions": false
+    }
+  ],
+  "MaterialOperations": [],
+  "RuntimeActions": [],
+  "KawaiiPresets": [],
+  "Package": {
+    "ModName": "lacrimosa004_character_attached_smoke_P",
+    "ModsDir": "F:/Neverness To Everness/Client/WindowsNoEditor/HT/Content/Paks/Mods",
+    "JobFilename": "F:/NTE/PhyLab/Saved/NTEBuildTool/Packages/lacrimosa004_character_attached_smoke_P/lacrimosa004_character_attached_smoke_P.job.json",
+    "BuildAfterCreate": false
+  }
+}

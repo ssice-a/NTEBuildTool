@@ -18,6 +18,7 @@ struct FNteAppearanceMeshDataPlan
 	FString MobileAnimInstancePath;
 	FString UIAnimInstancePath;
 	FString SocketName;
+	TArray<FString> MeshComponentOwnedTags;
 	FVector RelativeLocation = FVector::ZeroVector;
 	FRotator RelativeRotation = FRotator::ZeroRotator;
 	FVector RelativeScale3D = FVector::OneVector;

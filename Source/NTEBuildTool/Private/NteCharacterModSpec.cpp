@@ -174,6 +174,7 @@ TSharedRef<FJsonObject> AttachedMeshToJson(const FNteCharacterAttachedMeshSpec& 
 	SetStringIfNotEmpty(Object, TEXT("UIAnimBlueprintPath"), AttachedMesh.UIAnimBlueprintPath);
 	SetStringIfNotEmpty(Object, TEXT("RuntimeAnimBlueprintPath"), AttachedMesh.RuntimeAnimBlueprintPath);
 	SetStringIfNotEmpty(Object, TEXT("SocketName"), AttachedMesh.SocketName);
+	Object->SetArrayField(TEXT("MeshComponentOwnedTags"), Json::StringArrayToJsonValues(AttachedMesh.MeshComponentOwnedTags));
 	Object->SetObjectField(TEXT("RelativeLocation"), VectorToJson(AttachedMesh.RelativeLocation));
 	Object->SetObjectField(TEXT("RelativeRotation"), RotatorToJson(AttachedMesh.RelativeRotation));
 	Object->SetObjectField(TEXT("RelativeScale"), VectorToJson(AttachedMesh.RelativeScale));
@@ -194,6 +195,7 @@ FNteCharacterAttachedMeshSpec AttachedMeshFromJson(const FJsonObject& Object)
 	AttachedMesh.UIAnimBlueprintPath = GetStringField(Object, TEXT("UIAnimBlueprintPath"));
 	AttachedMesh.RuntimeAnimBlueprintPath = GetStringField(Object, TEXT("RuntimeAnimBlueprintPath"));
 	AttachedMesh.SocketName = GetStringField(Object, TEXT("SocketName"));
+	AttachedMesh.MeshComponentOwnedTags = GetStringArrayField(Object, TEXT("MeshComponentOwnedTags"));
 	ReadObjectField(Object, TEXT("RelativeLocation"), [&AttachedMesh](const FJsonObject& Child)
 	{
 		AttachedMesh.RelativeLocation = VectorFromJson(Child, FVector::ZeroVector);

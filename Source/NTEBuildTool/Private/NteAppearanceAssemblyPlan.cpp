@@ -47,6 +47,7 @@ TSharedRef<FJsonObject> MeshDataPlanToJson(const FNteAppearanceMeshDataPlan& Mes
 	AddStringIfNotEmpty(Object, TEXT("MobileAnimInstancePath"), MeshData.MobileAnimInstancePath);
 	AddStringIfNotEmpty(Object, TEXT("UIAnimInstancePath"), MeshData.UIAnimInstancePath);
 	AddStringIfNotEmpty(Object, TEXT("SocketName"), MeshData.SocketName);
+	Object->SetArrayField(TEXT("MeshComponentOwnedTags"), Json::StringArrayToJsonValues(MeshData.MeshComponentOwnedTags));
 	Object->SetObjectField(TEXT("RelativeLocation"), VectorToJson(MeshData.RelativeLocation));
 	Object->SetObjectField(TEXT("RelativeRotation"), RotatorToJson(MeshData.RelativeRotation));
 	Object->SetObjectField(TEXT("RelativeScale3D"), VectorToJson(MeshData.RelativeScale3D));
@@ -78,6 +79,7 @@ FNteAppearanceMeshDataPlan AttachedMeshPlanFromSpec(const FNteCharacterAttachedM
 	MeshData.MobileAnimInstancePath = AttachedMesh.MobileAnimBlueprintPath;
 	MeshData.UIAnimInstancePath = AttachedMesh.UIAnimBlueprintPath;
 	MeshData.SocketName = AttachedMesh.SocketName;
+	MeshData.MeshComponentOwnedTags = AttachedMesh.MeshComponentOwnedTags;
 	MeshData.RelativeLocation = AttachedMesh.RelativeLocation;
 	MeshData.RelativeRotation = AttachedMesh.RelativeRotation;
 	MeshData.RelativeScale3D = AttachedMesh.RelativeScale;

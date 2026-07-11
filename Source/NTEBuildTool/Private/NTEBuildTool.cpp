@@ -114,6 +114,56 @@ void RunCreateModMaterialInstanceFromSourceJson(const NTEBuildTool::Material::FN
 		FText::AsNumber(Result.CreateResult.ApplySummary.SourceTextureOverrideGroups),
 		FText::FromString(Result.ReportFilename)));
 }
+
+void RunCharacterModPackageFromSpec(NTEBuildTool::Character::FNteCharacterModSpec CharacterSpec)
+{
+	FString Error;
+	NTEBuildTool::Package::FNtePackagePlan Plan;
+	if (!NTEBuildTool::Package::BuildPackagePlanFromCharacterModSpec(CharacterSpec, Plan, Error))
+	{
+		NTEBuildTool::Editor::ShowError(FText::FromString(Error));
+		return;
+	}
+
+	NTEBuildTool::Package::FNtePackagePlanDialogResult DialogResult;
+	if (!NTEBuildTool::Package::ShowPackagePlanDialog(Plan, DialogResult))
+	{
+		return;
+	}
+
+	CharacterSpec.Package.ModsDir = DialogResult.ModsDir;
+	CharacterSpec.Package.ModName = DialogResult.ModName;
+	CharacterSpec.Package.JobFilename = DialogResult.JobFilename;
+	CharacterSpec.Package.bBuildAfterCreate = DialogResult.bLaunchBuild;
+
+	NTEBuildTool::Package::FNteModPackageJobCreateResult CreateResult;
+	if (!NTEBuildTool::Package::CreateModPackageJobFromCharacterModSpec(CharacterSpec, Plan, CreateResult, Error))
+	{
+		NTEBuildTool::Editor::ShowError(FText::FromString(Error));
+		return;
+	}
+
+	if (!DialogResult.bLaunchBuild)
+	{
+		NTEBuildTool::Editor::ShowInfo(FText::Format(
+			LOCTEXT("CreatedCharacterModPackageJob", "Created CharacterModSpec package job with {0} packages. Job file: {1}"),
+			FText::AsNumber(CreateResult.PackageCount),
+			FText::FromString(CreateResult.JobFile)));
+		return;
+	}
+
+	NTEBuildTool::Package::FNteModPackageLaunchResult LaunchResult;
+	if (!NTEBuildTool::Package::LaunchModPackageBuildJob(CreateResult.JobFile, LaunchResult, Error))
+	{
+		NTEBuildTool::Editor::ShowError(FText::FromString(Error));
+		return;
+	}
+
+	NTEBuildTool::Editor::ShowInfo(FText::Format(
+		LOCTEXT("BuildCharacterModPackageFinished", "Created CharacterModSpec package job with {0} packages and finished build. Job file: {1}"),
+		FText::AsNumber(CreateResult.PackageCount),
+		FText::FromString(LaunchResult.JobFile)));
+}
 }
 
 void FNTEBuildToolModule::StartupModule()
@@ -196,7 +246,7 @@ void FNTEBuildToolModule::OpenCharacterModWorkspace()
 		CreateMeshToggleUiSetup();
 		break;
 	case NTEBuildTool::Workspace::ENteMeshModWorkspaceAction::BuildPackage:
-		BuildSelectedAssetsModPackage();
+		RunCharacterModPackageFromSpec(WorkspaceResult.CharacterSpec);
 		break;
 	default:
 		break;
