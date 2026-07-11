@@ -5,6 +5,8 @@
 #include "NTEBuildTool.h"
 #include "NteAppearanceAssemblyPlan.h"
 #include "NteAppearanceAssemblyWriter.h"
+#include "NteCharacterMaterialPlan.h"
+#include "NteCharacterMaterialWriter.h"
 #include "NteCharacterModSpec.h"
 #include "NteCharacterRuntimeActionPlan.h"
 #include "NteJsonFileUtils.h"
@@ -98,7 +100,7 @@ UNteCharacterModSpecCommandlet::UNteCharacterModSpecCommandlet()
 	ShowErrorCount = true;
 	UseCommandletResultAsExitCode = true;
 	HelpDescription = TEXT("Validates an NTE CharacterModSpec JSON and writes a report.");
-	HelpUsage = TEXT("UnrealEditor-Cmd.exe <Project>.uproject -run=NteCharacterModSpec -Spec=<json> [-Output=<json>] [-ApplyAppearance] [-WritePackageJob] [-BuildPackage] [-FailOnWarnings]");
+	HelpUsage = TEXT("UnrealEditor-Cmd.exe <Project>.uproject -run=NteCharacterModSpec -Spec=<json> [-Output=<json>] [-ApplyAppearance] [-ApplyMaterials] [-WritePackageJob] [-BuildPackage] [-FailOnWarnings]");
 }
 
 int32 UNteCharacterModSpecCommandlet::Main(const FString& Params)
@@ -121,16 +123,29 @@ int32 UNteCharacterModSpecCommandlet::Main(const FString& Params)
 
 	const NTEBuildTool::Character::FNteCharacterModSpecValidationResult Validation =
 		NTEBuildTool::Character::ValidateCharacterModSpec(Spec);
-	const TArray<FString> PackageSeeds = NTEBuildTool::Character::CollectCharacterModSpecPackageSeeds(Spec);
 	const NTEBuildTool::Character::FNteAppearanceAssemblyPlan AppearancePlan =
 		NTEBuildTool::Character::BuildAppearanceAssemblyPlanFromSpec(Spec);
+	const NTEBuildTool::Character::FNteCharacterMaterialPlan MaterialPlan =
+		NTEBuildTool::Character::BuildCharacterMaterialPlanFromSpec(Spec);
 	const NTEBuildTool::Character::FNteCharacterRuntimeActionPlan RuntimeActionPlan =
 		NTEBuildTool::Character::BuildCharacterRuntimeActionPlanFromSpec(Spec);
+	TArray<FString> PackageSeeds = NTEBuildTool::Character::CollectCharacterModSpecPackageSeeds(Spec);
+	for (const FString& MaterialSeed : NTEBuildTool::Character::CollectCharacterMaterialPlanPackageSeeds(MaterialPlan))
+	{
+		PackageSeeds.AddUnique(MaterialSeed);
+	}
+	PackageSeeds.Sort();
 	const bool bApplyAppearance = FParse::Param(*Params, TEXT("ApplyAppearance"));
 	NTEBuildTool::Character::FNteAppearanceAssemblyWriteResult AppearanceWriteResult;
 	if (bApplyAppearance && !Validation.HasErrors())
 	{
 		AppearanceWriteResult = NTEBuildTool::Character::WriteAppearanceAssembly(AppearancePlan);
+	}
+	const bool bApplyMaterials = FParse::Param(*Params, TEXT("ApplyMaterials"));
+	NTEBuildTool::Character::FNteCharacterMaterialWriteResult MaterialWriteResult;
+	if (bApplyMaterials && !Validation.HasErrors())
+	{
+		MaterialWriteResult = NTEBuildTool::Character::WriteCharacterMaterials(MaterialPlan);
 	}
 
 	FString PackagePlanError;
@@ -171,11 +186,17 @@ int32 UNteCharacterModSpecCommandlet::Main(const FString& Params)
 	Root->SetArrayField(TEXT("Warnings"), StringArrayToJsonValues(Validation.Warnings));
 	Root->SetArrayField(TEXT("PackageSeeds"), StringArrayToJsonValues(PackageSeeds));
 	Root->SetObjectField(TEXT("AppearanceAssemblyPlan"), NTEBuildTool::Character::AppearanceAssemblyPlanToJson(AppearancePlan));
+	Root->SetObjectField(TEXT("MaterialPlan"), NTEBuildTool::Character::CharacterMaterialPlanToJson(MaterialPlan));
 	Root->SetObjectField(TEXT("RuntimeActionPlan"), NTEBuildTool::Character::CharacterRuntimeActionPlanToJson(RuntimeActionPlan));
 	Root->SetBoolField(TEXT("ApplyAppearance"), bApplyAppearance);
 	if (bApplyAppearance)
 	{
 		Root->SetObjectField(TEXT("AppearanceAssemblyWriteResult"), NTEBuildTool::Character::AppearanceAssemblyWriteResultToJson(AppearanceWriteResult));
+	}
+	Root->SetBoolField(TEXT("ApplyMaterials"), bApplyMaterials);
+	if (bApplyMaterials)
+	{
+		Root->SetObjectField(TEXT("MaterialWriteResult"), NTEBuildTool::Character::CharacterMaterialWriteResultToJson(MaterialWriteResult));
 	}
 	if (bHasPackagePlan)
 	{
@@ -236,6 +257,17 @@ int32 UNteCharacterModSpecCommandlet::Main(const FString& Params)
 			UE_LOG(LogNTEBuildTool, Error, TEXT("%s"), *WriteError);
 		}
 	}
+	if (bApplyMaterials)
+	{
+		for (const FString& Warning : MaterialWriteResult.Warnings)
+		{
+			UE_LOG(LogNTEBuildTool, Warning, TEXT("%s"), *Warning);
+		}
+		for (const FString& WriteError : MaterialWriteResult.Errors)
+		{
+			UE_LOG(LogNTEBuildTool, Error, TEXT("%s"), *WriteError);
+		}
+	}
 	if (bWritePackageJob && !bHasPackageJob && !PackageJobError.IsEmpty())
 	{
 		UE_LOG(LogNTEBuildTool, Error, TEXT("%s"), *PackageJobError);
@@ -254,11 +286,16 @@ int32 UNteCharacterModSpecCommandlet::Main(const FString& Params)
 		Validation.Warnings.Num());
 
 	const bool bFailOnWarnings = FParse::Param(*Params, TEXT("FailOnWarnings"));
+	const bool bHasReportWarnings = Validation.HasWarnings()
+		|| !MaterialPlan.Warnings.IsEmpty()
+		|| (bApplyAppearance && AppearanceWriteResult.Warnings.Num() > 0)
+		|| (bApplyMaterials && MaterialWriteResult.Warnings.Num() > 0);
 	if (Validation.HasErrors()
 		|| (bApplyAppearance && AppearanceWriteResult.HasErrors())
+		|| (bApplyMaterials && MaterialWriteResult.HasErrors())
 		|| (bWritePackageJob && !bHasPackageJob)
 		|| (bBuildPackage && !bHasPackageBuild)
-		|| (bFailOnWarnings && (Validation.HasWarnings() || (bApplyAppearance && AppearanceWriteResult.Warnings.Num() > 0))))
+		|| (bFailOnWarnings && bHasReportWarnings))
 	{
 		return 4;
 	}

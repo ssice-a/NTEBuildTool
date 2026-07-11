@@ -241,6 +241,12 @@ Completed:
   - Workspace Package action now uses the `CharacterModSpec` package path instead of selected Content Browser assets;
   - `RequiresHTGameStub` package-job preflight protects Character packages from Mirror Project `TargetAllowList=["Editor"]` cook failures;
   - `Config/FilterPlugin.ini` excludes `.scratch`, build outputs, binaries, intermediate files, and cache folders from `RunUAT BuildPlugin`.
+- First part of Slice 4:
+  - `NteCharacterMaterialPlan`;
+  - `NteCharacterMaterialWriter`;
+  - `NteCharacterModSpec -ApplyMaterials`;
+  - material plan package seeds for generated MIs and replacement textures;
+  - raw FModel `MaterialInstanceConstant` JSON array normalization in the material module.
 
 Verified:
 
@@ -256,6 +262,9 @@ Verified:
 - `CreateModPackageJobFromCharacterModSpec` and `NteCharacterModSpec -WritePackageJob` produce a package job from spec package settings.
 - Full `NteCharacterModSpec -ApplyAppearance -BuildPackage` smoke test produced pak/utoc/ucas in the game Mods directory for `lacrimosa004_character_attached_smoke_P`.
 - `NtePakModAudit` on the generated package job reports 0 errors / 0 warnings.
+- `NteCharacterModSpec` plan-only reports include `MaterialPlan` for 071 and 004 runtime-action specs.
+- `NteCharacterModSpec -ApplyMaterials` safely generated a material instance from real FModel JSON without assigning it to the mesh slot.
+- `NteCharacterModSpec -ApplyMaterials` with `SourceTextureOverrides` expanded a source texture group to the `BaseColor` parameter and wrote the replacement texture override.
 
 Latest verification reports:
 
@@ -263,6 +272,8 @@ Latest verification reports:
 - `.scratch/character-mod-workspace/004_lacrimosa_attached_mesh_build_package_preflight.report.json`
 - `.scratch/character-mod-workspace/004_lacrimosa_attached_mesh_preflight_inspection.json`
 - `.scratch/character-mod-workspace/004_lacrimosa_attached_mesh_package_audit_preflight.json`
+- `.scratch/character-mod-workspace/004_lacrimosa_apply_materials_safe.report.json`
+- `.scratch/character-mod-workspace/004_lacrimosa_apply_materials_texture_override.report.json`
 
 Important environment requirement:
 
@@ -274,9 +285,10 @@ Continue with the remaining vertical slices:
 
 1. validate `PlayerUIShow` SCS sync against a real existing UIShow Blueprint once the Mirror Project contains one;
 2. implement the runtime action generator that uses `MeshComponentOwnedTags` to find attached mesh/material-slot targets;
-3. design and implement the UE-side Kawaii preset editor/data model;
-4. replace the remaining mesh-only UI fragments with spec-first Character Workspace panels;
-5. keep using the 004 smoke spec as the minimal package regression test.
+3. expose `MaterialOperations` in the Character Workspace UI as slot-centered rows rather than raw JSON/path entry;
+4. design and implement the UE-side Kawaii preset editor/data model;
+5. replace the remaining mesh-only UI fragments with spec-first Character Workspace panels;
+6. keep using the 004 smoke spec as the minimal package regression test.
 
 Runtime action checkpoint:
 

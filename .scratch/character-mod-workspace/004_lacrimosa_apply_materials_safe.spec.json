@@ -1,0 +1,34 @@
+{
+  "Format": "NTE.CharacterModSpec",
+  "Version": 1,
+  "WorkspaceName": "004_lacrimosa_apply_materials_safe",
+  "Appearance": {
+    "AppearanceRowName": "Player004",
+    "PlayerAppearanceAssetPath": "/Game/Characters/Player/004_lacrimosa/mod/Generated/MeshAsset_Player004_NTE_MaterialApplySafe",
+    "UIActorClassPath": ""
+  },
+  "MainMeshPath": "/Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+  "MainAnimBlueprintPath": "/Game/Characters/Player/004_lacrimosa/Player004_Lacrimosa_AnimBP",
+  "AttachedMeshes": [],
+  "MaterialOperations": [
+    {
+      "Id": "create_lacrimosa_fashion4_cloth_01_mi",
+      "TargetMeshId": "main",
+      "SlotIndex": 0,
+      "SlotName": "body",
+      "SourceMaterialJson": "F:/F-model/Output/Exports/HT/Content/Characters/Player/004_lacrimosa_fashion4/ter/cloth/MI_player_004_lacrimosa_fashion_01.json",
+      "ParentMaterialPath": "",
+      "OutputMaterialPath": "",
+      "SourceTextureOverrides": {},
+      "AssignToSlot": false
+    }
+  ],
+  "RuntimeActions": [],
+  "KawaiiPresets": [],
+  "Package": {
+    "ModName": "lacrimosa004_apply_materials_safe_P",
+    "ModsDir": "F:/Neverness To Everness/Client/WindowsNoEditor/HT/Content/Paks/Mods",
+    "JobFilename": "F:/NTE/PhyLab/Saved/NTEBuildTool/Packages/lacrimosa004_apply_materials_safe_P/lacrimosa004_apply_materials_safe_P.job.json",
+    "BuildAfterCreate": false
+  }
+}

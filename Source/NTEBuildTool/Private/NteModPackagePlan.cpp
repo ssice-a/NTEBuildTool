@@ -2,6 +2,7 @@
 
 #include "NteModPackagePlan.h"
 
+#include "NteCharacterMaterialPlan.h"
 #include "NteCharacterModSpec.h"
 #include "NteEditorAssetUtils.h"
 
@@ -306,12 +307,20 @@ bool BuildPackagePlanFromCharacterModSpec(
 	FString& OutError)
 {
 	const TArray<FString> SeedPackages = NTEBuildTool::Character::CollectCharacterModSpecPackageSeeds(Spec);
-	if (SeedPackages.IsEmpty())
+	TArray<FString> EffectiveSeedPackages = SeedPackages;
+	const NTEBuildTool::Character::FNteCharacterMaterialPlan MaterialPlan =
+		NTEBuildTool::Character::BuildCharacterMaterialPlanFromSpec(Spec);
+	for (const FString& MaterialSeed : NTEBuildTool::Character::CollectCharacterMaterialPlanPackageSeeds(MaterialPlan))
+	{
+		EffectiveSeedPackages.AddUnique(MaterialSeed);
+	}
+	EffectiveSeedPackages.Sort();
+	if (EffectiveSeedPackages.IsEmpty())
 	{
 		OutError = TEXT("CharacterModSpec produced no /Game package seeds.");
 		return false;
 	}
-	return BuildPackagePlanFromPackagesInternal(SeedPackages, TEXT("from CharacterModSpec"), OutPlan, OutError);
+	return BuildPackagePlanFromPackagesInternal(EffectiveSeedPackages, TEXT("from CharacterModSpec"), OutPlan, OutError);
 }
 
 TArray<FString> GetIncludedPackageNames(const FNtePackagePlan& Plan)

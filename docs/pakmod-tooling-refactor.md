@@ -230,6 +230,10 @@ Current implementation checkpoint:
 - The dialog displays each source texture once and lists the material parameters that use it.
 - Users can choose one replacement texture per source texture group, and the material module expands it into parameter overrides.
 - `Create Material Instance From Recipe JSON` and the `NteMaterialConfig` commandlet still consume the same core material module, so manual and automated recipes stay compatible.
+- Raw FModel `MaterialInstanceConstant` export arrays are normalized into the same internal material-parameter object used by recipe JSON. This lets source texture usage work directly on normal FModel exports such as `MI_player_004_lacrimosa_fashion_01.json`.
+- `CharacterModSpec.MaterialOperations` now has a plan/write path through `NteCharacterMaterialPlan` and `NteCharacterMaterialWriter`.
+- `NteCharacterModSpec` always reports `MaterialPlan`; `-ApplyMaterials` creates or updates material instances through the material module.
+- Material plan package seeds include generated material instance paths and replacement textures, including output paths derived from target mesh roots when `OutputMaterialPath` is empty.
 
 Next UX target:
 
@@ -891,3 +895,32 @@ Remaining work:
 - implement generated runtime action assets from `NteCharacterRuntimeActionPlan`, starting with `AttachedMeshVisibility` and `MaterialSlotVisibility`;
 - build the Kawaii preset editor/data model;
 - replace remaining mesh-only UI fragments with spec-first Character Workspace panels.
+
+## 2026-07-11 CharacterModSpec material-operation checkpoint
+
+The material slice is now on the CharacterModSpec main path.
+
+Implemented:
+
+- `NteCharacterMaterialPlan` resolves each `MaterialOperations` entry to main/attached target mesh data, slot index, source material JSON, parent material path, output material path, and normalized source texture overrides.
+- Empty `ParentMaterialPath` is derived from the FModel material export path.
+- Empty `OutputMaterialPath` is derived under the target character root, for example `/Game/Characters/Player/004_lacrimosa/mod/Materials/...`.
+- `NteCharacterMaterialWriter` consumes the plan and calls the existing material module, so standalone recipe JSON, the material dialog, and CharacterModSpec all share the same material-instance code path.
+- `NteCharacterModSpec -ApplyMaterials` writes material instances and reports per-operation output path, report filename, applied count, texture override count, source texture usage, missing textures, unmatched source texture overrides, and editor-only proxy creation.
+- Raw FModel material export arrays are now accepted by the material module and normalized into `Textures`, `Scalars`, `Colors`, and `Switches` parameter sections.
+- `BuildPackagePlanFromCharacterModSpec` merges material-plan package seeds, so generated MIs and replacement textures enter package candidates even when the output MI path is derived.
+
+Verified:
+
+- `PhyLabEditor Win64 Development` builds after syncing the plugin mirror.
+- `NteCharacterModSpec` plan-only reports still pass for:
+  - `.scratch/character-mod-workspace/examples/071_chaos_character_mod_spec.example.json`;
+  - `.scratch/character-mod-workspace/004_lacrimosa_runtime_actions_validation.spec.json`.
+- Safe material apply using real FModel JSON generated `/Game/Characters/Player/004_lacrimosa/mod/Materials/MI_mod_MI_player_004_lacrimosa_fashion_01` without assigning it to the mesh slot.
+- Source texture override apply expanded `/Game/Characters/Player/004_lacrimosa_fashion4/ter/cloth/T_player_004_lacrimosa_fashion1_1_d` to the `BaseColor` parameter and wrote `/Game/Characters/Player/004_lacrimosa/T_player_004_lacrimosa_02_d`.
+- The material report confirms `TextureOverrides=1`, `SourceTextureOverrideGroups=1`, and `AssetLoads=true`.
+
+Representative reports:
+
+- `.scratch/character-mod-workspace/004_lacrimosa_apply_materials_safe.report.json`
+- `.scratch/character-mod-workspace/004_lacrimosa_apply_materials_texture_override.report.json`

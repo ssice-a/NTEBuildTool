@@ -16,6 +16,7 @@ Build Package Plan and Package Job directly from `CharacterModSpec`.
 - attached meshes and attached runtime AnimBPs
 - generated material instances
 - replacement textures
+- material-plan-derived output MI paths when `MaterialOperations.OutputMaterialPath` is empty
 - runtime action material references
 
 `NteCharacterModSpec` commandlet now includes `PackageSeeds` and `PackagePlan` in its report, using the formal `BuildPackagePlanFromCharacterModSpec` API.
@@ -67,3 +68,9 @@ Remaining:
 
 - Expose package candidate grouping/editing in the Character Mod Workspace UI.
 - Re-run cook/IoStore after runtime actions and Kawaii presets enter the spec.
+
+## 2026-07-11 material seed update
+
+`BuildPackagePlanFromCharacterModSpec` now merges `CollectCharacterMaterialPlanPackageSeeds`.
+
+This matters because material output paths can be derived by `NteCharacterMaterialPlan`; package planning must include the effective generated MI path even when the raw spec left `OutputMaterialPath` empty.

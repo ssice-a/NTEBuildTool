@@ -2,6 +2,7 @@
 
 #include "NteMaterialInstanceTool.h"
 
+#include "FModelJsonUtils.h"
 #include "NteEditorAssetUtils.h"
 #include "NteJsonFileUtils.h"
 
@@ -333,6 +334,237 @@ void AppendTextureParameters(const FJsonObject& Source, FJsonObject& Target)
 
 		Target.SetStringField(Entry.Key, Entry.Value->AsString());
 	}
+}
+
+FString StripFModelObjectPathIndex(FString ObjectPath)
+{
+	ObjectPath = NormalizeAssetPathForText(ObjectPath);
+
+	int32 DotIndex = INDEX_NONE;
+	if (!ObjectPath.FindLastChar(TEXT('.'), DotIndex))
+	{
+		return ObjectPath;
+	}
+
+	const FString Suffix = ObjectPath.Mid(DotIndex + 1);
+	if (Suffix.IsEmpty())
+	{
+		return ObjectPath;
+	}
+
+	for (const TCHAR Character : Suffix)
+	{
+		if (!FChar::IsDigit(Character))
+		{
+			return ObjectPath;
+		}
+	}
+
+	return ObjectPath.Left(DotIndex);
+}
+
+FString GetFModelParameterName(const FJsonObject& ParameterValueObject)
+{
+	TSharedPtr<FJsonObject> ParameterInfo;
+	if (!NTEBuildTool::FModelJson::TryGetObject(ParameterValueObject, TEXT("ParameterInfo"), ParameterInfo))
+	{
+		return FString();
+	}
+	return NTEBuildTool::FModelJson::GetString(*ParameterInfo, TEXT("Name"));
+}
+
+FString GetFModelReferencedPackagePath(const FJsonObject& ReferenceObject)
+{
+	return StripFModelObjectPathIndex(NTEBuildTool::FModelJson::GetString(ReferenceObject, TEXT("ObjectPath")));
+}
+
+void ReadFModelTextureParameters(const FJsonObject& Properties, FJsonObject& OutTextures)
+{
+	const TArray<TSharedPtr<FJsonValue>>* Values = nullptr;
+	if (!NTEBuildTool::FModelJson::TryGetArray(Properties, TEXT("TextureParameterValues"), Values))
+	{
+		return;
+	}
+
+	for (const TSharedPtr<FJsonValue>& Value : *Values)
+	{
+		if (!Value.IsValid() || Value->Type != EJson::Object)
+		{
+			continue;
+		}
+
+		const TSharedPtr<FJsonObject> ParameterValueObject = Value->AsObject();
+		const FString ParameterName = ParameterValueObject.IsValid() ? GetFModelParameterName(*ParameterValueObject) : FString();
+		TSharedPtr<FJsonObject> ReferencedTexture;
+		if (ParameterName.IsEmpty()
+			|| !NTEBuildTool::FModelJson::TryGetObject(*ParameterValueObject, TEXT("ParameterValue"), ReferencedTexture))
+		{
+			continue;
+		}
+
+		const FString TexturePath = GetFModelReferencedPackagePath(*ReferencedTexture);
+		if (!TexturePath.IsEmpty())
+		{
+			OutTextures.SetStringField(ParameterName, TexturePath);
+		}
+	}
+}
+
+void ReadFModelScalarParameters(const FJsonObject& Properties, FJsonObject& OutScalars)
+{
+	const TArray<TSharedPtr<FJsonValue>>* Values = nullptr;
+	if (!NTEBuildTool::FModelJson::TryGetArray(Properties, TEXT("ScalarParameterValues"), Values))
+	{
+		return;
+	}
+
+	for (const TSharedPtr<FJsonValue>& Value : *Values)
+	{
+		if (!Value.IsValid() || Value->Type != EJson::Object)
+		{
+			continue;
+		}
+
+		const TSharedPtr<FJsonObject> ParameterValueObject = Value->AsObject();
+		const FString ParameterName = ParameterValueObject.IsValid() ? GetFModelParameterName(*ParameterValueObject) : FString();
+		double ParameterValue = 0.0;
+		if (!ParameterName.IsEmpty() && ParameterValueObject->TryGetNumberField(TEXT("ParameterValue"), ParameterValue))
+		{
+			OutScalars.SetNumberField(ParameterName, ParameterValue);
+		}
+	}
+}
+
+void ReadFModelVectorParameters(const FJsonObject& Properties, FJsonObject& OutVectors)
+{
+	const TArray<TSharedPtr<FJsonValue>>* Values = nullptr;
+	if (!NTEBuildTool::FModelJson::TryGetArray(Properties, TEXT("VectorParameterValues"), Values))
+	{
+		return;
+	}
+
+	for (const TSharedPtr<FJsonValue>& Value : *Values)
+	{
+		if (!Value.IsValid() || Value->Type != EJson::Object)
+		{
+			continue;
+		}
+
+		const TSharedPtr<FJsonObject> ParameterValueObject = Value->AsObject();
+		const FString ParameterName = ParameterValueObject.IsValid() ? GetFModelParameterName(*ParameterValueObject) : FString();
+		TSharedPtr<FJsonObject> ColorObject;
+		if (ParameterName.IsEmpty()
+			|| !NTEBuildTool::FModelJson::TryGetObject(*ParameterValueObject, TEXT("ParameterValue"), ColorObject))
+		{
+			continue;
+		}
+
+		const TSharedRef<FJsonObject> NormalizedColor = MakeShared<FJsonObject>();
+		NormalizedColor->SetNumberField(TEXT("R"), NTEBuildTool::FModelJson::GetFloat(*ColorObject, TEXT("R")));
+		NormalizedColor->SetNumberField(TEXT("G"), NTEBuildTool::FModelJson::GetFloat(*ColorObject, TEXT("G")));
+		NormalizedColor->SetNumberField(TEXT("B"), NTEBuildTool::FModelJson::GetFloat(*ColorObject, TEXT("B")));
+		NormalizedColor->SetNumberField(TEXT("A"), NTEBuildTool::FModelJson::GetFloat(*ColorObject, TEXT("A"), 1.0f));
+		OutVectors.SetObjectField(ParameterName, NormalizedColor);
+	}
+}
+
+void ReadFModelStaticSwitchParameters(const FJsonObject& Properties, FJsonObject& OutSwitches)
+{
+	TSharedPtr<FJsonObject> StaticParameters;
+	if (!NTEBuildTool::FModelJson::TryGetObject(Properties, TEXT("StaticParametersRuntime"), StaticParameters)
+		&& !NTEBuildTool::FModelJson::TryGetObject(Properties, TEXT("StaticParameters"), StaticParameters))
+	{
+		return;
+	}
+
+	const TArray<TSharedPtr<FJsonValue>>* Values = nullptr;
+	if (!NTEBuildTool::FModelJson::TryGetArray(*StaticParameters, TEXT("StaticSwitchParameters"), Values))
+	{
+		return;
+	}
+
+	for (const TSharedPtr<FJsonValue>& Value : *Values)
+	{
+		if (!Value.IsValid() || Value->Type != EJson::Object)
+		{
+			continue;
+		}
+
+		const TSharedPtr<FJsonObject> ParameterValueObject = Value->AsObject();
+		const FString ParameterName = ParameterValueObject.IsValid() ? GetFModelParameterName(*ParameterValueObject) : FString();
+		bool ParameterValue = false;
+		if (!ParameterName.IsEmpty() && ParameterValueObject->TryGetBoolField(TEXT("Value"), ParameterValue))
+		{
+			OutSwitches.SetBoolField(ParameterName, ParameterValue);
+		}
+	}
+}
+
+bool NormalizeFModelMaterialExportArray(
+	const TArray<TSharedPtr<FJsonValue>>& RootArray,
+	TSharedPtr<FJsonObject>& OutSourceMaterial,
+	FString& OutError)
+{
+	NTEBuildTool::FModelJson::FExportObjectIndex Index;
+	Index.Build(RootArray);
+
+	TSharedPtr<FJsonObject> MaterialObject = Index.FindFirstByType(TEXT("MaterialInstanceConstant"));
+	if (!MaterialObject.IsValid())
+	{
+		MaterialObject = Index.FindFirstByType(TEXT("Material"));
+	}
+	if (!MaterialObject.IsValid())
+	{
+		OutError = TEXT("FModel material JSON does not contain a MaterialInstanceConstant or Material export.");
+		return false;
+	}
+
+	TSharedPtr<FJsonObject> Properties;
+	if (!NTEBuildTool::FModelJson::TryGetObject(*MaterialObject, TEXT("Properties"), Properties))
+	{
+		OutError = TEXT("FModel material export has no Properties object.");
+		return false;
+	}
+
+	const TSharedRef<FJsonObject> Textures = MakeShared<FJsonObject>();
+	const TSharedRef<FJsonObject> Scalars = MakeShared<FJsonObject>();
+	const TSharedRef<FJsonObject> Colors = MakeShared<FJsonObject>();
+	const TSharedRef<FJsonObject> Switches = MakeShared<FJsonObject>();
+	ReadFModelTextureParameters(*Properties, *Textures);
+	ReadFModelScalarParameters(*Properties, *Scalars);
+	ReadFModelVectorParameters(*Properties, *Colors);
+	ReadFModelStaticSwitchParameters(*Properties, *Switches);
+
+	const TSharedRef<FJsonObject> Parameters = MakeShared<FJsonObject>();
+	Parameters->SetObjectField(TEXT("Textures"), Textures);
+	Parameters->SetObjectField(TEXT("Scalars"), Scalars);
+	Parameters->SetObjectField(TEXT("Colors"), Colors);
+	Parameters->SetObjectField(TEXT("Switches"), Switches);
+
+	OutSourceMaterial = MakeShared<FJsonObject>();
+	OutSourceMaterial->SetObjectField(TEXT("Parameters"), Parameters);
+	OutSourceMaterial->SetStringField(TEXT("SourceFormat"), TEXT("FModelExportArray"));
+	OutSourceMaterial->SetStringField(TEXT("SourceExportType"), NTEBuildTool::FModelJson::GetString(*MaterialObject, TEXT("Type")));
+	OutSourceMaterial->SetStringField(TEXT("SourceExportName"), NTEBuildTool::FModelJson::GetString(*MaterialObject, TEXT("Name")));
+	return true;
+}
+
+bool LoadSourceMaterialJson(const FString& SourceMaterialJson, TSharedPtr<FJsonObject>& OutSourceMaterial, FString& OutError)
+{
+	if (LoadJsonObjectFromFile(SourceMaterialJson, OutSourceMaterial, OutError))
+	{
+		return true;
+	}
+
+	const FString ObjectError = OutError;
+	TArray<TSharedPtr<FJsonValue>> RootArray;
+	if (!NTEBuildTool::FModelJson::LoadJsonArrayFromFile(SourceMaterialJson, RootArray, OutError))
+	{
+		OutError = FString::Printf(TEXT("%s Also failed to read as FModel export array: %s"), *ObjectError, *OutError);
+		return false;
+	}
+
+	return NormalizeFModelMaterialExportArray(RootArray, OutSourceMaterial, OutError);
 }
 
 void ApplyScalarParameters(UMaterialInstanceConstant& MaterialInstance, const FJsonObject& Scalars, FNteMaterialApplySummary& Summary)
@@ -751,7 +983,7 @@ bool ApplyModMaterialConfig(
 	}
 
 	TSharedPtr<FJsonObject> SourceMaterial;
-	if (!OutResult.SourceMaterialJson.IsEmpty() && !LoadJsonObjectFromFile(OutResult.SourceMaterialJson, SourceMaterial, OutError))
+	if (!OutResult.SourceMaterialJson.IsEmpty() && !LoadSourceMaterialJson(OutResult.SourceMaterialJson, SourceMaterial, OutError))
 	{
 		return false;
 	}
