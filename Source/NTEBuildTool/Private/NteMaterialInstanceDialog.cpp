@@ -92,7 +92,7 @@ bool ShowMaterialInstanceRecipeDialog(const FString& SourceMaterialJson, const F
 {
 	TSharedPtr<FJsonObject> SourceMaterial;
 	FString Error;
-	if (!NTEBuildTool::Json::LoadJsonObjectFromFile(SourceMaterialJson, SourceMaterial, Error))
+	if (!LoadMaterialSourceParametersFromJsonFile(SourceMaterialJson, SourceMaterial, Error))
 	{
 		NTEBuildTool::Editor::ShowError(FText::FromString(Error));
 		return false;

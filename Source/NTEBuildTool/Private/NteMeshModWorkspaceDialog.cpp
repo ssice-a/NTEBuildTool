@@ -233,10 +233,10 @@ TSharedRef<SWidget> MakeMaterialSlotList(USkeletalMesh* Mesh, TSharedPtr<SWindow
 				.VAlign(VAlign_Center)
 				[
 					SNew(SButton)
-					.Text(LOCTEXT("WorkspaceSlotMaterialButton", "Material"))
+					.Text(LOCTEXT("WorkspaceSlotMaterialButton", "Apply Material"))
 					.OnClicked_Lambda([&Window, &OutResult, Mesh, Index, SlotName, MaterialPath]()
 					{
-						CloseWithAction(Window, OutResult, ENteMeshModWorkspaceAction::CreateMaterialInstance, Mesh, Index, SlotName, MaterialPath);
+						CloseWithAction(Window, OutResult, ENteMeshModWorkspaceAction::ApplyMaterialOperation, Mesh, Index, SlotName, MaterialPath);
 						return FReply::Handled();
 					})
 				]
@@ -327,11 +327,11 @@ bool ShowMeshModWorkspaceDialog(USkeletalMesh* SelectedMesh, FNteMeshModWorkspac
 				.Padding(0, 0, 8, 0)
 				[
 					SNew(SButton)
-					.Text(LOCTEXT("WorkspaceMaterialButton", "Material"))
+					.Text(LOCTEXT("WorkspaceMaterialButton", "Material Operation"))
 					.IsEnabled(SelectedMesh != nullptr)
 					.OnClicked_Lambda([&OutResult, &Window, SelectedMesh]()
 					{
-						CloseWithAction(Window, OutResult, ENteMeshModWorkspaceAction::CreateMaterialInstance, SelectedMesh);
+						CloseWithAction(Window, OutResult, ENteMeshModWorkspaceAction::ApplyMaterialOperation, SelectedMesh);
 						return FReply::Handled();
 					})
 				]

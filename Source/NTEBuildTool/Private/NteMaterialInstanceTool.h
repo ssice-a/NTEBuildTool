@@ -77,6 +77,7 @@ TSharedRef<FJsonObject> ExpandSourceTextureOverridesToParameters(
 	const FJsonObject* SourceTextureOverrides,
 	int32& OutMatchedGroups,
 	TArray<FString>* OutUnmatchedSourceTextures = nullptr);
+bool LoadMaterialSourceParametersFromJsonFile(const FString& SourceMaterialJson, TSharedPtr<FJsonObject>& OutSourceMaterial, FString& OutError);
 
 bool CreateOrUpdateModMaterialInstance(
 	const FNteMaterialInstanceOptions& Options,

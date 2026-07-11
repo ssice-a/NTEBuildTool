@@ -234,6 +234,7 @@ Current implementation checkpoint:
 - `CharacterModSpec.MaterialOperations` now has a plan/write path through `NteCharacterMaterialPlan` and `NteCharacterMaterialWriter`.
 - `NteCharacterModSpec` always reports `MaterialPlan`; `-ApplyMaterials` creates or updates material instances through the material module.
 - Material plan package seeds include generated material instance paths and replacement textures, including output paths derived from target mesh roots when `OutputMaterialPath` is empty.
+- The Character Workspace material slot action now uses the `CharacterModSpec.MaterialOperations` plan/write path in memory. The standalone material menu remains as an advanced direct adapter, not the workspace's core architecture.
 
 Next UX target:
 
@@ -909,6 +910,7 @@ Implemented:
 - `NteCharacterModSpec -ApplyMaterials` writes material instances and reports per-operation output path, report filename, applied count, texture override count, source texture usage, missing textures, unmatched source texture overrides, and editor-only proxy creation.
 - Raw FModel material export arrays are now accepted by the material module and normalized into `Textures`, `Scalars`, `Colors`, and `Switches` parameter sections.
 - `BuildPackagePlanFromCharacterModSpec` merges material-plan package seeds, so generated MIs and replacement textures enter package candidates even when the output MI path is derived.
+- Character Workspace material actions now build a single-operation `CharacterModSpec` draft and apply it through the same plan/writer path as `NteCharacterModSpec -ApplyMaterials`.
 
 Verified:
 

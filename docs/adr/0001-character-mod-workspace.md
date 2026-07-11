@@ -52,7 +52,7 @@ The first vertical path is now implemented and smoke-tested:
 - `CharacterModSpec` drives `HTPlayerAppearance` creation/update.
 - `ArrayFashionAttachedMeshData` supports multiple attached mesh entries, socket/transform data, anim classes, and `MeshComponentOwnedTags`.
 - `NteAssetInspection` can verify generated `HTPlayerAppearance` data and Blueprint SCS nodes.
-- `CharacterModSpec.MaterialOperations` now produces a `MaterialPlan`, supports `NteCharacterModSpec -ApplyMaterials`, accepts raw FModel `MaterialInstanceConstant` JSON arrays, and contributes generated material instances/replacement textures to package planning.
+- `CharacterModSpec.MaterialOperations` now produces a `MaterialPlan`, supports `NteCharacterModSpec -ApplyMaterials`, accepts raw FModel `MaterialInstanceConstant` JSON arrays, contributes generated material instances/replacement textures to package planning, and is used by the Character Workspace material slot action.
 - Workspace package creation uses `CharacterModSpec` instead of selected Content Browser assets.
 - A 004 Lacrimosa attached-mesh smoke spec cooked and packaged to pak/utoc/ucas.
 

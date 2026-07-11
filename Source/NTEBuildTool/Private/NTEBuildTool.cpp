@@ -4,6 +4,8 @@
 
 #include "FModelPhysicsAssetImporter.h"
 #include "NteBuildToolSettings.h"
+#include "NteCharacterMaterialPlan.h"
+#include "NteCharacterMaterialWriter.h"
 #include "NteEditorAssetUtils.h"
 #include "NteMaterialInstanceDialog.h"
 #include "NteMaterialInstanceTool.h"
@@ -16,6 +18,7 @@
 #include "NteNotificationUtils.h"
 
 #include "ContentBrowserModule.h"
+#include "Dom/JsonValue.h"
 #include "Engine/SkeletalMesh.h"
 #include "IContentBrowserSingleton.h"
 #include "Misc/PackageName.h"
@@ -73,6 +76,36 @@ NTEBuildTool::Material::FNteMaterialInstanceOptions MakeWorkspaceMaterialDefault
 	return Options;
 }
 
+FString MakeMaterialOperationId(const int32 SlotIndex)
+{
+	return SlotIndex != INDEX_NONE
+		? FString::Printf(TEXT("main_slot_%d_material"), SlotIndex)
+		: TEXT("main_material");
+}
+
+TMap<FString, FString> JsonStringObjectToMap(const TSharedPtr<FJsonObject>& Object)
+{
+	TMap<FString, FString> Result;
+	if (!Object.IsValid())
+	{
+		return Result;
+	}
+
+	for (const TPair<FString, TSharedPtr<FJsonValue>>& Pair : Object->Values)
+	{
+		if (Pair.Value.IsValid())
+		{
+			const FString SourceTexturePath = NTEBuildTool::Editor::NormalizeAssetPathForText(Pair.Key);
+			const FString ReplacementTexturePath = NTEBuildTool::Editor::NormalizeAssetPathForText(Pair.Value->AsString());
+			if (!SourceTexturePath.IsEmpty() && !ReplacementTexturePath.IsEmpty())
+			{
+				Result.Add(SourceTexturePath, ReplacementTexturePath);
+			}
+		}
+	}
+	return Result;
+}
+
 void RunCreateModMaterialInstanceFromSourceJson(const NTEBuildTool::Material::FNteMaterialInstanceOptions& InitialOptions)
 {
 	FString SourceMaterialJson;
@@ -113,6 +146,78 @@ void RunCreateModMaterialInstanceFromSourceJson(const NTEBuildTool::Material::FN
 		FText::FromString(Result.OutputMaterialPath),
 		FText::AsNumber(Result.CreateResult.ApplySummary.SourceTextureOverrideGroups),
 		FText::FromString(Result.ReportFilename)));
+}
+
+void RunCharacterMaterialOperationFromSourceJson(
+	USkeletalMesh* SelectedMesh,
+	const NTEBuildTool::Workspace::FNteMeshModWorkspaceResult& WorkspaceResult)
+{
+	FString SourceMaterialJson;
+	if (!NTEBuildTool::Editor::ChooseJsonFileWithTitle(
+		LOCTEXT("ChooseCharacterMaterialSourceJson", "Choose FModel Material JSON"),
+		TEXT("MI_source_material.json"),
+		SourceMaterialJson))
+	{
+		return;
+	}
+
+	NTEBuildTool::Material::FNteMaterialInstanceOptions Options;
+	TSharedPtr<FJsonObject> SourceTextureOverrides;
+	if (!NTEBuildTool::Material::ShowMaterialInstanceRecipeDialog(
+		SourceMaterialJson,
+		MakeWorkspaceMaterialDefaults(SelectedMesh, WorkspaceResult),
+		Options,
+		SourceTextureOverrides))
+	{
+		return;
+	}
+
+	NTEBuildTool::Character::FNteCharacterModSpec CharacterSpec = WorkspaceResult.CharacterSpec;
+	if (!Options.MeshPath.IsEmpty())
+	{
+		CharacterSpec.MainMeshPath = Options.MeshPath;
+	}
+	else if (SelectedMesh)
+	{
+		CharacterSpec.MainMeshPath = NTEBuildTool::Editor::GetAssetPackagePath(SelectedMesh);
+	}
+
+	NTEBuildTool::Character::FNteCharacterMaterialOperationSpec Operation;
+	Operation.Id = MakeMaterialOperationId(Options.SlotIndex);
+	Operation.TargetMeshId = TEXT("main");
+	Operation.SlotIndex = Options.SlotIndex;
+	Operation.SlotName = WorkspaceResult.SlotName;
+	Operation.SourceMaterialJson = Options.SourceMaterialJson.IsEmpty() ? SourceMaterialJson : Options.SourceMaterialJson;
+	Operation.ParentMaterialPath = Options.ParentMaterialPath;
+	Operation.OutputMaterialPath = Options.OutputMaterialPath;
+	Operation.SourceTextureOverrides = JsonStringObjectToMap(SourceTextureOverrides);
+	Operation.bAssignToSlot = Options.bAssignToMeshSlot;
+	CharacterSpec.MaterialOperations.Reset();
+	CharacterSpec.MaterialOperations.Add(MoveTemp(Operation));
+
+	const NTEBuildTool::Character::FNteCharacterMaterialPlan MaterialPlan =
+		NTEBuildTool::Character::BuildCharacterMaterialPlanFromSpec(CharacterSpec);
+
+	const FScopedTransaction Transaction(LOCTEXT("ApplyCharacterMaterialOperationTransaction", "Apply Character Material Operation"));
+	const NTEBuildTool::Character::FNteCharacterMaterialWriteResult WriteResult =
+		NTEBuildTool::Character::WriteCharacterMaterials(MaterialPlan);
+	if (WriteResult.HasErrors())
+	{
+		NTEBuildTool::Editor::ShowError(FText::FromString(FString::Join(WriteResult.Errors, TEXT("\n"))));
+		return;
+	}
+
+	FString OutputMaterialPath;
+	int32 SourceTextureGroups = 0;
+	if (!WriteResult.Operations.IsEmpty())
+	{
+		OutputMaterialPath = WriteResult.Operations[0].OutputMaterialPath;
+		SourceTextureGroups = WriteResult.Operations[0].SourceTextureOverrideGroups;
+	}
+	NTEBuildTool::Editor::ShowSuccessNotification(FText::Format(
+		LOCTEXT("AppliedCharacterMaterialOperation", "Applied CharacterModSpec material operation. Output: {0}. Source texture groups: {1}."),
+		FText::FromString(OutputMaterialPath),
+		FText::AsNumber(SourceTextureGroups)));
 }
 
 void RunCharacterModPackageFromSpec(NTEBuildTool::Character::FNteCharacterModSpec CharacterSpec)
@@ -239,8 +344,8 @@ void FNTEBuildToolModule::OpenCharacterModWorkspace()
 
 	switch (WorkspaceResult.Action)
 	{
-	case NTEBuildTool::Workspace::ENteMeshModWorkspaceAction::CreateMaterialInstance:
-		RunCreateModMaterialInstanceFromSourceJson(MakeWorkspaceMaterialDefaults(SelectedSkeletalMesh, WorkspaceResult));
+	case NTEBuildTool::Workspace::ENteMeshModWorkspaceAction::ApplyMaterialOperation:
+		RunCharacterMaterialOperationFromSourceJson(SelectedSkeletalMesh, WorkspaceResult);
 		break;
 	case NTEBuildTool::Workspace::ENteMeshModWorkspaceAction::ConfigureToggleRuntime:
 		CreateMeshToggleUiSetup();

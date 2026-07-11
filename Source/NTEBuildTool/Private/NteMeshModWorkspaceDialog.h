@@ -12,7 +12,7 @@ namespace NTEBuildTool::Workspace
 enum class ENteMeshModWorkspaceAction
 {
 	None,
-	CreateMaterialInstance,
+	ApplyMaterialOperation,
 	ConfigureToggleRuntime,
 	BuildPackage
 };

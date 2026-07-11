@@ -769,6 +769,11 @@ TArray<FNteMaterialSourceTextureUsage> BuildSourceTextureUsage(const FJsonObject
 	return Usage;
 }
 
+bool LoadMaterialSourceParametersFromJsonFile(const FString& SourceMaterialJson, TSharedPtr<FJsonObject>& OutSourceMaterial, FString& OutError)
+{
+	return LoadSourceMaterialJson(SourceMaterialJson, OutSourceMaterial, OutError);
+}
+
 TSharedRef<FJsonObject> ExpandSourceTextureOverridesToParameters(
 	const TArray<FNteMaterialSourceTextureUsage>& SourceTextureUsage,
 	const FJsonObject* SourceTextureOverrides,
