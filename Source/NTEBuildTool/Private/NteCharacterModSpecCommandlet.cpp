@@ -6,6 +6,7 @@
 #include "NteAppearanceAssemblyPlan.h"
 #include "NteAppearanceAssemblyWriter.h"
 #include "NteCharacterModSpec.h"
+#include "NteCharacterRuntimeActionPlan.h"
 #include "NteJsonFileUtils.h"
 #include "NteModPackageJob.h"
 #include "NteModPackagePlan.h"
@@ -123,6 +124,8 @@ int32 UNteCharacterModSpecCommandlet::Main(const FString& Params)
 	const TArray<FString> PackageSeeds = NTEBuildTool::Character::CollectCharacterModSpecPackageSeeds(Spec);
 	const NTEBuildTool::Character::FNteAppearanceAssemblyPlan AppearancePlan =
 		NTEBuildTool::Character::BuildAppearanceAssemblyPlanFromSpec(Spec);
+	const NTEBuildTool::Character::FNteCharacterRuntimeActionPlan RuntimeActionPlan =
+		NTEBuildTool::Character::BuildCharacterRuntimeActionPlanFromSpec(Spec);
 	const bool bApplyAppearance = FParse::Param(*Params, TEXT("ApplyAppearance"));
 	NTEBuildTool::Character::FNteAppearanceAssemblyWriteResult AppearanceWriteResult;
 	if (bApplyAppearance && !Validation.HasErrors())
@@ -168,6 +171,7 @@ int32 UNteCharacterModSpecCommandlet::Main(const FString& Params)
 	Root->SetArrayField(TEXT("Warnings"), StringArrayToJsonValues(Validation.Warnings));
 	Root->SetArrayField(TEXT("PackageSeeds"), StringArrayToJsonValues(PackageSeeds));
 	Root->SetObjectField(TEXT("AppearanceAssemblyPlan"), NTEBuildTool::Character::AppearanceAssemblyPlanToJson(AppearancePlan));
+	Root->SetObjectField(TEXT("RuntimeActionPlan"), NTEBuildTool::Character::CharacterRuntimeActionPlanToJson(RuntimeActionPlan));
 	Root->SetBoolField(TEXT("ApplyAppearance"), bApplyAppearance);
 	if (bApplyAppearance)
 	{

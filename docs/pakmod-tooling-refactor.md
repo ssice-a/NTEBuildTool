@@ -875,6 +875,11 @@ The first Character Mod Workspace vertical slice is now compiling and smoke-test
 - The Character Workspace Package button now follows the `CharacterModSpec` package path instead of selected Content Browser assets.
 - `Config/FilterPlugin.ini` excludes `.scratch`, build outputs, binaries, intermediate files, saved data, and DDC from plugin package builds.
 - `NteCharacterModSpec -ApplyAppearance -BuildPackage` produced pak/utoc/ucas for `lacrimosa004_character_attached_smoke_P` in the game Mods directory.
+- `NteCharacterRuntimeActionPlan` now exposes the next runtime slice from the same `CharacterModSpec.RuntimeActions` model:
+  - action host grouping by main/attached mesh and AnimBP path;
+  - tag-based target lookup data from `TargetComponentTags` plus `MeshComponentOwnedTags`;
+  - shared Widget/SaveGame Blueprint output paths under `/mod/Runtime`;
+  - first-slice Blueprint support flags for `AttachedMeshVisibility` and `MaterialSlotVisibility`.
 
 Mirror Project requirement:
 
@@ -883,6 +888,6 @@ Mirror Project requirement:
 Remaining work:
 
 - validate `PlayerUIShow` SCS sync against a real existing UIShow Blueprint;
-- implement generated runtime action assets that use `MeshComponentOwnedTags` to find material-slot and attached-mesh targets;
+- implement generated runtime action assets from `NteCharacterRuntimeActionPlan`, starting with `AttachedMeshVisibility` and `MaterialSlotVisibility`;
 - build the Kawaii preset editor/data model;
 - replace remaining mesh-only UI fragments with spec-first Character Workspace panels.

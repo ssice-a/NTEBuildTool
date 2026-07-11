@@ -38,11 +38,21 @@ Implemented:
 - The 071 example now uses `AttachedMeshVisibility` and `NTE.Attached.mask` tags instead of the old ambiguous `MeshVisibility` placeholder.
 - Added a focused 004 runtime-action validation spec:
   - `.scratch/character-mod-workspace/004_lacrimosa_runtime_actions_validation.spec.json`
+- Added `NteCharacterRuntimeActionPlan`:
+  - groups actions by runtime host mesh / host AnimBP;
+  - resolves attached targets through action `TargetComponentTags` plus attached mesh `MeshComponentOwnedTags`;
+  - records whether an action is in the first Blueprint generation slice (`AttachedMeshVisibility`, `MaterialSlotVisibility`) or schema-only for now;
+  - plans shared Widget and SaveGame Blueprint paths under `/mod/Runtime`.
+- Added commandlet reports:
+  - `.scratch/character-mod-workspace/004_lacrimosa_runtime_actions_plan.report.json`
+  - `.scratch/character-mod-workspace/071_chaos_runtime_actions_plan.report.json`
 
 ## Blockers
 
 - Need concrete template/graph-generation design for CopyPose + Kawaii + output pose.
-- Need action executor graph design for tag-based attached mesh visibility and material operations.
+- Need action executor graph generation for the first runtime slice:
+  - `AttachedMeshVisibility`;
+  - `MaterialSlotVisibility`.
 - Need Kawaii schema compatibility before final cooked physics AnimBPs are trusted.
 
 ## Tests

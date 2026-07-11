@@ -282,7 +282,10 @@ Runtime action checkpoint:
 
 - `CharacterModSpec.RuntimeActions` now has a typed target/action schema for material slot visibility, attached mesh visibility, material swap, scalar/vector parameters, and morph targets.
 - Runtime validation now requires tag-based lookup data for attached mesh visibility, so later Blueprint generation can stay data-driven instead of guessing component names.
+- `NteCharacterRuntimeActionPlan` now converts `RuntimeActions` into a commandlet-visible plan with host AnimBP grouping, target lookup mode, target component tags, generated Widget/SaveGame paths, and first-slice Blueprint support flags.
+- Runtime asset roots now prefer explicit `RuntimeAnimBlueprintPath` directories and otherwise fall back to `/mod/Runtime`, so generated Widget/SaveGame/runtime assets do not drift into `/mod/Generated`.
 - `.scratch/character-mod-workspace/004_lacrimosa_runtime_actions_validation.spec.json` is the focused spec for this data-layer regression.
+- `.scratch/character-mod-workspace/004_lacrimosa_runtime_actions_plan.report.json` and `.scratch/character-mod-workspace/071_chaos_runtime_actions_plan.report.json` are the focused reports for the runtime-action planning regression.
 
 Kawaii preset checkpoint:
 
