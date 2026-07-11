@@ -4,6 +4,7 @@
 
 #include "FModelPhysicsAssetImporter.h"
 #include "NteBuildToolSettings.h"
+#include "NteCharacterModSpec.h"
 #include "NteCharacterMaterialPlan.h"
 #include "NteCharacterMaterialWriter.h"
 #include "NteEditorAssetUtils.h"
@@ -40,14 +41,8 @@ bool ChooseJsonFile(FString& OutFilename)
 		OutFilename);
 }
 
-FString MakeDefaultWorkspaceMaterialInstancePath(USkeletalMesh* Mesh, const int32 SlotIndex)
+FString MakeDefaultWorkspaceMaterialInstancePathFromMeshPath(const FString& MeshPath, const int32 SlotIndex)
 {
-	if (!Mesh)
-	{
-		return FString();
-	}
-
-	const FString MeshPath = NTEBuildTool::Editor::GetAssetPackagePath(Mesh);
 	if (!NTEBuildTool::Editor::IsGamePackageName(MeshPath))
 	{
 		return FString();
@@ -72,7 +67,7 @@ NTEBuildTool::Material::FNteMaterialInstanceOptions MakeWorkspaceMaterialDefault
 	Options.SlotIndex = WorkspaceResult.SlotIndex;
 	Options.bAssignToMeshSlot = !Options.MeshPath.IsEmpty() && Options.SlotIndex != INDEX_NONE;
 	Options.ParentMaterialPath = WorkspaceResult.MaterialPath;
-	Options.OutputMaterialPath = MakeDefaultWorkspaceMaterialInstancePath(SelectedMesh, WorkspaceResult.SlotIndex);
+	Options.OutputMaterialPath = MakeDefaultWorkspaceMaterialInstancePathFromMeshPath(Options.MeshPath, WorkspaceResult.SlotIndex);
 	return Options;
 }
 
@@ -81,6 +76,80 @@ FString MakeMaterialOperationId(const int32 SlotIndex)
 	return SlotIndex != INDEX_NONE
 		? FString::Printf(TEXT("main_slot_%d_material"), SlotIndex)
 		: TEXT("main_material");
+}
+
+FString SanitizeSpecFilenamePart(FString Value)
+{
+	Value.TrimStartAndEndInline();
+	if (Value.IsEmpty())
+	{
+		Value = TEXT("CharacterModSpec");
+	}
+
+	const TCHAR* InvalidChars = TEXT("/\\:*?\"<>|");
+	for (const TCHAR* Cursor = InvalidChars; Cursor && *Cursor; ++Cursor)
+	{
+		Value.ReplaceCharInline(*Cursor, TCHAR('_'));
+	}
+	return Value;
+}
+
+FString MakeDefaultCharacterSpecFilename(const NTEBuildTool::Character::FNteCharacterModSpec& Spec)
+{
+	FString BaseName = Spec.WorkspaceName;
+	if (BaseName.IsEmpty())
+	{
+		BaseName = Spec.Package.ModName;
+	}
+	if (BaseName.IsEmpty() && !Spec.MainMeshPath.IsEmpty())
+	{
+		BaseName = FPackageName::GetShortName(Spec.MainMeshPath);
+	}
+	return SanitizeSpecFilenamePart(BaseName) + TEXT(".spec.json");
+}
+
+void UpsertMaterialOperation(
+	TArray<NTEBuildTool::Character::FNteCharacterMaterialOperationSpec>& Operations,
+	NTEBuildTool::Character::FNteCharacterMaterialOperationSpec&& Operation)
+{
+	for (NTEBuildTool::Character::FNteCharacterMaterialOperationSpec& ExistingOperation : Operations)
+	{
+		if (ExistingOperation.Id == Operation.Id)
+		{
+			ExistingOperation = MoveTemp(Operation);
+			return;
+		}
+	}
+
+	Operations.Add(MoveTemp(Operation));
+}
+
+FString SaveCharacterSpecAfterWorkspaceAction(
+	const NTEBuildTool::Character::FNteCharacterModSpec& CharacterSpec,
+	const FString& ExistingSpecFilename)
+{
+	FString SpecFilename = ExistingSpecFilename;
+	if (SpecFilename.IsEmpty())
+	{
+		if (!NTEBuildTool::Editor::ChooseSaveJsonFileWithTitle(
+			LOCTEXT("SaveCharacterModSpecAfterAction", "Save Updated CharacterModSpec JSON"),
+			MakeDefaultCharacterSpecFilename(CharacterSpec),
+			SpecFilename))
+		{
+			return FString();
+		}
+	}
+
+	FString Error;
+	if (!NTEBuildTool::Character::SaveCharacterModSpecToJsonFile(CharacterSpec, SpecFilename, Error))
+	{
+		NTEBuildTool::Editor::ShowError(FText::Format(
+			LOCTEXT("WorkspaceSpecSaveAfterActionFailed", "The workspace action finished, but CharacterModSpec could not be saved:\n{0}"),
+			FText::FromString(Error)));
+		return FString();
+	}
+
+	return SpecFilename;
 }
 
 TMap<FString, FString> JsonStringObjectToMap(const TSharedPtr<FJsonObject>& Object)
@@ -192,8 +261,7 @@ void RunCharacterMaterialOperationFromSourceJson(
 	Operation.OutputMaterialPath = Options.OutputMaterialPath;
 	Operation.SourceTextureOverrides = JsonStringObjectToMap(SourceTextureOverrides);
 	Operation.bAssignToSlot = Options.bAssignToMeshSlot;
-	CharacterSpec.MaterialOperations.Reset();
-	CharacterSpec.MaterialOperations.Add(MoveTemp(Operation));
+	UpsertMaterialOperation(CharacterSpec.MaterialOperations, MoveTemp(Operation));
 
 	const NTEBuildTool::Character::FNteCharacterMaterialPlan MaterialPlan =
 		NTEBuildTool::Character::BuildCharacterMaterialPlanFromSpec(CharacterSpec);
@@ -207,6 +275,7 @@ void RunCharacterMaterialOperationFromSourceJson(
 		return;
 	}
 
+	const FString SavedSpecFilename = SaveCharacterSpecAfterWorkspaceAction(CharacterSpec, WorkspaceResult.SpecFilename);
 	FString OutputMaterialPath;
 	int32 SourceTextureGroups = 0;
 	if (!WriteResult.Operations.IsEmpty())
@@ -215,9 +284,10 @@ void RunCharacterMaterialOperationFromSourceJson(
 		SourceTextureGroups = WriteResult.Operations[0].SourceTextureOverrideGroups;
 	}
 	NTEBuildTool::Editor::ShowSuccessNotification(FText::Format(
-		LOCTEXT("AppliedCharacterMaterialOperation", "Applied CharacterModSpec material operation. Output: {0}. Source texture groups: {1}."),
+		LOCTEXT("AppliedCharacterMaterialOperation", "Applied CharacterModSpec material operation. Output: {0}. Source texture groups: {1}. Spec: {2}"),
 		FText::FromString(OutputMaterialPath),
-		FText::AsNumber(SourceTextureGroups)));
+		FText::AsNumber(SourceTextureGroups),
+		FText::FromString(SavedSpecFilename.IsEmpty() ? TEXT("<not saved>") : SavedSpecFilename)));
 }
 
 void RunCharacterModPackageFromSpec(NTEBuildTool::Character::FNteCharacterModSpec CharacterSpec)

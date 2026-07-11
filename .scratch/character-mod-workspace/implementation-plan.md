@@ -247,7 +247,8 @@ Completed:
   - `NteCharacterModSpec -ApplyMaterials`;
   - material plan package seeds for generated MIs and replacement textures;
   - raw FModel `MaterialInstanceConstant` JSON array normalization in the material module;
-  - Character Workspace material slot actions now apply a single-operation in-memory `CharacterModSpec` through the same material plan/writer path.
+  - Character Workspace material slot actions apply through the same material plan/writer path;
+  - Character Workspace can load/save `CharacterModSpec` JSON, edit the core spec fields, list existing `MaterialOperations`, and upsert new material-slot operations back into the saved spec file.
 
 Verified:
 
@@ -266,7 +267,8 @@ Verified:
 - `NteCharacterModSpec` plan-only reports include `MaterialPlan` for 071 and 004 runtime-action specs.
 - `NteCharacterModSpec -ApplyMaterials` safely generated a material instance from real FModel JSON without assigning it to the mesh slot.
 - `NteCharacterModSpec -ApplyMaterials` with `SourceTextureOverrides` expanded a source texture group to the `BaseColor` parameter and wrote the replacement texture override.
-- The mirrored `PhyLabEditor` build passes after routing the Workspace material action through `CharacterModSpec.MaterialOperations`.
+- The mirrored `PhyLabEditor` build passes after adding Workspace `CharacterModSpec` load/save and material operation upsert.
+- `RunUAT BuildPlugin -StrictIncludes` passes for `.scratch/PluginBuild_CharacterWorkspaceSpecPersistence`.
 
 Latest verification reports:
 
@@ -287,7 +289,7 @@ Continue with the remaining vertical slices:
 
 1. validate `PlayerUIShow` SCS sync against a real existing UIShow Blueprint once the Mirror Project contains one;
 2. implement the runtime action generator that uses `MeshComponentOwnedTags` to find attached mesh/material-slot targets;
-3. persist/load full `CharacterModSpec` files in the Character Workspace and show `MaterialOperations` as editable slot-centered rows rather than one-shot modal actions;
+3. expand the Character Workspace material rows from read-only summaries into editable slot-centered rows with remove/reorder affordances;
 4. design and implement the UE-side Kawaii preset editor/data model;
 5. replace the remaining mesh-only UI fragments with spec-first Character Workspace panels;
 6. keep using the 004 smoke spec as the minimal package regression test.

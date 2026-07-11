@@ -21,6 +21,7 @@ struct FNteMeshModWorkspaceResult
 {
 	ENteMeshModWorkspaceAction Action = ENteMeshModWorkspaceAction::None;
 	NTEBuildTool::Character::FNteCharacterModSpec CharacterSpec;
+	FString SpecFilename;
 	FString MeshPath;
 	int32 SlotIndex = INDEX_NONE;
 	FString SlotName;

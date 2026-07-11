@@ -910,11 +910,13 @@ Implemented:
 - `NteCharacterModSpec -ApplyMaterials` writes material instances and reports per-operation output path, report filename, applied count, texture override count, source texture usage, missing textures, unmatched source texture overrides, and editor-only proxy creation.
 - Raw FModel material export arrays are now accepted by the material module and normalized into `Textures`, `Scalars`, `Colors`, and `Switches` parameter sections.
 - `BuildPackagePlanFromCharacterModSpec` merges material-plan package seeds, so generated MIs and replacement textures enter package candidates even when the output MI path is derived.
-- Character Workspace material actions now build a single-operation `CharacterModSpec` draft and apply it through the same plan/writer path as `NteCharacterModSpec -ApplyMaterials`.
+- Character Workspace material actions apply through the same plan/writer path as `NteCharacterModSpec -ApplyMaterials`.
+- Character Workspace now has a spec-first persistence path: load/save `CharacterModSpec` JSON, edit core spec fields, show existing `MaterialOperations`, and upsert material slot actions back into the saved spec file.
 
 Verified:
 
-- `PhyLabEditor Win64 Development` builds after syncing the plugin mirror.
+- `PhyLabEditor Win64 Development` builds after syncing the plugin mirror, including the Workspace spec persistence/upsert UI.
+- `RunUAT BuildPlugin -StrictIncludes` succeeds for `.scratch/PluginBuild_CharacterWorkspaceSpecPersistence`.
 - `NteCharacterModSpec` plan-only reports still pass for:
   - `.scratch/character-mod-workspace/examples/071_chaos_character_mod_spec.example.json`;
   - `.scratch/character-mod-workspace/004_lacrimosa_runtime_actions_validation.spec.json`.

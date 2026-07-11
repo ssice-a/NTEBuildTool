@@ -4,12 +4,15 @@
 
 #include "NteBuildToolSettings.h"
 #include "NteEditorAssetUtils.h"
+#include "NteNotificationUtils.h"
 
 #include "Engine/SkeletalMesh.h"
 #include "Framework/Application/SlateApplication.h"
 #include "Materials/MaterialInterface.h"
+#include "Misc/PackageName.h"
 #include "UObject/Package.h"
 #include "Widgets/Input/SButton.h"
+#include "Widgets/Input/SEditableTextBox.h"
 #include "Widgets/Layout/SScrollBox.h"
 #include "Widgets/SBoxPanel.h"
 #include "Widgets/SWindow.h"
@@ -21,6 +24,52 @@ namespace NTEBuildTool::Workspace
 {
 namespace
 {
+struct FWorkspaceDialogState
+{
+	NTEBuildTool::Character::FNteCharacterModSpec Spec;
+	FString SpecFilename;
+	bool bDirty = false;
+	bool bRefreshingControls = false;
+
+	TSharedPtr<SEditableTextBox> WorkspaceNameTextBox;
+	TSharedPtr<SEditableTextBox> MainMeshPathTextBox;
+	TSharedPtr<SEditableTextBox> AppearancePathTextBox;
+	TSharedPtr<SEditableTextBox> UIActorPathTextBox;
+	TSharedPtr<SEditableTextBox> PackageModNameTextBox;
+	TSharedPtr<SEditableTextBox> PackageModsDirTextBox;
+	TSharedPtr<SVerticalBox> MaterialOperationRows;
+};
+
+FString SanitizeFilenamePart(FString Value)
+{
+	Value.TrimStartAndEndInline();
+	if (Value.IsEmpty())
+	{
+		Value = TEXT("CharacterModSpec");
+	}
+
+	const TCHAR* InvalidChars = TEXT("/\\:*?\"<>|");
+	for (const TCHAR* Cursor = InvalidChars; Cursor && *Cursor; ++Cursor)
+	{
+		Value.ReplaceCharInline(*Cursor, TCHAR('_'));
+	}
+	return Value;
+}
+
+FString MakeDefaultSpecFilename(const NTEBuildTool::Character::FNteCharacterModSpec& Spec)
+{
+	FString BaseName = Spec.WorkspaceName;
+	if (BaseName.IsEmpty())
+	{
+		BaseName = Spec.Package.ModName;
+	}
+	if (BaseName.IsEmpty() && !Spec.MainMeshPath.IsEmpty())
+	{
+		BaseName = FPackageName::GetShortName(Spec.MainMeshPath);
+	}
+	return SanitizeFilenamePart(BaseName) + TEXT(".spec.json");
+}
+
 FText MakeMeshHeader(USkeletalMesh* Mesh)
 {
 	if (!Mesh)
@@ -44,6 +93,209 @@ NTEBuildTool::Character::FNteCharacterModSpec MakeDraftCharacterSpec(USkeletalMe
 	return Spec;
 }
 
+void ApplyTextBoxesToSpec(const TSharedRef<FWorkspaceDialogState>& State)
+{
+	if (State->WorkspaceNameTextBox.IsValid())
+	{
+		State->Spec.WorkspaceName = State->WorkspaceNameTextBox->GetText().ToString();
+	}
+	if (State->MainMeshPathTextBox.IsValid())
+	{
+		State->Spec.MainMeshPath = NTEBuildTool::Editor::NormalizeAssetPathForText(State->MainMeshPathTextBox->GetText().ToString());
+	}
+	if (State->AppearancePathTextBox.IsValid())
+	{
+		State->Spec.Appearance.PlayerAppearanceAssetPath = NTEBuildTool::Editor::NormalizeAssetPathForText(State->AppearancePathTextBox->GetText().ToString());
+	}
+	if (State->UIActorPathTextBox.IsValid())
+	{
+		State->Spec.Appearance.UIActorClassPath = NTEBuildTool::Editor::NormalizeAssetPathForText(State->UIActorPathTextBox->GetText().ToString());
+	}
+	if (State->PackageModNameTextBox.IsValid())
+	{
+		State->Spec.Package.ModName = State->PackageModNameTextBox->GetText().ToString();
+	}
+	if (State->PackageModsDirTextBox.IsValid())
+	{
+		State->Spec.Package.ModsDir = State->PackageModsDirTextBox->GetText().ToString();
+	}
+}
+
+void RebuildMaterialOperationRows(const TSharedRef<FWorkspaceDialogState>& State)
+{
+	if (!State->MaterialOperationRows.IsValid())
+	{
+		return;
+	}
+
+	State->MaterialOperationRows->ClearChildren();
+	if (State->Spec.MaterialOperations.IsEmpty())
+	{
+		State->MaterialOperationRows->AddSlot()
+			.AutoHeight()
+			[
+				SNew(STextBlock)
+				.Text(LOCTEXT("WorkspaceNoMaterialOperations", "No material operations in this spec yet. Use Apply Material on a mesh slot to add one."))
+			];
+		return;
+	}
+
+	for (const NTEBuildTool::Character::FNteCharacterMaterialOperationSpec& Operation : State->Spec.MaterialOperations)
+	{
+		const FString SlotText = Operation.SlotName.IsEmpty()
+			? FString::Printf(TEXT("Slot %d"), Operation.SlotIndex)
+			: FString::Printf(TEXT("Slot %d / %s"), Operation.SlotIndex, *Operation.SlotName);
+		const FString OutputText = Operation.OutputMaterialPath.IsEmpty() ? TEXT("<output material not set>") : Operation.OutputMaterialPath;
+
+		State->MaterialOperationRows->AddSlot()
+			.AutoHeight()
+			.Padding(0, 2)
+			[
+				SNew(SHorizontalBox)
+				+ SHorizontalBox::Slot()
+				.FillWidth(0.24f)
+				.Padding(0, 0, 8, 0)
+				.VAlign(VAlign_Center)
+				[
+					SNew(STextBlock)
+					.Text(FText::FromString(Operation.Id.IsEmpty() ? TEXT("<missing id>") : Operation.Id))
+				]
+				+ SHorizontalBox::Slot()
+				.FillWidth(0.18f)
+				.Padding(0, 0, 8, 0)
+				.VAlign(VAlign_Center)
+				[
+					SNew(STextBlock)
+					.Text(FText::FromString(Operation.TargetMeshId.IsEmpty() ? TEXT("main") : Operation.TargetMeshId))
+				]
+				+ SHorizontalBox::Slot()
+				.FillWidth(0.22f)
+				.Padding(0, 0, 8, 0)
+				.VAlign(VAlign_Center)
+				[
+					SNew(STextBlock)
+					.Text(FText::FromString(SlotText))
+				]
+				+ SHorizontalBox::Slot()
+				.FillWidth(0.36f)
+				.VAlign(VAlign_Center)
+				[
+					SNew(STextBlock)
+					.Text(FText::FromString(OutputText))
+				]
+			];
+	}
+}
+
+void RefreshWorkspaceEditor(const TSharedRef<FWorkspaceDialogState>& State)
+{
+	State->bRefreshingControls = true;
+	if (State->WorkspaceNameTextBox.IsValid())
+	{
+		State->WorkspaceNameTextBox->SetText(FText::FromString(State->Spec.WorkspaceName));
+	}
+	if (State->MainMeshPathTextBox.IsValid())
+	{
+		State->MainMeshPathTextBox->SetText(FText::FromString(State->Spec.MainMeshPath));
+	}
+	if (State->AppearancePathTextBox.IsValid())
+	{
+		State->AppearancePathTextBox->SetText(FText::FromString(State->Spec.Appearance.PlayerAppearanceAssetPath));
+	}
+	if (State->UIActorPathTextBox.IsValid())
+	{
+		State->UIActorPathTextBox->SetText(FText::FromString(State->Spec.Appearance.UIActorClassPath));
+	}
+	if (State->PackageModNameTextBox.IsValid())
+	{
+		State->PackageModNameTextBox->SetText(FText::FromString(State->Spec.Package.ModName));
+	}
+	if (State->PackageModsDirTextBox.IsValid())
+	{
+		State->PackageModsDirTextBox->SetText(FText::FromString(State->Spec.Package.ModsDir));
+	}
+	State->bRefreshingControls = false;
+	RebuildMaterialOperationRows(State);
+}
+
+bool SaveWorkspaceSpec(const TSharedRef<FWorkspaceDialogState>& State, const bool bSaveAs)
+{
+	ApplyTextBoxesToSpec(State);
+
+	FString Filename = State->SpecFilename;
+	if (bSaveAs || Filename.IsEmpty())
+	{
+		if (!NTEBuildTool::Editor::ChooseSaveJsonFileWithTitle(
+			LOCTEXT("SaveCharacterModSpecJson", "Save NTE CharacterModSpec JSON"),
+			MakeDefaultSpecFilename(State->Spec),
+			Filename))
+		{
+			return false;
+		}
+	}
+
+	FString Error;
+	if (!NTEBuildTool::Character::SaveCharacterModSpecToJsonFile(State->Spec, Filename, Error))
+	{
+		NTEBuildTool::Editor::ShowError(FText::FromString(Error));
+		return false;
+	}
+
+	State->SpecFilename = Filename;
+	State->bDirty = false;
+	NTEBuildTool::Editor::ShowSuccessNotification(FText::Format(
+		LOCTEXT("SavedCharacterModSpec", "Saved CharacterModSpec: {0}"),
+		FText::FromString(Filename)));
+	return true;
+}
+
+bool LoadWorkspaceSpec(const TSharedRef<FWorkspaceDialogState>& State, USkeletalMesh* SelectedMesh)
+{
+	FString Filename;
+	if (!NTEBuildTool::Editor::ChooseJsonFileWithTitle(
+		LOCTEXT("OpenCharacterModSpecJson", "Open NTE CharacterModSpec JSON"),
+		TEXT("CharacterModSpec.spec.json"),
+		Filename))
+	{
+		return false;
+	}
+
+	NTEBuildTool::Character::FNteCharacterModSpec LoadedSpec;
+	FString Error;
+	if (!NTEBuildTool::Character::LoadCharacterModSpecFromJsonFile(Filename, LoadedSpec, Error))
+	{
+		NTEBuildTool::Editor::ShowError(FText::FromString(Error));
+		return false;
+	}
+
+	if (LoadedSpec.WorkspaceName.IsEmpty())
+	{
+		LoadedSpec.WorkspaceName = SelectedMesh ? SelectedMesh->GetName() : TEXT("NewCharacterMod");
+	}
+	if (LoadedSpec.MainMeshPath.IsEmpty() && SelectedMesh)
+	{
+		LoadedSpec.MainMeshPath = NTEBuildTool::Editor::GetAssetPackagePath(SelectedMesh);
+	}
+	if (LoadedSpec.Package.ModsDir.IsEmpty())
+	{
+		LoadedSpec.Package.ModsDir = NTEBuildTool::Settings::GetDefaultModsOutputDirectory();
+	}
+	if (LoadedSpec.Package.ModName.IsEmpty())
+	{
+		LoadedSpec.Package.ModName = LoadedSpec.WorkspaceName + TEXT("_mod_P");
+	}
+
+	State->Spec = MoveTemp(LoadedSpec);
+	State->SpecFilename = Filename;
+	State->bDirty = false;
+	RefreshWorkspaceEditor(State);
+
+	NTEBuildTool::Editor::ShowSuccessNotification(FText::Format(
+		LOCTEXT("LoadedCharacterModSpec", "Loaded CharacterModSpec: {0}"),
+		FText::FromString(Filename)));
+	return true;
+}
+
 TSharedRef<SWidget> MakeSettingsSummary()
 {
 	const FString GameMount = NTEBuildTool::Settings::GetGameMountName();
@@ -64,55 +316,294 @@ TSharedRef<SWidget> MakeSettingsSummary()
 		];
 }
 
-TSharedRef<SWidget> MakeCharacterSpecSummary(const NTEBuildTool::Character::FNteCharacterModSpec& Spec)
+TSharedRef<SWidget> MakeCharacterSpecSummary(const TSharedRef<FWorkspaceDialogState>& State)
 {
-	const NTEBuildTool::Character::FNteCharacterModSpecValidationResult Validation =
-		NTEBuildTool::Character::ValidateCharacterModSpec(Spec);
-
-	const FString AppearanceText = Spec.Appearance.PlayerAppearanceAssetPath.IsEmpty()
-		? TEXT("Appearance: not selected yet")
-		: FString::Printf(TEXT("Appearance: %s"), *Spec.Appearance.PlayerAppearanceAssetPath);
-	const FString UIShowText = Spec.Appearance.UIActorClassPath.IsEmpty()
-		? TEXT("UI Preview: not selected yet")
-		: FString::Printf(TEXT("UI Preview: %s"), *Spec.Appearance.UIActorClassPath);
-	const FString CountsText = FString::Printf(
-		TEXT("Attached: %d   Materials: %d   Runtime Actions: %d   Kawaii Presets: %d"),
-		Spec.AttachedMeshes.Num(),
-		Spec.MaterialOperations.Num(),
-		Spec.RuntimeActions.Num(),
-		Spec.KawaiiPresets.Num());
-	const FString ValidationText = FString::Printf(
-		TEXT("Spec validation: %d error(s), %d warning(s)"),
-		Validation.Errors.Num(),
-		Validation.Warnings.Num());
-
 	return SNew(SVerticalBox)
 		+ SVerticalBox::Slot()
 		.AutoHeight()
 		[
 			SNew(STextBlock)
-			.Text(FText::FromString(AppearanceText))
+			.Text_Lambda([State]()
+			{
+				return FText::FromString(State->SpecFilename.IsEmpty()
+					? TEXT("Spec file: <unsaved>")
+					: FString::Printf(TEXT("Spec file: %s"), *State->SpecFilename));
+			})
 		]
 		+ SVerticalBox::Slot()
 		.AutoHeight()
 		.Padding(0, 3, 0, 0)
 		[
 			SNew(STextBlock)
-			.Text(FText::FromString(UIShowText))
+			.Text_Lambda([State]()
+			{
+				return FText::FromString(State->Spec.Appearance.PlayerAppearanceAssetPath.IsEmpty()
+					? TEXT("Appearance: not selected yet")
+					: FString::Printf(TEXT("Appearance: %s"), *State->Spec.Appearance.PlayerAppearanceAssetPath));
+			})
 		]
 		+ SVerticalBox::Slot()
 		.AutoHeight()
 		.Padding(0, 3, 0, 0)
 		[
 			SNew(STextBlock)
-			.Text(FText::FromString(CountsText))
+			.Text_Lambda([State]()
+			{
+				return FText::FromString(State->Spec.Appearance.UIActorClassPath.IsEmpty()
+					? TEXT("UI Preview: not selected yet")
+					: FString::Printf(TEXT("UI Preview: %s"), *State->Spec.Appearance.UIActorClassPath));
+			})
 		]
 		+ SVerticalBox::Slot()
 		.AutoHeight()
 		.Padding(0, 3, 0, 0)
 		[
 			SNew(STextBlock)
-			.Text(FText::FromString(ValidationText))
+			.Text_Lambda([State]()
+			{
+				return FText::FromString(FString::Printf(
+					TEXT("Attached: %d   Materials: %d   Runtime Actions: %d   Kawaii Presets: %d"),
+					State->Spec.AttachedMeshes.Num(),
+					State->Spec.MaterialOperations.Num(),
+					State->Spec.RuntimeActions.Num(),
+					State->Spec.KawaiiPresets.Num()));
+			})
+		]
+		+ SVerticalBox::Slot()
+		.AutoHeight()
+		.Padding(0, 3, 0, 0)
+		[
+			SNew(STextBlock)
+			.Text_Lambda([State]()
+			{
+				const NTEBuildTool::Character::FNteCharacterModSpecValidationResult Validation =
+					NTEBuildTool::Character::ValidateCharacterModSpec(State->Spec);
+				return FText::FromString(FString::Printf(
+					TEXT("Spec validation: %d error(s), %d warning(s)%s"),
+					Validation.Errors.Num(),
+					Validation.Warnings.Num(),
+					State->bDirty ? TEXT("   Unsaved changes") : TEXT("")));
+			})
+		];
+}
+
+TSharedRef<SWidget> MakeEditableSpecRow(
+	const FText& Label,
+	const FString& InitialValue,
+	TSharedPtr<SEditableTextBox>& OutTextBox,
+	TFunction<void(const FString&)> OnValueChanged)
+{
+	return SNew(SHorizontalBox)
+		+ SHorizontalBox::Slot()
+		.FillWidth(0.20f)
+		.Padding(0, 0, 8, 0)
+		.VAlign(VAlign_Center)
+		[
+			SNew(STextBlock)
+			.Text(Label)
+		]
+		+ SHorizontalBox::Slot()
+		.FillWidth(0.80f)
+		.VAlign(VAlign_Center)
+		[
+			SAssignNew(OutTextBox, SEditableTextBox)
+			.Text(FText::FromString(InitialValue))
+			.OnTextChanged_Lambda([OnValueChanged](const FText& Text)
+			{
+				OnValueChanged(Text.ToString());
+			})
+		];
+}
+
+TSharedRef<SWidget> MakeCharacterSpecEditor(const TSharedRef<FWorkspaceDialogState>& State, USkeletalMesh* SelectedMesh)
+{
+	const auto MarkDirty = [State]()
+	{
+		if (!State->bRefreshingControls)
+		{
+			State->bDirty = true;
+		}
+	};
+
+	return SNew(SVerticalBox)
+		+ SVerticalBox::Slot()
+		.AutoHeight()
+		.Padding(0, 0, 0, 6)
+		[
+			SNew(SHorizontalBox)
+			+ SHorizontalBox::Slot()
+			.FillWidth(0.20f)
+			.Padding(0, 0, 8, 0)
+			.VAlign(VAlign_Center)
+			[
+				SNew(STextBlock)
+				.Text(LOCTEXT("WorkspaceSpecFileLabel", "Spec JSON"))
+			]
+			+ SHorizontalBox::Slot()
+			.FillWidth(1.0f)
+			.Padding(0, 0, 8, 0)
+			.VAlign(VAlign_Center)
+			[
+				SNew(STextBlock)
+				.Text_Lambda([State]()
+				{
+					return FText::FromString(State->SpecFilename.IsEmpty() ? TEXT("<unsaved>") : State->SpecFilename);
+				})
+			]
+			+ SHorizontalBox::Slot()
+			.AutoWidth()
+			.Padding(0, 0, 6, 0)
+			[
+				SNew(SButton)
+				.Text(LOCTEXT("WorkspaceLoadSpecButton", "Load"))
+				.OnClicked_Lambda([State, SelectedMesh]()
+				{
+					LoadWorkspaceSpec(State, SelectedMesh);
+					return FReply::Handled();
+				})
+			]
+			+ SHorizontalBox::Slot()
+			.AutoWidth()
+			.Padding(0, 0, 6, 0)
+			[
+				SNew(SButton)
+				.Text(LOCTEXT("WorkspaceSaveSpecButton", "Save"))
+				.OnClicked_Lambda([State]()
+				{
+					SaveWorkspaceSpec(State, false);
+					return FReply::Handled();
+				})
+			]
+			+ SHorizontalBox::Slot()
+			.AutoWidth()
+			[
+				SNew(SButton)
+				.Text(LOCTEXT("WorkspaceSaveSpecAsButton", "Save As"))
+				.OnClicked_Lambda([State]()
+				{
+					SaveWorkspaceSpec(State, true);
+					return FReply::Handled();
+				})
+			]
+		]
+		+ SVerticalBox::Slot()
+		.AutoHeight()
+		.Padding(0, 0, 0, 6)
+		[
+			MakeEditableSpecRow(
+				LOCTEXT("WorkspaceNameLabel", "Workspace"),
+				State->Spec.WorkspaceName,
+				State->WorkspaceNameTextBox,
+				[State, MarkDirty](const FString& Value)
+				{
+					State->Spec.WorkspaceName = Value;
+					MarkDirty();
+				})
+		]
+		+ SVerticalBox::Slot()
+		.AutoHeight()
+		.Padding(0, 0, 0, 6)
+		[
+			MakeEditableSpecRow(
+				LOCTEXT("WorkspaceMainMeshLabel", "Main Mesh"),
+				State->Spec.MainMeshPath,
+				State->MainMeshPathTextBox,
+				[State, MarkDirty](const FString& Value)
+				{
+					State->Spec.MainMeshPath = NTEBuildTool::Editor::NormalizeAssetPathForText(Value);
+					MarkDirty();
+				})
+		]
+		+ SVerticalBox::Slot()
+		.AutoHeight()
+		.Padding(0, 0, 0, 6)
+		[
+			MakeEditableSpecRow(
+				LOCTEXT("WorkspaceAppearanceLabel", "Appearance"),
+				State->Spec.Appearance.PlayerAppearanceAssetPath,
+				State->AppearancePathTextBox,
+				[State, MarkDirty](const FString& Value)
+				{
+					State->Spec.Appearance.PlayerAppearanceAssetPath = NTEBuildTool::Editor::NormalizeAssetPathForText(Value);
+					MarkDirty();
+				})
+		]
+		+ SVerticalBox::Slot()
+		.AutoHeight()
+		.Padding(0, 0, 0, 6)
+		[
+			MakeEditableSpecRow(
+				LOCTEXT("WorkspaceUIActorLabel", "UI Preview"),
+				State->Spec.Appearance.UIActorClassPath,
+				State->UIActorPathTextBox,
+				[State, MarkDirty](const FString& Value)
+				{
+					State->Spec.Appearance.UIActorClassPath = NTEBuildTool::Editor::NormalizeAssetPathForText(Value);
+					MarkDirty();
+				})
+		]
+		+ SVerticalBox::Slot()
+		.AutoHeight()
+		.Padding(0, 0, 0, 6)
+		[
+			MakeEditableSpecRow(
+				LOCTEXT("WorkspacePackageModNameLabel", "Mod Name"),
+				State->Spec.Package.ModName,
+				State->PackageModNameTextBox,
+				[State, MarkDirty](const FString& Value)
+				{
+					State->Spec.Package.ModName = Value;
+					MarkDirty();
+				})
+		]
+		+ SVerticalBox::Slot()
+		.AutoHeight()
+		[
+			SNew(SHorizontalBox)
+			+ SHorizontalBox::Slot()
+			.FillWidth(0.20f)
+			.Padding(0, 0, 8, 0)
+			.VAlign(VAlign_Center)
+			[
+				SNew(STextBlock)
+				.Text(LOCTEXT("WorkspacePackageModsDirLabel", "Mods Dir"))
+			]
+			+ SHorizontalBox::Slot()
+			.FillWidth(0.80f)
+			.Padding(0, 0, 8, 0)
+			.VAlign(VAlign_Center)
+			[
+				SAssignNew(State->PackageModsDirTextBox, SEditableTextBox)
+				.Text(FText::FromString(State->Spec.Package.ModsDir))
+				.OnTextChanged_Lambda([State, MarkDirty](const FText& Text)
+				{
+					State->Spec.Package.ModsDir = Text.ToString();
+					MarkDirty();
+				})
+			]
+			+ SHorizontalBox::Slot()
+			.AutoWidth()
+			[
+				SNew(SButton)
+				.Text(LOCTEXT("WorkspaceBrowseModsDirButton", "Browse"))
+				.OnClicked_Lambda([State, MarkDirty]()
+				{
+					FString ModsDir;
+					if (NTEBuildTool::Editor::ChooseDirectoryWithTitle(
+						LOCTEXT("ChooseWorkspaceModsDir", "Choose Mods Output Directory"),
+						State->Spec.Package.ModsDir.IsEmpty() ? NTEBuildTool::Settings::GetDefaultModsOutputDirectory() : State->Spec.Package.ModsDir,
+						ModsDir))
+					{
+						State->Spec.Package.ModsDir = ModsDir;
+						if (State->PackageModsDirTextBox.IsValid())
+						{
+							State->PackageModsDirTextBox->SetText(FText::FromString(ModsDir));
+						}
+						MarkDirty();
+					}
+					return FReply::Handled();
+				})
+			]
 		];
 }
 
@@ -159,14 +650,19 @@ void CloseWithAction(
 	const TSharedPtr<SWindow>& Window,
 	FNteMeshModWorkspaceResult& Result,
 	const ENteMeshModWorkspaceAction Action,
+	const TSharedRef<FWorkspaceDialogState>& State,
 	USkeletalMesh* Mesh,
 	const int32 SlotIndex = INDEX_NONE,
 	const FString& SlotName = FString(),
 	const FString& MaterialPath = FString())
 {
+	ApplyTextBoxesToSpec(State);
 	Result.Action = Action;
-	Result.CharacterSpec = MakeDraftCharacterSpec(Mesh);
-	Result.MeshPath = Mesh ? Mesh->GetPackage()->GetName() : FString();
+	Result.CharacterSpec = State->Spec;
+	Result.SpecFilename = State->SpecFilename;
+	Result.MeshPath = !State->Spec.MainMeshPath.IsEmpty()
+		? State->Spec.MainMeshPath
+		: (Mesh ? Mesh->GetPackage()->GetName() : FString());
 	Result.SlotIndex = SlotIndex;
 	Result.SlotName = SlotName;
 	Result.MaterialPath = MaterialPath;
@@ -176,7 +672,11 @@ void CloseWithAction(
 	}
 }
 
-TSharedRef<SWidget> MakeMaterialSlotList(USkeletalMesh* Mesh, TSharedPtr<SWindow>& Window, FNteMeshModWorkspaceResult& OutResult)
+TSharedRef<SWidget> MakeMaterialSlotList(
+	USkeletalMesh* Mesh,
+	const TSharedRef<FWorkspaceDialogState>& State,
+	TSharedPtr<SWindow>& Window,
+	FNteMeshModWorkspaceResult& OutResult)
 {
 	TSharedRef<SVerticalBox> Rows = SNew(SVerticalBox);
 	if (!Mesh)
@@ -234,9 +734,9 @@ TSharedRef<SWidget> MakeMaterialSlotList(USkeletalMesh* Mesh, TSharedPtr<SWindow
 				[
 					SNew(SButton)
 					.Text(LOCTEXT("WorkspaceSlotMaterialButton", "Apply Material"))
-					.OnClicked_Lambda([&Window, &OutResult, Mesh, Index, SlotName, MaterialPath]()
+					.OnClicked_Lambda([&Window, &OutResult, State, Mesh, Index, SlotName, MaterialPath]()
 					{
-						CloseWithAction(Window, OutResult, ENteMeshModWorkspaceAction::ApplyMaterialOperation, Mesh, Index, SlotName, MaterialPath);
+						CloseWithAction(Window, OutResult, ENteMeshModWorkspaceAction::ApplyMaterialOperation, State, Mesh, Index, SlotName, MaterialPath);
 						return FReply::Handled();
 					})
 				]
@@ -258,12 +758,14 @@ bool ShowMeshModWorkspaceDialog(USkeletalMesh* SelectedMesh, ENteMeshModWorkspac
 bool ShowMeshModWorkspaceDialog(USkeletalMesh* SelectedMesh, FNteMeshModWorkspaceResult& OutResult)
 {
 	OutResult = FNteMeshModWorkspaceResult();
-	OutResult.CharacterSpec = MakeDraftCharacterSpec(SelectedMesh);
+	TSharedRef<FWorkspaceDialogState> State = MakeShared<FWorkspaceDialogState>();
+	State->Spec = MakeDraftCharacterSpec(SelectedMesh);
+	OutResult.CharacterSpec = State->Spec;
 
 	TSharedPtr<SWindow> Window;
 	SAssignNew(Window, SWindow)
 		.Title(LOCTEXT("MeshModWorkspaceTitle", "NTE Character Mod Workspace"))
-		.ClientSize(FVector2D(1080, 780))
+		.ClientSize(FVector2D(1180, 860))
 		.SupportsMaximize(false)
 		.SupportsMinimize(false)
 		[
@@ -279,7 +781,13 @@ bool ShowMeshModWorkspaceDialog(USkeletalMesh* SelectedMesh, FNteMeshModWorkspac
 			.AutoHeight()
 			.Padding(16, 4, 16, 8)
 			[
-				MakeCharacterSpecSummary(OutResult.CharacterSpec)
+				MakeCharacterSpecSummary(State)
+			]
+			+ SVerticalBox::Slot()
+			.AutoHeight()
+			.Padding(16, 4, 16, 10)
+			[
+				MakeCharacterSpecEditor(State, SelectedMesh)
 			]
 			+ SVerticalBox::Slot()
 			.AutoHeight()
@@ -305,6 +813,19 @@ bool ShowMeshModWorkspaceDialog(USkeletalMesh* SelectedMesh, FNteMeshModWorkspac
 			.Padding(16, 8, 16, 4)
 			[
 				SNew(STextBlock)
+				.Text(LOCTEXT("WorkspaceMaterialOperationsHeader", "Material Operations in Spec"))
+			]
+			+ SVerticalBox::Slot()
+			.AutoHeight()
+			.Padding(16, 0, 16, 8)
+			[
+				SAssignNew(State->MaterialOperationRows, SVerticalBox)
+			]
+			+ SVerticalBox::Slot()
+			.AutoHeight()
+			.Padding(16, 8, 16, 4)
+			[
+				SNew(STextBlock)
 				.Text(LOCTEXT("WorkspaceMaterialSlotsHeader", "Material Slots"))
 			]
 			+ SVerticalBox::Slot()
@@ -314,7 +835,7 @@ bool ShowMeshModWorkspaceDialog(USkeletalMesh* SelectedMesh, FNteMeshModWorkspac
 				SNew(SScrollBox)
 				+ SScrollBox::Slot()
 				[
-					MakeMaterialSlotList(SelectedMesh, Window, OutResult)
+					MakeMaterialSlotList(SelectedMesh, State, Window, OutResult)
 				]
 			]
 			+ SVerticalBox::Slot()
@@ -329,9 +850,9 @@ bool ShowMeshModWorkspaceDialog(USkeletalMesh* SelectedMesh, FNteMeshModWorkspac
 					SNew(SButton)
 					.Text(LOCTEXT("WorkspaceMaterialButton", "Material Operation"))
 					.IsEnabled(SelectedMesh != nullptr)
-					.OnClicked_Lambda([&OutResult, &Window, SelectedMesh]()
+					.OnClicked_Lambda([&OutResult, &Window, State, SelectedMesh]()
 					{
-						CloseWithAction(Window, OutResult, ENteMeshModWorkspaceAction::ApplyMaterialOperation, SelectedMesh);
+						CloseWithAction(Window, OutResult, ENteMeshModWorkspaceAction::ApplyMaterialOperation, State, SelectedMesh);
 						return FReply::Handled();
 					})
 				]
@@ -342,9 +863,9 @@ bool ShowMeshModWorkspaceDialog(USkeletalMesh* SelectedMesh, FNteMeshModWorkspac
 					SNew(SButton)
 					.Text(LOCTEXT("WorkspaceToggleButton", "Toggle"))
 					.IsEnabled(SelectedMesh != nullptr)
-					.OnClicked_Lambda([&OutResult, &Window, SelectedMesh]()
+					.OnClicked_Lambda([&OutResult, &Window, State, SelectedMesh]()
 					{
-						CloseWithAction(Window, OutResult, ENteMeshModWorkspaceAction::ConfigureToggleRuntime, SelectedMesh);
+						CloseWithAction(Window, OutResult, ENteMeshModWorkspaceAction::ConfigureToggleRuntime, State, SelectedMesh);
 						return FReply::Handled();
 					})
 				]
@@ -354,9 +875,9 @@ bool ShowMeshModWorkspaceDialog(USkeletalMesh* SelectedMesh, FNteMeshModWorkspac
 				[
 					SNew(SButton)
 					.Text(LOCTEXT("WorkspacePackageButton", "Package"))
-					.OnClicked_Lambda([&OutResult, &Window, SelectedMesh]()
+					.OnClicked_Lambda([&OutResult, &Window, State, SelectedMesh]()
 					{
-						CloseWithAction(Window, OutResult, ENteMeshModWorkspaceAction::BuildPackage, SelectedMesh);
+						CloseWithAction(Window, OutResult, ENteMeshModWorkspaceAction::BuildPackage, State, SelectedMesh);
 						return FReply::Handled();
 					})
 				]
@@ -378,6 +899,7 @@ bool ShowMeshModWorkspaceDialog(USkeletalMesh* SelectedMesh, FNteMeshModWorkspac
 			]
 		];
 
+	RebuildMaterialOperationRows(State);
 	FSlateApplication::Get().AddModalWindow(Window.ToSharedRef(), nullptr);
 	return OutResult.Action != ENteMeshModWorkspaceAction::None;
 }
