@@ -8,6 +8,7 @@
 #include "NteCharacterMaterialPlan.h"
 #include "NteCharacterMaterialWriter.h"
 #include "NteEditorAssetUtils.h"
+#include "NteCharacterRuntimeActionDialog.h"
 #include "NteMaterialInstanceDialog.h"
 #include "NteMaterialInstanceTool.h"
 #include "NteMeshModWorkspaceDialog.h"
@@ -122,6 +123,35 @@ void UpsertMaterialOperation(
 	}
 
 	Operations.Add(MoveTemp(Operation));
+}
+
+NTEBuildTool::Character::FNteCharacterRuntimeActionDialogDefaults MakeRuntimeActionDefaults(
+	const NTEBuildTool::Workspace::FNteMeshModWorkspaceResult& WorkspaceResult)
+{
+	NTEBuildTool::Character::FNteCharacterRuntimeActionDialogDefaults Defaults;
+	Defaults.TargetMeshId = TEXT("main");
+	if (WorkspaceResult.SlotIndex != INDEX_NONE)
+	{
+		Defaults.MaterialSlots.Add(WorkspaceResult.SlotIndex);
+		Defaults.SlotName = WorkspaceResult.SlotName;
+	}
+	return Defaults;
+}
+
+void UpsertRuntimeAction(
+	TArray<NTEBuildTool::Character::FNteCharacterRuntimeActionSpec>& RuntimeActions,
+	NTEBuildTool::Character::FNteCharacterRuntimeActionSpec&& RuntimeAction)
+{
+	for (NTEBuildTool::Character::FNteCharacterRuntimeActionSpec& ExistingAction : RuntimeActions)
+	{
+		if (ExistingAction.Id == RuntimeAction.Id)
+		{
+			ExistingAction = MoveTemp(RuntimeAction);
+			return;
+		}
+	}
+
+	RuntimeActions.Add(MoveTemp(RuntimeAction));
 }
 
 FString SaveCharacterSpecAfterWorkspaceAction(
@@ -290,6 +320,35 @@ void RunCharacterMaterialOperationFromSourceJson(
 		FText::FromString(SavedSpecFilename.IsEmpty() ? TEXT("<not saved>") : SavedSpecFilename)));
 }
 
+void RunCharacterRuntimeActionSetup(const NTEBuildTool::Workspace::FNteMeshModWorkspaceResult& WorkspaceResult)
+{
+	NTEBuildTool::Character::FNteCharacterRuntimeActionSpec RuntimeAction;
+	if (!NTEBuildTool::Character::ShowCharacterRuntimeActionDialog(
+		WorkspaceResult.CharacterSpec,
+		MakeRuntimeActionDefaults(WorkspaceResult),
+		RuntimeAction))
+	{
+		return;
+	}
+
+	NTEBuildTool::Character::FNteCharacterModSpec CharacterSpec = WorkspaceResult.CharacterSpec;
+	UpsertRuntimeAction(CharacterSpec.RuntimeActions, MoveTemp(RuntimeAction));
+
+	const NTEBuildTool::Character::FNteCharacterModSpecValidationResult Validation =
+		NTEBuildTool::Character::ValidateCharacterModSpec(CharacterSpec);
+	if (Validation.HasErrors())
+	{
+		NTEBuildTool::Editor::ShowError(FText::FromString(FString::Join(Validation.Errors, TEXT("\n"))));
+		return;
+	}
+
+	const FString SavedSpecFilename = SaveCharacterSpecAfterWorkspaceAction(CharacterSpec, WorkspaceResult.SpecFilename);
+	NTEBuildTool::Editor::ShowSuccessNotification(FText::Format(
+		LOCTEXT("SavedRuntimeActionToCharacterSpec", "Saved CharacterModSpec runtime action. Actions: {0}. Spec: {1}"),
+		FText::AsNumber(CharacterSpec.RuntimeActions.Num()),
+		FText::FromString(SavedSpecFilename.IsEmpty() ? TEXT("<not saved>") : SavedSpecFilename)));
+}
+
 void RunCharacterModPackageFromSpec(NTEBuildTool::Character::FNteCharacterModSpec CharacterSpec)
 {
 	FString Error;
@@ -418,7 +477,7 @@ void FNTEBuildToolModule::OpenCharacterModWorkspace()
 		RunCharacterMaterialOperationFromSourceJson(SelectedSkeletalMesh, WorkspaceResult);
 		break;
 	case NTEBuildTool::Workspace::ENteMeshModWorkspaceAction::ConfigureToggleRuntime:
-		CreateMeshToggleUiSetup();
+		RunCharacterRuntimeActionSetup(WorkspaceResult);
 		break;
 	case NTEBuildTool::Workspace::ENteMeshModWorkspaceAction::BuildPackage:
 		RunCharacterModPackageFromSpec(WorkspaceResult.CharacterSpec);

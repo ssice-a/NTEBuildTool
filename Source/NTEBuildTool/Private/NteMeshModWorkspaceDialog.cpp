@@ -721,7 +721,7 @@ TSharedRef<SWidget> MakeMaterialSlotList(
 					.Text(FText::FromString(FString::Printf(TEXT("%d  %s"), Index, *SlotName)))
 				]
 				+ SHorizontalBox::Slot()
-				.FillWidth(0.70f)
+				.FillWidth(0.60f)
 				.Padding(0, 0, 8, 0)
 				.VAlign(VAlign_Center)
 				[
@@ -737,6 +737,19 @@ TSharedRef<SWidget> MakeMaterialSlotList(
 					.OnClicked_Lambda([&Window, &OutResult, State, Mesh, Index, SlotName, MaterialPath]()
 					{
 						CloseWithAction(Window, OutResult, ENteMeshModWorkspaceAction::ApplyMaterialOperation, State, Mesh, Index, SlotName, MaterialPath);
+						return FReply::Handled();
+					})
+				]
+				+ SHorizontalBox::Slot()
+				.AutoWidth()
+				.Padding(6, 0, 0, 0)
+				.VAlign(VAlign_Center)
+				[
+					SNew(SButton)
+					.Text(LOCTEXT("WorkspaceSlotRuntimeActionButton", "Add Toggle"))
+					.OnClicked_Lambda([&Window, &OutResult, State, Mesh, Index, SlotName, MaterialPath]()
+					{
+						CloseWithAction(Window, OutResult, ENteMeshModWorkspaceAction::ConfigureToggleRuntime, State, Mesh, Index, SlotName, MaterialPath);
 						return FReply::Handled();
 					})
 				]
@@ -861,7 +874,7 @@ bool ShowMeshModWorkspaceDialog(USkeletalMesh* SelectedMesh, FNteMeshModWorkspac
 				.Padding(0, 0, 8, 0)
 				[
 					SNew(SButton)
-					.Text(LOCTEXT("WorkspaceToggleButton", "Toggle"))
+					.Text(LOCTEXT("WorkspaceRuntimeActionButton", "Runtime Action"))
 					.IsEnabled(SelectedMesh != nullptr)
 					.OnClicked_Lambda([&OutResult, &Window, State, SelectedMesh]()
 					{

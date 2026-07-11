@@ -269,6 +269,8 @@ Verified:
 - `NteCharacterModSpec -ApplyMaterials` with `SourceTextureOverrides` expanded a source texture group to the `BaseColor` parameter and wrote the replacement texture override.
 - The mirrored `PhyLabEditor` build passes after adding Workspace `CharacterModSpec` load/save and material operation upsert.
 - `RunUAT BuildPlugin -StrictIncludes` passes for `.scratch/PluginBuild_CharacterWorkspaceSpecPersistence`.
+- Character Workspace Runtime Action UI now creates/updates `CharacterModSpec.RuntimeActions` for first-slice `MaterialSlotVisibility` entries and saves the updated spec, instead of routing through the legacy mesh-only PostProcess toggle generator.
+- `RunUAT BuildPlugin -StrictIncludes` passes for `.scratch/PluginBuild_CharacterWorkspaceRuntimeActionUi`.
 
 Latest verification reports:
 
@@ -300,6 +302,7 @@ Runtime action checkpoint:
 - Runtime validation now requires tag-based lookup data for attached mesh visibility, so later Blueprint generation can stay data-driven instead of guessing component names.
 - `NteCharacterRuntimeActionPlan` now converts `RuntimeActions` into a commandlet-visible plan with host AnimBP grouping, target lookup mode, target component tags, generated Widget/SaveGame paths, and first-slice Blueprint support flags.
 - Runtime asset roots now prefer explicit `RuntimeAnimBlueprintPath` directories and otherwise fall back to `/mod/Runtime`, so generated Widget/SaveGame/runtime assets do not drift into `/mod/Generated`.
+- Character Workspace can add/update `MaterialSlotVisibility` runtime actions from a material-slot row or the Runtime Action button and persists them to the active spec JSON.
 - `.scratch/character-mod-workspace/004_lacrimosa_runtime_actions_validation.spec.json` is the focused spec for this data-layer regression.
 - `.scratch/character-mod-workspace/004_lacrimosa_runtime_actions_plan.report.json` and `.scratch/character-mod-workspace/071_chaos_runtime_actions_plan.report.json` are the focused reports for the runtime-action planning regression.
 

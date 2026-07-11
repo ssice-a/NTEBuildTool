@@ -928,3 +928,20 @@ Representative reports:
 
 - `.scratch/character-mod-workspace/004_lacrimosa_apply_materials_safe.report.json`
 - `.scratch/character-mod-workspace/004_lacrimosa_apply_materials_texture_override.report.json`
+
+## 2026-07-12 Character Workspace runtime-action UI checkpoint
+
+The Character Workspace no longer routes its Runtime Action button through the legacy mesh-only PostProcess toggle generator.
+
+Implemented:
+
+- Added a first-slice Runtime Action dialog for `CharacterModSpec.RuntimeActions`.
+- Material-slot rows now expose `Add Toggle`, prefilled as a `MaterialSlotVisibility` action for that slot.
+- The generic Runtime Action button can add/update a `MaterialSlotVisibility` action by manually entering material slots.
+- Runtime actions are upserted by `Id`, validated through `ValidateCharacterModSpec`, and saved back to the active spec JSON when available.
+- The legacy `Manage Mesh Toggle Setup` menu remains available as a standalone advanced adapter, but it is no longer the Character Workspace runtime path.
+
+Verified:
+
+- `PhyLabEditor Win64 Development` builds after syncing the plugin mirror.
+- `RunUAT BuildPlugin -StrictIncludes` succeeds for `.scratch/PluginBuild_CharacterWorkspaceRuntimeActionUi`.

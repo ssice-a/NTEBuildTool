@@ -54,6 +54,7 @@ The first vertical path is now implemented and smoke-tested:
 - `NteAssetInspection` can verify generated `HTPlayerAppearance` data and Blueprint SCS nodes.
 - `CharacterModSpec.MaterialOperations` now produces a `MaterialPlan`, supports `NteCharacterModSpec -ApplyMaterials`, accepts raw FModel `MaterialInstanceConstant` JSON arrays, contributes generated material instances/replacement textures to package planning, and is used by the Character Workspace material slot action.
 - The Character Workspace UI can load/save `CharacterModSpec` JSON, edit core spec fields, show existing material operations, and upsert material slot actions back into the saved spec file.
+- The Character Workspace Runtime Action UI now writes first-slice `MaterialSlotVisibility` entries to `CharacterModSpec.RuntimeActions` instead of invoking the legacy mesh-only toggle generator.
 - Workspace package creation uses `CharacterModSpec` instead of selected Content Browser assets.
 - A 004 Lacrimosa attached-mesh smoke spec cooked and packaged to pak/utoc/ucas.
 
