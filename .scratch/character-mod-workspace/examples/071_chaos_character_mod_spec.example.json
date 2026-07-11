@@ -16,6 +16,10 @@
       "MeshPath": "/Game/Characters/Player/071_chaos/mod/Attachments/SK_071_mask",
       "RuntimeAnimBlueprintPath": "/Game/Characters/Player/071_chaos/mod/Runtime/ABP_mask_Runtime",
       "SocketName": "Bip001-Head",
+      "MeshComponentOwnedTags": [
+        "NTE.ToggleTarget",
+        "NTE.Attached.mask"
+      ],
       "RelativeLocation": { "X": 0, "Y": 0, "Z": 0 },
       "RelativeRotation": { "Pitch": 0, "Yaw": 0, "Roll": 0 },
       "RelativeScale": { "X": 1, "Y": 1, "Z": 1 },
@@ -45,7 +49,10 @@
       "Label": "Mask",
       "Hotkey": "M",
       "TargetMeshId": "mask",
-      "ActionType": "MeshVisibility",
+      "ActionType": "AttachedMeshVisibility",
+      "TargetComponentTags": [
+        "NTE.Attached.mask"
+      ],
       "MaterialSlots": [],
       "DefaultEnabled": true
     }

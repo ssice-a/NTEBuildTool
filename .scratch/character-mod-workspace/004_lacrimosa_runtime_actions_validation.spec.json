@@ -1,0 +1,97 @@
+{
+  "Format": "NTE.CharacterModSpec",
+  "Version": 1,
+  "WorkspaceName": "004_lacrimosa_runtime_actions_validation",
+  "Appearance": {
+    "AppearanceRowName": "Player004",
+    "PlayerAppearanceAssetPath": "/Game/Characters/Player/004_lacrimosa/mod/Generated/MeshAsset_Player004_NTE_AttachedSmoke",
+    "UIActorClassPath": ""
+  },
+  "MainMeshPath": "/Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+  "MainAnimBlueprintPath": "/Game/Characters/Player/004_lacrimosa/mod/Runtime/ABP_NTE_ModToggle_PostProcess",
+  "AttachedMeshes": [
+    {
+      "Id": "smoke_attach",
+      "Label": "Smoke Attached Mesh",
+      "MeshPath": "/Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+      "AnimBlueprintPath": "/Game/Characters/Player/004_lacrimosa/mod/Runtime/ABP_NTE_ModToggle_PostProcess",
+      "RuntimeAnimBlueprintPath": "/Game/Characters/Player/004_lacrimosa/mod/Runtime/ABP_NTE_ModToggle_PostProcess",
+      "SocketName": "Bip001-Head",
+      "MeshComponentOwnedTags": [
+        "NTE.ToggleTarget",
+        "NTE.Attached.smoke_attach"
+      ],
+      "RelativeLocation": { "X": 0, "Y": 0, "Z": 0 },
+      "RelativeRotation": { "Pitch": 0, "Yaw": 0, "Roll": 0 },
+      "RelativeScale": { "X": 1, "Y": 1, "Z": 1 },
+      "SyncToUIShow": false,
+      "EnableRuntimeActions": true
+    }
+  ],
+  "MaterialOperations": [],
+  "RuntimeActions": [
+    {
+      "Id": "toggle_main_slot0",
+      "Label": "Main Slot 0",
+      "Hotkey": "Ctrl+M",
+      "TargetMeshId": "main",
+      "ActionType": "MaterialSlotVisibility",
+      "MaterialSlots": [0],
+      "DefaultEnabled": true
+    },
+    {
+      "Id": "toggle_smoke_attach",
+      "Label": "Smoke Attachment",
+      "Hotkey": "H",
+      "TargetMeshId": "smoke_attach",
+      "ActionType": "AttachedMeshVisibility",
+      "TargetComponentTags": [
+        "NTE.Attached.smoke_attach"
+      ],
+      "DefaultEnabled": true
+    },
+    {
+      "Id": "swap_main_slot0",
+      "Label": "Swap Main Slot 0",
+      "TargetMeshId": "main",
+      "ActionType": "MaterialSwap",
+      "MaterialSlots": [0],
+      "MaterialPath": "/Game/Characters/Player/004_lacrimosa/mod/Materials/MI_mod_body",
+      "DefaultEnabled": false
+    },
+    {
+      "Id": "set_main_scalar",
+      "Label": "Scalar Parameter",
+      "TargetMeshId": "main",
+      "ActionType": "ScalarParameter",
+      "ParameterName": "NTE_TestScalar",
+      "ScalarValue": 1.0,
+      "DefaultEnabled": false
+    },
+    {
+      "Id": "set_main_vector",
+      "Label": "Vector Parameter",
+      "TargetMeshId": "main",
+      "ActionType": "VectorParameter",
+      "ParameterName": "NTE_TestVector",
+      "VectorValue": { "R": 1.0, "G": 0.5, "B": 0.25, "A": 1.0 },
+      "DefaultEnabled": false
+    },
+    {
+      "Id": "set_main_morph",
+      "Label": "Morph Target",
+      "TargetMeshId": "main",
+      "ActionType": "MorphTarget",
+      "MorphTargetName": "NTE_TestMorph",
+      "MorphValue": 1.0,
+      "DefaultEnabled": false
+    }
+  ],
+  "KawaiiPresets": [],
+  "Package": {
+    "ModName": "lacrimosa004_runtime_actions_validation_P",
+    "ModsDir": "F:/Neverness To Everness/Client/WindowsNoEditor/HT/Content/Paks/Mods",
+    "JobFilename": "F:/NTE/PhyLab/Saved/NTEBuildTool/Packages/lacrimosa004_runtime_actions_validation_P/lacrimosa004_runtime_actions_validation_P.job.json",
+    "BuildAfterCreate": false
+  }
+}

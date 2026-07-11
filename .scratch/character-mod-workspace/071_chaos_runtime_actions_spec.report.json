@@ -1,0 +1,261 @@
+﻿{
+	"Format": "NTE.CharacterModSpecReport",
+	"Version": 1,
+	"SpecFile": "F:/NTE/NTEBuildTool/.scratch/character-mod-workspace/examples/071_chaos_character_mod_spec.example.json",
+	"Summary":
+	{
+		"WorkspaceName": "071_chaos_example",
+		"MainMeshPath": "/Game/Characters/Player/071_chaos/player_071_chaos_skin",
+		"PlayerAppearanceAssetPath": "/Game/Characters/Player/071_chaos/MeshAsset_Player071",
+		"UIActorClassPath": "/Game/Blueprints/Character/PlayerUIShow/PlayerUIShow_071",
+		"AttachedMeshCount": 1,
+		"MaterialOperationCount": 1,
+		"RuntimeActionCount": 1,
+		"KawaiiPresetCount": 0,
+		"ModName": "chaos071_character_mod_P",
+		"ModsDir": "F:/Neverness To Everness/Client/WindowsNoEditor/HT/Content/Paks/Mods"
+	},
+	"ErrorCount": 0,
+	"WarningCount": 0,
+	"Errors": [],
+	"Warnings": [],
+	"PackageSeeds": [
+		"/Game/Blueprints/Character/PlayerUIShow/PlayerUIShow_071",
+		"/Game/Characters/Player/071_chaos/MeshAsset_Player071",
+		"/Game/Characters/Player/071_chaos/mod/Attachments/SK_071_mask",
+		"/Game/Characters/Player/071_chaos/mod/Materials/MI_mod_body",
+		"/Game/Characters/Player/071_chaos/mod/Runtime/ABP_mask_Runtime",
+		"/Game/Characters/Player/071_chaos/mod/Textures/T_body_d",
+		"/Game/Characters/Player/071_chaos/Player071_Chaos_AnimBP",
+		"/Game/Characters/Player/071_chaos/player_071_chaos_skin"
+	],
+	"AppearanceAssemblyPlan":
+	{
+		"PlayerAppearanceAssetPath": "/Game/Characters/Player/071_chaos/MeshAsset_Player071",
+		"UIActorClassPath": "/Game/Blueprints/Character/PlayerUIShow/PlayerUIShow_071",
+		"MainMesh":
+		{
+			"Id": "main",
+			"Label": "Main",
+			"CharacterMeshPath": "/Game/Characters/Player/071_chaos/player_071_chaos_skin",
+			"AnimInstancePath": "/Game/Characters/Player/071_chaos/Player071_Chaos_AnimBP",
+			"MeshComponentOwnedTags": [],
+			"RelativeLocation":
+			{
+				"X": 0,
+				"Y": 0,
+				"Z": 0
+			},
+			"RelativeRotation":
+			{
+				"Pitch": 0,
+				"Yaw": 0,
+				"Roll": 0
+			},
+			"RelativeScale3D":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			},
+			"SyncToUIShow": false,
+			"RuntimeActionsEnabled": false
+		},
+		"AttachedMeshes": [
+			{
+				"Id": "mask",
+				"Label": "Mask",
+				"CharacterMeshPath": "/Game/Characters/Player/071_chaos/mod/Attachments/SK_071_mask",
+				"AnimInstancePath": "/Game/Characters/Player/071_chaos/mod/Runtime/ABP_mask_Runtime",
+				"SocketName": "Bip001-Head",
+				"MeshComponentOwnedTags": [
+					"NTE.ToggleTarget",
+					"NTE.Attached.mask"
+				],
+				"RelativeLocation":
+				{
+					"X": 0,
+					"Y": 0,
+					"Z": 0
+				},
+				"RelativeRotation":
+				{
+					"Pitch": 0,
+					"Yaw": 0,
+					"Roll": 0
+				},
+				"RelativeScale3D":
+				{
+					"X": 1,
+					"Y": 1,
+					"Z": 1
+				},
+				"SyncToUIShow": true,
+				"RuntimeActionsEnabled": true
+			}
+		],
+		"Errors": [],
+		"Warnings": []
+	},
+	"ApplyAppearance": false,
+	"PackagePlan":
+	{
+		"CandidateCount": 8,
+		"Candidates": [
+			{
+				"PackageName": "/Game/Blueprints/Character/PlayerUIShow/PlayerUIShow_071",
+				"Kind": "Selected",
+				"Reason": "from CharacterModSpec",
+				"DefaultIncluded": true
+			},
+			{
+				"PackageName": "/Game/Characters/Player/071_chaos/MeshAsset_Player071",
+				"Kind": "Selected",
+				"Reason": "from CharacterModSpec",
+				"DefaultIncluded": true
+			},
+			{
+				"PackageName": "/Game/Characters/Player/071_chaos/Player071_Chaos_AnimBP",
+				"Kind": "Selected",
+				"Reason": "from CharacterModSpec",
+				"DefaultIncluded": true
+			},
+			{
+				"PackageName": "/Game/Characters/Player/071_chaos/player_071_chaos_skin",
+				"Kind": "Selected",
+				"Reason": "from CharacterModSpec",
+				"DefaultIncluded": true
+			},
+			{
+				"PackageName": "/Game/Characters/Player/071_chaos/mod/Runtime/ABP_mask_Runtime",
+				"Kind": "Runtime",
+				"Reason": "from CharacterModSpec",
+				"DefaultIncluded": true
+			},
+			{
+				"PackageName": "/Game/Characters/Player/071_chaos/mod/Attachments/SK_071_mask",
+				"Kind": "Mod",
+				"Reason": "from CharacterModSpec",
+				"DefaultIncluded": true
+			},
+			{
+				"PackageName": "/Game/Characters/Player/071_chaos/mod/Materials/MI_mod_body",
+				"Kind": "Mod",
+				"Reason": "from CharacterModSpec",
+				"DefaultIncluded": true
+			},
+			{
+				"PackageName": "/Game/Characters/Player/071_chaos/mod/Textures/T_body_d",
+				"Kind": "Mod",
+				"Reason": "from CharacterModSpec",
+				"DefaultIncluded": true
+			}
+		],
+		"IncludedPackages": [
+			"/Game/Blueprints/Character/PlayerUIShow/PlayerUIShow_071",
+			"/Game/Characters/Player/071_chaos/MeshAsset_Player071",
+			"/Game/Characters/Player/071_chaos/mod/Attachments/SK_071_mask",
+			"/Game/Characters/Player/071_chaos/mod/Materials/MI_mod_body",
+			"/Game/Characters/Player/071_chaos/mod/Runtime/ABP_mask_Runtime",
+			"/Game/Characters/Player/071_chaos/mod/Textures/T_body_d",
+			"/Game/Characters/Player/071_chaos/Player071_Chaos_AnimBP",
+			"/Game/Characters/Player/071_chaos/player_071_chaos_skin"
+		]
+	},
+	"WritePackageJob": false,
+	"BuildPackage": false,
+	"NormalizedSpec":
+	{
+		"Format": "NTE.CharacterModSpec",
+		"Version": 1,
+		"WorkspaceName": "071_chaos_example",
+		"Appearance":
+		{
+			"AppearanceRowName": "Player071",
+			"PlayerAppearanceAssetPath": "/Game/Characters/Player/071_chaos/MeshAsset_Player071",
+			"UIActorClassPath": "/Game/Blueprints/Character/PlayerUIShow/PlayerUIShow_071"
+		},
+		"MainMeshPath": "/Game/Characters/Player/071_chaos/player_071_chaos_skin",
+		"MainAnimBlueprintPath": "/Game/Characters/Player/071_chaos/Player071_Chaos_AnimBP",
+		"AttachedMeshes": [
+			{
+				"Id": "mask",
+				"Label": "Mask",
+				"MeshPath": "/Game/Characters/Player/071_chaos/mod/Attachments/SK_071_mask",
+				"RuntimeAnimBlueprintPath": "/Game/Characters/Player/071_chaos/mod/Runtime/ABP_mask_Runtime",
+				"SocketName": "Bip001-Head",
+				"MeshComponentOwnedTags": [
+					"NTE.ToggleTarget",
+					"NTE.Attached.mask"
+				],
+				"RelativeLocation":
+				{
+					"X": 0,
+					"Y": 0,
+					"Z": 0
+				},
+				"RelativeRotation":
+				{
+					"Pitch": 0,
+					"Yaw": 0,
+					"Roll": 0
+				},
+				"RelativeScale":
+				{
+					"X": 1,
+					"Y": 1,
+					"Z": 1
+				},
+				"SyncToUIShow": true,
+				"EnableRuntimeActions": true
+			}
+		],
+		"MaterialOperations": [
+			{
+				"Id": "main_body_slot0",
+				"TargetMeshId": "main",
+				"SlotIndex": 0,
+				"SlotName": "body",
+				"SourceMaterialJson": "F:/F-model/Output/Exports/HT/Content/Characters/Player/071_chaos/MI_example.json",
+				"ParentMaterialPath": "/Game/Characters/Player/071_chaos/MI_example",
+				"OutputMaterialPath": "/Game/Characters/Player/071_chaos/mod/Materials/MI_mod_body",
+				"SourceTextureOverrides":
+				{
+					"/Game/Characters/Player/071_chaos/T_source_d": "/Game/Characters/Player/071_chaos/mod/Textures/T_body_d"
+				},
+				"AssignToSlot": true
+			}
+		],
+		"RuntimeActions": [
+			{
+				"Id": "toggle_mask",
+				"Label": "Mask",
+				"Hotkey": "M",
+				"TargetMeshId": "mask",
+				"ActionType": "AttachedMeshVisibility",
+				"TargetComponentTags": [
+					"NTE.Attached.mask"
+				],
+				"MaterialSlots": [],
+				"ScalarValue": 0,
+				"VectorValue":
+				{
+					"R": 1,
+					"G": 1,
+					"B": 1,
+					"A": 1
+				},
+				"MorphValue": 0,
+				"DefaultEnabled": true
+			}
+		],
+		"KawaiiPresets": [],
+		"Package":
+		{
+			"ModName": "chaos071_character_mod_P",
+			"ModsDir": "F:/Neverness To Everness/Client/WindowsNoEditor/HT/Content/Paks/Mods",
+			"JobFilename": "F:/NTE/PhyLab/Saved/NTEBuildTool/Packages/chaos071_character_mod_P/chaos071_character_mod_P.job.json",
+			"BuildAfterCreate": false
+		}
+	}
+}

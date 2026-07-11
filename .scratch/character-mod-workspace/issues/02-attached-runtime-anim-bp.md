@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: in-progress
 
 # Attached mesh runtime AnimBP generator
 
@@ -19,10 +19,30 @@ Each attached runtime AnimBP should be able to:
 - Do not make PostProcess AnimBP the new primary route.
 - Keep the generated AnimBP contract small and inspectable.
 - Runtime actions should come from one `CharacterModSpec.RuntimeActions` model, shared by hotkeys and UI buttons.
+- Runtime component lookup should use stable tags, primarily `MeshComponentOwnedTags` from attached mesh definitions and action-level `TargetComponentTags`, not SCS node names or array indices.
+- The first implementation step is the domain model/validation layer. Blueprint graph generation comes after the action model is stable.
+
+## 2026-07-11 checkpoint
+
+Implemented:
+
+- `CharacterModSpec.RuntimeActions` now distinguishes:
+  - `MaterialSlotVisibility`
+  - `AttachedMeshVisibility`
+  - `MaterialSwap`
+  - `ScalarParameter`
+  - `VectorParameter`
+  - `MorphTarget`
+- Runtime actions can carry `TargetComponentTags`, `MaterialSlots`, `MaterialPath`, `ParameterName`, `ScalarValue`, `VectorValue`, `MorphTargetName`, and `MorphValue`.
+- Validation now rejects unsupported action types, invalid/duplicate hotkeys, duplicate/negative material slots, missing material swap materials, missing parameter names, missing morph target names, and attached mesh visibility actions without any runtime component tag source.
+- The 071 example now uses `AttachedMeshVisibility` and `NTE.Attached.mask` tags instead of the old ambiguous `MeshVisibility` placeholder.
+- Added a focused 004 runtime-action validation spec:
+  - `.scratch/character-mod-workspace/004_lacrimosa_runtime_actions_validation.spec.json`
 
 ## Blockers
 
 - Need concrete template/graph-generation design for CopyPose + Kawaii + output pose.
+- Need action executor graph design for tag-based attached mesh visibility and material operations.
 - Need Kawaii schema compatibility before final cooked physics AnimBPs are trusted.
 
 ## Tests

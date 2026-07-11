@@ -53,10 +53,14 @@ struct FNteCharacterRuntimeActionSpec
 	FString Hotkey;
 	FString TargetMeshId;
 	FString ActionType = TEXT("MaterialSlotVisibility");
+	TArray<FString> TargetComponentTags;
 	TArray<int32> MaterialSlots;
 	FString MaterialPath;
 	FString ParameterName;
 	float ScalarValue = 0.0f;
+	FLinearColor VectorValue = FLinearColor::White;
+	FString MorphTargetName;
+	float MorphValue = 0.0f;
 	bool bDefaultEnabled = true;
 };
 

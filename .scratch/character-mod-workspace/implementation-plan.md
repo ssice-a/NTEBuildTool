@@ -277,3 +277,9 @@ Continue with the remaining vertical slices:
 3. design and implement the UE-side Kawaii preset editor/data model;
 4. replace the remaining mesh-only UI fragments with spec-first Character Workspace panels;
 5. keep using the 004 smoke spec as the minimal package regression test.
+
+Runtime action checkpoint:
+
+- `CharacterModSpec.RuntimeActions` now has a typed target/action schema for material slot visibility, attached mesh visibility, material swap, scalar/vector parameters, and morph targets.
+- Runtime validation now requires tag-based lookup data for attached mesh visibility, so later Blueprint generation can stay data-driven instead of guessing component names.
+- `.scratch/character-mod-workspace/004_lacrimosa_runtime_actions_validation.spec.json` is the focused spec for this data-layer regression.

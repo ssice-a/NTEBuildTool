@@ -5,6 +5,7 @@
 #include "NteJsonFileUtils.h"
 
 #include "Dom/JsonValue.h"
+#include "InputCoreTypes.h"
 #include "Misc/PackageName.h"
 
 namespace NTEBuildTool::Character
@@ -111,6 +112,25 @@ FRotator RotatorFromJson(const FJsonObject& Object, const FRotator& DefaultValue
 		GetFloatField(Object, TEXT("Pitch"), DefaultValue.Pitch),
 		GetFloatField(Object, TEXT("Yaw"), DefaultValue.Yaw),
 		GetFloatField(Object, TEXT("Roll"), DefaultValue.Roll));
+}
+
+TSharedRef<FJsonObject> ColorToJson(const FLinearColor& Value)
+{
+	TSharedRef<FJsonObject> Object = MakeShared<FJsonObject>();
+	Object->SetNumberField(TEXT("R"), Value.R);
+	Object->SetNumberField(TEXT("G"), Value.G);
+	Object->SetNumberField(TEXT("B"), Value.B);
+	Object->SetNumberField(TEXT("A"), Value.A);
+	return Object;
+}
+
+FLinearColor ColorFromJson(const FJsonObject& Object, const FLinearColor& DefaultValue)
+{
+	return FLinearColor(
+		GetFloatField(Object, TEXT("R"), DefaultValue.R),
+		GetFloatField(Object, TEXT("G"), DefaultValue.G),
+		GetFloatField(Object, TEXT("B"), DefaultValue.B),
+		GetFloatField(Object, TEXT("A"), DefaultValue.A));
 }
 
 void ReadObjectField(const FJsonObject& Object, const TCHAR* FieldName, TFunctionRef<void(const FJsonObject&)> Reader)
@@ -278,10 +298,14 @@ TSharedRef<FJsonObject> RuntimeActionToJson(const FNteCharacterRuntimeActionSpec
 	SetStringIfNotEmpty(Object, TEXT("Hotkey"), Action.Hotkey);
 	SetStringIfNotEmpty(Object, TEXT("TargetMeshId"), Action.TargetMeshId);
 	SetStringIfNotEmpty(Object, TEXT("ActionType"), Action.ActionType);
+	Object->SetArrayField(TEXT("TargetComponentTags"), Json::StringArrayToJsonValues(Action.TargetComponentTags));
 	Object->SetArrayField(TEXT("MaterialSlots"), IntArrayToJsonValues(Action.MaterialSlots));
 	SetStringIfNotEmpty(Object, TEXT("MaterialPath"), Action.MaterialPath);
 	SetStringIfNotEmpty(Object, TEXT("ParameterName"), Action.ParameterName);
 	Object->SetNumberField(TEXT("ScalarValue"), Action.ScalarValue);
+	Object->SetObjectField(TEXT("VectorValue"), ColorToJson(Action.VectorValue));
+	SetStringIfNotEmpty(Object, TEXT("MorphTargetName"), Action.MorphTargetName);
+	Object->SetNumberField(TEXT("MorphValue"), Action.MorphValue);
 	Object->SetBoolField(TEXT("DefaultEnabled"), Action.bDefaultEnabled);
 	return Object;
 }
@@ -298,10 +322,17 @@ FNteCharacterRuntimeActionSpec RuntimeActionFromJson(const FJsonObject& Object)
 	{
 		Action.ActionType = TEXT("MaterialSlotVisibility");
 	}
+	Action.TargetComponentTags = GetStringArrayField(Object, TEXT("TargetComponentTags"));
 	Action.MaterialSlots = GetIntArrayField(Object, TEXT("MaterialSlots"));
 	Action.MaterialPath = GetStringField(Object, TEXT("MaterialPath"));
 	Action.ParameterName = GetStringField(Object, TEXT("ParameterName"));
 	Action.ScalarValue = GetFloatField(Object, TEXT("ScalarValue"));
+	ReadObjectField(Object, TEXT("VectorValue"), [&Action](const FJsonObject& Child)
+	{
+		Action.VectorValue = ColorFromJson(Child, FLinearColor::White);
+	});
+	Action.MorphTargetName = GetStringField(Object, TEXT("MorphTargetName"));
+	Action.MorphValue = GetFloatField(Object, TEXT("MorphValue"));
 	Action.bDefaultEnabled = GetBoolField(Object, TEXT("DefaultEnabled"), true);
 	return Action;
 }
@@ -397,9 +428,141 @@ bool HasAttachedMeshId(const FNteCharacterModSpec& Spec, const FString& Id)
 	return false;
 }
 
+const FNteCharacterAttachedMeshSpec* FindAttachedMeshById(const FNteCharacterModSpec& Spec, const FString& Id)
+{
+	for (const FNteCharacterAttachedMeshSpec& AttachedMesh : Spec.AttachedMeshes)
+	{
+		if (AttachedMesh.Id == Id)
+		{
+			return &AttachedMesh;
+		}
+	}
+	return nullptr;
+}
+
 bool HasMeshTargetId(const FNteCharacterModSpec& Spec, const FString& Id)
 {
 	return IsMainMeshId(Id) || HasAttachedMeshId(Spec, Id);
+}
+
+bool IsSupportedRuntimeActionType(const FString& ActionType)
+{
+	return ActionType == TEXT("MaterialSlotVisibility")
+		|| ActionType == TEXT("AttachedMeshVisibility")
+		|| ActionType == TEXT("MaterialSwap")
+		|| ActionType == TEXT("ScalarParameter")
+		|| ActionType == TEXT("VectorParameter")
+		|| ActionType == TEXT("MorphTarget");
+}
+
+FString NormalizeRuntimeHotkey(FString Hotkey)
+{
+	Hotkey.TrimStartAndEndInline();
+	Hotkey.ReplaceInline(TEXT(" "), TEXT(""));
+	return Hotkey;
+}
+
+bool ValidateRuntimeHotkey(const FString& RawHotkey, FString& OutNormalizedHotkey, FString& OutError)
+{
+	OutNormalizedHotkey = NormalizeRuntimeHotkey(RawHotkey);
+	if (OutNormalizedHotkey.IsEmpty())
+	{
+		return true;
+	}
+
+	TArray<FString> Tokens;
+	OutNormalizedHotkey.ParseIntoArray(Tokens, TEXT("+"), true);
+	if (Tokens.IsEmpty())
+	{
+		OutError = FString::Printf(TEXT("Runtime hotkey '%s' is empty after parsing."), *RawHotkey);
+		return false;
+	}
+
+	FString KeyName;
+	TSet<FString> Modifiers;
+	for (FString Token : Tokens)
+	{
+		Token.TrimStartAndEndInline();
+		if (Token.IsEmpty())
+		{
+			continue;
+		}
+
+		if (Token.Equals(TEXT("Ctrl"), ESearchCase::IgnoreCase)
+			|| Token.Equals(TEXT("Control"), ESearchCase::IgnoreCase)
+			|| Token.Equals(TEXT("Alt"), ESearchCase::IgnoreCase)
+			|| Token.Equals(TEXT("Shift"), ESearchCase::IgnoreCase)
+			|| Token.Equals(TEXT("Cmd"), ESearchCase::IgnoreCase)
+			|| Token.Equals(TEXT("Command"), ESearchCase::IgnoreCase))
+		{
+			Modifiers.Add(Token.ToLower());
+			continue;
+		}
+
+		if (!KeyName.IsEmpty())
+		{
+			OutError = FString::Printf(TEXT("Runtime hotkey '%s' contains more than one key token."), *RawHotkey);
+			return false;
+		}
+		KeyName = Token;
+	}
+
+	if (KeyName.IsEmpty())
+	{
+		OutError = FString::Printf(TEXT("Runtime hotkey '%s' has modifiers but no key."), *RawHotkey);
+		return false;
+	}
+
+	const FKey Key(*KeyName);
+	if (!Key.IsValid())
+	{
+		OutError = FString::Printf(TEXT("Runtime hotkey '%s' uses unknown key '%s'. Use an Unreal key name such as M, Slash, F9, NumPadOne, or leave it empty for UI-only actions."), *RawHotkey, *KeyName);
+		return false;
+	}
+
+	TArray<FString> NormalizedParts;
+	if (Modifiers.Contains(TEXT("control")) || Modifiers.Contains(TEXT("ctrl")))
+	{
+		NormalizedParts.Add(TEXT("Ctrl"));
+	}
+	if (Modifiers.Contains(TEXT("alt")))
+	{
+		NormalizedParts.Add(TEXT("Alt"));
+	}
+	if (Modifiers.Contains(TEXT("shift")))
+	{
+		NormalizedParts.Add(TEXT("Shift"));
+	}
+	if (Modifiers.Contains(TEXT("command")) || Modifiers.Contains(TEXT("cmd")))
+	{
+		NormalizedParts.Add(TEXT("Cmd"));
+	}
+	NormalizedParts.Add(Key.GetFName().ToString());
+	OutNormalizedHotkey = FString::Join(NormalizedParts, TEXT("+"));
+	return true;
+}
+
+bool HasDuplicateInts(const TArray<int32>& Values)
+{
+	TSet<int32> Seen;
+	for (const int32 Value : Values)
+	{
+		if (Seen.Contains(Value))
+		{
+			return true;
+		}
+		Seen.Add(Value);
+	}
+	return false;
+}
+
+bool HasAnyRuntimeComponentTag(const FNteCharacterRuntimeActionSpec& Action, const FNteCharacterAttachedMeshSpec* AttachedMesh)
+{
+	if (!Action.TargetComponentTags.IsEmpty())
+	{
+		return true;
+	}
+	return AttachedMesh && !AttachedMesh->MeshComponentOwnedTags.IsEmpty();
 }
 
 FString NormalizeSpecPackagePath(FString Path)
@@ -595,17 +758,77 @@ FNteCharacterModSpecValidationResult ValidateCharacterModSpec(const FNteCharacte
 		{
 			Result.Errors.Add(FString::Printf(TEXT("Runtime action '%s' targets unknown mesh id '%s'."), *Action.Id, *Action.TargetMeshId));
 		}
+		if (!IsSupportedRuntimeActionType(Action.ActionType))
+		{
+			Result.Errors.Add(FString::Printf(
+				TEXT("Runtime action '%s' uses unsupported ActionType '%s'. Supported values: MaterialSlotVisibility, AttachedMeshVisibility, MaterialSwap, ScalarParameter, VectorParameter, MorphTarget."),
+				*Action.Id,
+				*Action.ActionType));
+		}
 		if (!Action.Hotkey.IsEmpty())
 		{
-			if (Hotkeys.Contains(Action.Hotkey))
+			FString NormalizedHotkey;
+			FString HotkeyError;
+			if (!ValidateRuntimeHotkey(Action.Hotkey, NormalizedHotkey, HotkeyError))
 			{
-				Result.Errors.Add(FString::Printf(TEXT("Duplicate runtime hotkey: %s"), *Action.Hotkey));
+				Result.Errors.Add(FString::Printf(TEXT("Runtime action '%s': %s"), *Action.Id, *HotkeyError));
 			}
-			Hotkeys.Add(Action.Hotkey);
+			else if (!NormalizedHotkey.IsEmpty() && Hotkeys.Contains(NormalizedHotkey))
+			{
+				Result.Errors.Add(FString::Printf(TEXT("Duplicate runtime hotkey: %s"), *NormalizedHotkey));
+			}
+			else if (!NormalizedHotkey.IsEmpty())
+			{
+				Hotkeys.Add(NormalizedHotkey);
+			}
 		}
-		if (Action.ActionType == TEXT("MaterialSlotVisibility") && Action.MaterialSlots.IsEmpty())
+
+		if (HasDuplicateInts(Action.MaterialSlots))
+		{
+			Result.Errors.Add(FString::Printf(TEXT("Runtime action '%s' lists a material slot more than once."), *Action.Id));
+		}
+		for (const int32 SlotIndex : Action.MaterialSlots)
+		{
+			if (SlotIndex < 0)
+			{
+				Result.Errors.Add(FString::Printf(TEXT("Runtime action '%s' has invalid negative material slot %d."), *Action.Id, SlotIndex));
+			}
+		}
+
+		if ((Action.ActionType == TEXT("MaterialSlotVisibility") || Action.ActionType == TEXT("MaterialSwap")) && Action.MaterialSlots.IsEmpty())
 		{
 			Result.Errors.Add(FString::Printf(TEXT("Runtime action '%s' has no MaterialSlots."), *Action.Id));
+		}
+		if (Action.ActionType == TEXT("MaterialSwap") && Action.MaterialPath.IsEmpty())
+		{
+			Result.Errors.Add(FString::Printf(TEXT("Runtime action '%s' is MaterialSwap but has no MaterialPath."), *Action.Id));
+		}
+		if ((Action.ActionType == TEXT("ScalarParameter") || Action.ActionType == TEXT("VectorParameter")) && Action.ParameterName.IsEmpty())
+		{
+			Result.Errors.Add(FString::Printf(TEXT("Runtime action '%s' requires ParameterName."), *Action.Id));
+		}
+		if (Action.ActionType == TEXT("MorphTarget") && Action.MorphTargetName.IsEmpty())
+		{
+			Result.Errors.Add(FString::Printf(TEXT("Runtime action '%s' is MorphTarget but has no MorphTargetName."), *Action.Id));
+		}
+		if (Action.ActionType == TEXT("AttachedMeshVisibility"))
+		{
+			const FNteCharacterAttachedMeshSpec* AttachedMesh = FindAttachedMeshById(Spec, Action.TargetMeshId);
+			if (!AttachedMesh)
+			{
+				Result.Errors.Add(FString::Printf(TEXT("Runtime action '%s' is AttachedMeshVisibility but TargetMeshId '%s' is not an attached mesh id."), *Action.Id, *Action.TargetMeshId));
+			}
+			else
+			{
+				if (!HasAnyRuntimeComponentTag(Action, AttachedMesh))
+				{
+					Result.Errors.Add(FString::Printf(TEXT("Runtime action '%s' cannot locate attached mesh '%s' at runtime because neither TargetComponentTags nor the attached mesh MeshComponentOwnedTags are set."), *Action.Id, *Action.TargetMeshId));
+				}
+				if (!AttachedMesh->bEnableRuntimeActions)
+				{
+					Result.Warnings.Add(FString::Printf(TEXT("Runtime action '%s' targets attached mesh '%s', but that attached mesh has EnableRuntimeActions=false."), *Action.Id, *Action.TargetMeshId));
+				}
+			}
 		}
 	}
 	AddDuplicateIdErrors(TEXT("runtime action"), RuntimeActionIds, Result);
