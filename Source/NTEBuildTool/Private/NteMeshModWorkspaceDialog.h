@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "NteCharacterModSpec.h"
 
 class USkeletalMesh;
 
@@ -19,6 +20,7 @@ enum class ENteMeshModWorkspaceAction
 struct FNteMeshModWorkspaceResult
 {
 	ENteMeshModWorkspaceAction Action = ENteMeshModWorkspaceAction::None;
+	NTEBuildTool::Character::FNteCharacterModSpec CharacterSpec;
 	FString MeshPath;
 	int32 SlotIndex = INDEX_NONE;
 	FString SlotName;

@@ -15,7 +15,7 @@ public:
 
 private:
 	void RegisterMenus();
-	void OpenMeshModWorkspace();
+	void OpenCharacterModWorkspace();
 	void ImportFModelPhysicsAssetJson();
 	void CreateModMaterialInstanceFromSourceJson();
 	void CreateModMaterialInstanceFromConfig();

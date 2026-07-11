@@ -38,9 +38,31 @@ bool LooksLikeRuntimeAsset(const FString& PackageName)
 		|| PackageName.Contains(TEXT("/mod/Runtime/"), ESearchCase::IgnoreCase);
 }
 
+bool TryFindPackageAssetData(const FString& PackageName, FAssetData& OutAssetData)
+{
+	FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
+	IAssetRegistry& AssetRegistry = AssetRegistryModule.Get();
+
+	TArray<FAssetData> PackageAssets;
+	AssetRegistry.GetAssetsByPackageName(FName(*PackageName), PackageAssets, true);
+	if (PackageAssets.IsEmpty())
+	{
+		return false;
+	}
+
+	OutAssetData = PackageAssets[0];
+	return true;
+}
+
 bool IsLikelyEditorOnlyProxy(const FString& PackageName)
 {
-	UObject* Asset = NTEBuildTool::Editor::LoadAnyAssetByPath(PackageName);
+	FAssetData AssetData;
+	if (!TryFindPackageAssetData(PackageName, AssetData))
+	{
+		return false;
+	}
+
+	UObject* Asset = AssetData.GetAsset();
 	if (!Asset)
 	{
 		return false;
@@ -61,7 +83,13 @@ bool IsLikelyEditorOnlyProxy(const FString& PackageName)
 
 bool IsAssetClass(const FString& PackageName, const UClass* ExpectedClass)
 {
-	UObject* Asset = NTEBuildTool::Editor::LoadAnyAssetByPath(PackageName);
+	FAssetData AssetData;
+	if (!TryFindPackageAssetData(PackageName, AssetData))
+	{
+		return false;
+	}
+
+	UObject* Asset = AssetData.GetAsset();
 	return Asset && ExpectedClass && Asset->IsA(ExpectedClass);
 }
 

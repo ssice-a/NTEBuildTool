@@ -759,6 +759,7 @@ This checkpoint starts moving common usage away from disconnected path-entry dia
 - Package Plan classification now exposes Skeleton and PhysicsAsset dependencies as explicit user-controlled candidate kinds.
 - Documentation now treats Source Asset inspection as analysis-side tooling, not a prerequisite in the main creation chain.
 - Package Plan wording has been corrected: Skeleton and PhysicsAsset packages are user-controlled candidates, not globally excluded or included by policy.
+- Source-game reference scans must start from the full installed game root `F:\Neverness To Everness\Client\WindowsNoEditor`, not only `...\HT\Content\Paks`. Patch, tag-patch, and mod container folders can contain live assets, so a negative result from the base `Paks` folder alone is not enough to conclude that an asset or reference chain is absent.
 
 Verification run:
 
@@ -777,3 +778,69 @@ Use sparse milestone commits:
 3. Five-mod asset/job regeneration and package verification.
 
 Do not commit every small edit. Do not commit generated build intermediates or cooked outputs.
+
+## 2026-07-11 Character Mod Workspace Direction
+
+The tooling direction has moved from a mesh-only workflow to a full `Character Mod Workspace`.
+
+The user's target is full NTE character model replacement with:
+
+- material freedom through FModel material JSON parsing, source texture usage, and generated material instances;
+- runtime switching through hotkeys and UI buttons for material slots, attached mesh visibility, material swaps/parameters, and future morph or animation actions;
+- physics freedom through editable UE-side KawaiiPhysics presets for custom main and attached meshes;
+- automated package planning and cook/IoStore packaging;
+- simple, precise, attractive editor UI backed by modular, testable code and minimal hardcoding.
+
+The new design center is `CharacterModSpec`, a single source of truth for one character mod workspace. The UI edits the spec; deep modules validate and transform it. The spec should drive:
+
+- target appearance resolution from `DT_AppearanceData`, `MeshAsset_PlayerXXX`, and `PlayerUIShow_XXX`;
+- main mesh replacement;
+- multiple attached mesh definitions, including socket, transform, runtime AnimBP, and UI preview sync;
+- material-slot operations and material instance generation;
+- runtime action groups for hotkey/UI switching;
+- Kawaii preset import/edit/apply;
+- Package Plan and Package Job generation.
+
+The preferred attached-mesh path now follows source-game evidence instead of the old PostProcess-only template route:
+
+```text
+HTPlayerAppearance / MeshAsset_PlayerXXX
+  -> FashionMeshData: main mesh + main AnimBP
+  -> ArrayFashionAttachedMeshData: attached mesh + socket + transform + attached AnimBP
+
+PlayerUIShow_XXX
+  -> SCS child HTSkeletalMeshComponentBudgeted components for preview
+
+ABP_<AttachName>_Runtime
+  -> AnimGraph: CopyPose / Kawaii / Output Pose
+  -> EventGraph: hotkey/UI/save/apply runtime actions when needed
+```
+
+The 071 Chaos mask investigation remains useful evidence, but it should not be overgeneralized. The native mask chain is a gameplay/state path:
+
+```text
+Buff_Chaos_KeepMask
+  -> GameplayCue.Display.Chaos.KeepMask
+  -> GC_Chaos_KeepMask
+  -> player_071_Chaos.PlayFaceMaskFadeIn / PlayFaceMaskFadeOut
+```
+
+That means it demonstrates a source-game state-driven toggle, not a reusable mesh-local blueprint pattern for mods.
+
+The stronger attached-mesh evidence comes from source-game appearance assets:
+
+- `MeshAsset_Player004_lacrimosa_fashion4` contains attached eardrop, ribbon, and tail entries with sockets and attached AnimBPs.
+- `MeshAsset_Player010_fashion3` contains attached hair data with an attached AnimBP and mobile/UI variants.
+- `PlayerUIShow_004_fashion4` and `PlayerUIShow_010_fashion3` duplicate preview child components attached under the main `Mesh`.
+
+Implementation should therefore add an Appearance Assembly module that can write both runtime appearance data and UI preview data from one spec. The tool should not require users to manually duplicate attachment definitions.
+
+PostProcess template runtime is now considered legacy/advanced. It can remain until the new modules cover its use cases, but new work should not deepen that dependency. Once a Character Mod Workspace slice supersedes old PostProcess-only logic or hardcoded test code, it should be removed rather than kept as permanent compatibility.
+
+KawaiiPhysics remains schema-sensitive. The mirror project must provide an NTE-compatible `/Script/KawaiiPhysics` layout before final Kawaii assets are trusted. The current game usmap is the serialization authority, and Kawaii parameters should be editable in UE while optionally seeded from source-game AnimBP JSON.
+
+The PRD for this work is tracked at:
+
+```text
+.scratch/character-mod-workspace/PRD.md
+```

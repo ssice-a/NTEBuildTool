@@ -1,0 +1,60 @@
+{
+  "Format": "NTE.CharacterModSpec",
+  "Version": 1,
+  "WorkspaceName": "071_chaos_example",
+  "Appearance": {
+    "AppearanceRowName": "Player071",
+    "PlayerAppearanceAssetPath": "/Game/Characters/Player/071_chaos/MeshAsset_Player071",
+    "UIActorClassPath": "/Game/Blueprints/Character/PlayerUIShow/PlayerUIShow_071"
+  },
+  "MainMeshPath": "/Game/Characters/Player/071_chaos/player_071_chaos_skin",
+  "MainAnimBlueprintPath": "/Game/Characters/Player/071_chaos/Player071_Chaos_AnimBP",
+  "AttachedMeshes": [
+    {
+      "Id": "mask",
+      "Label": "Mask",
+      "MeshPath": "/Game/Characters/Player/071_chaos/mod/Attachments/SK_071_mask",
+      "RuntimeAnimBlueprintPath": "/Game/Characters/Player/071_chaos/mod/Runtime/ABP_mask_Runtime",
+      "SocketName": "Bip001-Head",
+      "RelativeLocation": { "X": 0, "Y": 0, "Z": 0 },
+      "RelativeRotation": { "Pitch": 0, "Yaw": 0, "Roll": 0 },
+      "RelativeScale": { "X": 1, "Y": 1, "Z": 1 },
+      "KawaiiPresetId": "",
+      "SyncToUIShow": true,
+      "EnableRuntimeActions": true
+    }
+  ],
+  "MaterialOperations": [
+    {
+      "Id": "main_body_slot0",
+      "TargetMeshId": "main",
+      "SlotIndex": 0,
+      "SlotName": "body",
+      "SourceMaterialJson": "F:/F-model/Output/Exports/HT/Content/Characters/Player/071_chaos/MI_example.json",
+      "ParentMaterialPath": "/Game/Characters/Player/071_chaos/MI_example",
+      "OutputMaterialPath": "/Game/Characters/Player/071_chaos/mod/Materials/MI_mod_body",
+      "SourceTextureOverrides": {
+        "/Game/Characters/Player/071_chaos/T_source_d": "/Game/Characters/Player/071_chaos/mod/Textures/T_body_d"
+      },
+      "AssignToSlot": true
+    }
+  ],
+  "RuntimeActions": [
+    {
+      "Id": "toggle_mask",
+      "Label": "Mask",
+      "Hotkey": "M",
+      "TargetMeshId": "mask",
+      "ActionType": "MeshVisibility",
+      "MaterialSlots": [],
+      "DefaultEnabled": true
+    }
+  ],
+  "KawaiiPresets": [],
+  "Package": {
+    "ModName": "chaos071_character_mod_P",
+    "ModsDir": "F:/Neverness To Everness/Client/WindowsNoEditor/HT/Content/Paks/Mods",
+    "JobFilename": "F:/NTE/PhyLab/Saved/NTEBuildTool/Packages/chaos071_character_mod_P/chaos071_character_mod_P.job.json",
+    "BuildAfterCreate": false
+  }
+}

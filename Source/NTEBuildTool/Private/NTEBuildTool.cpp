@@ -135,11 +135,11 @@ void FNTEBuildToolModule::RegisterMenus()
 	UToolMenu* Menu = UToolMenus::Get()->ExtendMenu(TEXT("LevelEditor.MainMenu.Tools"));
 	FToolMenuSection& Section = Menu->AddSection(TEXT("NTEBuildTool"), LOCTEXT("NTEBuildToolSection", "NTE Build Tool"));
 	Section.AddEntry(FToolMenuEntry::InitMenuEntry(
-		TEXT("NTEBuildTool_OpenMeshModWorkspace"),
-		LOCTEXT("OpenMeshModWorkspaceLabel", "Open Mesh Mod Workspace"),
-		LOCTEXT("OpenMeshModWorkspaceTooltip", "Start from the selected mesh, then create materials, toggle runtime assets, or a package plan."),
+		TEXT("NTEBuildTool_OpenCharacterModWorkspace"),
+		LOCTEXT("OpenCharacterModWorkspaceLabel", "Open Character Mod Workspace"),
+		LOCTEXT("OpenCharacterModWorkspaceTooltip", "Start from one character appearance and coordinate meshes, materials, runtime actions, physics, and packaging."),
 		FSlateIcon(),
-		FUIAction(FExecuteAction::CreateRaw(this, &FNTEBuildToolModule::OpenMeshModWorkspace))));
+		FUIAction(FExecuteAction::CreateRaw(this, &FNTEBuildToolModule::OpenCharacterModWorkspace))));
 	Section.AddEntry(FToolMenuEntry::InitMenuEntry(
 		TEXT("NTEBuildTool_ImportFModelPhysicsAsset"),
 		LOCTEXT("ImportFModelPhysicsAssetLabel", "Import FModel PhysicsAsset JSON"),
@@ -178,7 +178,7 @@ void FNTEBuildToolModule::RegisterMenus()
 		FUIAction(FExecuteAction::CreateRaw(this, &FNTEBuildToolModule::BuildModPackageFromJobJson))));
 }
 
-void FNTEBuildToolModule::OpenMeshModWorkspace()
+void FNTEBuildToolModule::OpenCharacterModWorkspace()
 {
 	USkeletalMesh* SelectedSkeletalMesh = NTEBuildTool::Editor::GetSingleSelectedSkeletalMesh();
 	NTEBuildTool::Workspace::FNteMeshModWorkspaceResult WorkspaceResult;
