@@ -71,3 +71,15 @@ The runtime-action path now has a spec-first asset writer:
 - First-create missing-package load noise is avoided by checking package existence before loading future Blueprint paths.
 
 This checkpoint deliberately does not claim final hotkey/UI/material execution. The next ADR-significant proof is graph generation for `MaterialSlotVisibility` and `AttachedMeshVisibility` from the same `CharacterModSpec.RuntimeActions` model.
+
+## 2026-07-12 runtime-action execution-graph checkpoint
+
+The runtime-action writer now generates the first executable host AnimBP EventGraph slice directly from `CharacterModSpec.RuntimeActions`:
+
+- host AnimBPs are created or repaired with the host mesh Skeleton and preview mesh;
+- unique host AnimBP paths generate hotkey polling and per-action enabled-state toggles;
+- owning-component `MaterialSlotVisibility` calls `ShowMaterialSection`;
+- owning-component `AttachedMeshVisibility` calls `SetVisibility`;
+- shared AnimBP paths skip execution graph generation with a single warning because `GetOwningComponent` cannot safely distinguish multiple hosts using one class.
+
+The remaining ADR-significant proofs are Widget button generation, SaveGame state, OwnerComponentByTags lookup, CopyPose/Kawaii AnimGraph generation, and a full practical package/runtime smoke test.

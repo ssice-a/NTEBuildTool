@@ -58,7 +58,11 @@ Implemented:
   - `/mod/Runtime/BP_NTE_CharacterActionSaveGame`
   - `/mod/Runtime/WBP_NTE_CharacterActions`
   - host AnimBPs from the runtime-action plan.
-- The writer stores the condensed action plan and per-action data as Blueprint variables. This is a data/reachability skeleton, not the final EventGraph executor.
+- The writer stores the condensed action plan and per-action data as Blueprint variables.
+- The writer now creates host AnimBPs with the host mesh Skeleton/preview mesh and generates the first owning-component hotkey EventGraph executor slice:
+  - `MaterialSlotVisibility` -> `WasInputKeyJustPressed` / modifier checks / toggle enabled variable / `ShowMaterialSection`;
+  - `AttachedMeshVisibility` -> `WasInputKeyJustPressed` / toggle enabled variable / `SetVisibility`.
+- Shared host AnimBP paths skip execution graph generation with one warning because `GetOwningComponent` would be ambiguous.
 - First-create package load noise is avoided by checking loaded packages and `FPackageName::DoesPackageExist` before attempting to load future Blueprint paths.
 
 Verified:
@@ -69,14 +73,18 @@ Verified:
 - `NteAssetInspection` confirms the formal generated runtime SaveGame, Widget, and AnimBP assets load:
   - `.scratch/character-mod-workspace/004_lacrimosa_runtime_actions_assets.json`
 - `RunUAT BuildPlugin -StrictIncludes` succeeds for `.scratch/PluginBuild_CharacterRuntimeActionWriter_Strict3`.
+- Fresh first-create graph probe regenerates `/Game/Characters/Player/004_lacrimosa/mod/RuntimeGraphProbe` without AnimBP missing-Skeleton compile errors.
+- `NteCharacterModSpec -ApplyRuntimeActions` on `.scratch/character-mod-workspace/004_lacrimosa_runtime_actions_graph_probe.spec.json`.
+- `NteAssetInspection` confirms the graph-probe generated SaveGame, Widget, main host AnimBP, and attached host AnimBP load with 0 errors / 0 warnings:
+  - `.scratch/character-mod-workspace/004_lacrimosa_runtime_actions_graph_probe_assets.json`
+- `RunUAT BuildPlugin -StrictIncludes` succeeds for `.scratch/PluginBuild_CharacterRuntimeActionGraph_Strict`.
 
 ## Blockers
 
 - Need concrete template/graph-generation design for CopyPose + Kawaii + output pose.
-- Need action executor graph generation for the first runtime slice:
-  - `AttachedMeshVisibility`;
-  - `MaterialSlotVisibility`.
 - Need Widget button creation/click binding and SaveGame load/save graph generation.
+- Need OwnerComponentByTags lookup for host != target actions.
+- Need CopyPose AnimGraph generation before attached runtime AnimBPs are production-complete.
 - Need Kawaii schema compatibility before final cooked physics AnimBPs are trusted.
 
 ## Tests

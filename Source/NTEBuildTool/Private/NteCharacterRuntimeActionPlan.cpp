@@ -185,6 +185,7 @@ FNteCharacterRuntimeActionHostPlan& FindOrAddHost(
 	FNteCharacterRuntimeActionPlan& Plan,
 	const FString& MeshId,
 	const FString& HostKind,
+	const FString& MeshPath,
 	const FString& AnimBlueprintPath)
 {
 	for (FNteCharacterRuntimeActionHostPlan& Host : Plan.Hosts)
@@ -194,6 +195,10 @@ FNteCharacterRuntimeActionHostPlan& FindOrAddHost(
 			if (Host.HostKind.IsEmpty())
 			{
 				Host.HostKind = HostKind;
+			}
+			if (Host.MeshPath.IsEmpty())
+			{
+				Host.MeshPath = MeshPath;
 			}
 			if (Host.AnimBlueprintPath.IsEmpty())
 			{
@@ -206,6 +211,7 @@ FNteCharacterRuntimeActionHostPlan& FindOrAddHost(
 	FNteCharacterRuntimeActionHostPlan& Host = Plan.Hosts.AddDefaulted_GetRef();
 	Host.MeshId = MeshId;
 	Host.HostKind = HostKind;
+	Host.MeshPath = MeshPath;
 	Host.AnimBlueprintPath = AnimBlueprintPath;
 	return Host;
 }
@@ -328,6 +334,7 @@ TSharedRef<FJsonObject> HostPlanToJson(const FNteCharacterRuntimeActionHostPlan&
 	const TSharedRef<FJsonObject> Object = MakeShared<FJsonObject>();
 	AddStringIfNotEmpty(Object, TEXT("MeshId"), Host.MeshId);
 	AddStringIfNotEmpty(Object, TEXT("HostKind"), Host.HostKind);
+	AddStringIfNotEmpty(Object, TEXT("MeshPath"), Host.MeshPath);
 	AddStringIfNotEmpty(Object, TEXT("AnimBlueprintPath"), Host.AnimBlueprintPath);
 	Object->SetArrayField(TEXT("ActionIds"), Json::StringArrayToJsonValues(Host.ActionIds));
 	Object->SetArrayField(TEXT("Errors"), Json::StringArrayToJsonValues(Host.Errors));
@@ -358,7 +365,7 @@ FNteCharacterRuntimeActionPlan BuildCharacterRuntimeActionPlanFromSpec(const FNt
 		FNteCharacterRuntimeActionPlanItem Item = BuildActionPlanItem(Spec, Action);
 		if (!Item.HostMeshId.IsEmpty())
 		{
-			FNteCharacterRuntimeActionHostPlan& Host = FindOrAddHost(Plan, Item.HostMeshId, Item.HostKind, Item.HostAnimBlueprintPath);
+			FNteCharacterRuntimeActionHostPlan& Host = FindOrAddHost(Plan, Item.HostMeshId, Item.HostKind, Item.TargetMeshPath, Item.HostAnimBlueprintPath);
 			Host.ActionIds.AddUnique(Item.Id);
 			if (Item.HostAnimBlueprintPath.IsEmpty())
 			{

@@ -40,6 +40,7 @@ struct FNteCharacterRuntimeActionHostPlan
 {
 	FString MeshId;
 	FString HostKind;
+	FString MeshPath;
 	FString AnimBlueprintPath;
 	TArray<FString> ActionIds;
 	TArray<FString> Errors;

@@ -978,3 +978,34 @@ Still open:
 - Connect `MaterialSlotVisibility` to `ShowMaterialSection` for skinned mesh targets.
 - Connect `AttachedMeshVisibility` to component visibility using `MeshComponentOwnedTags` / action target tags.
 - Generate Widget buttons and click bindings from the same action data.
+
+## 2026-07-12 CharacterModSpec runtime-action execution-graph checkpoint
+
+The runtime-action module now has a first executable EventGraph slice. It still does not claim final UI/save/controller coverage, but it proves that `CharacterModSpec.RuntimeActions` can produce compiled host AnimBPs with real hotkey-driven visibility logic.
+
+Implemented:
+
+- `NteCharacterRuntimeActionPlan` now carries each host mesh path so generated host AnimBPs can derive their Skeleton from the target `USkeletalMesh`.
+- `NteCharacterRuntimeActionWriter` creates new host AnimBPs through `UAnimBlueprintFactory` with `TargetSkeleton` and preview mesh set from the host mesh. Existing generated host AnimBPs are repaired if their Skeleton or preview mesh is missing.
+- Host AnimBP EventGraphs now generate hotkey polling for first-slice owning-component actions:
+  - `MaterialSlotVisibility` uses `APlayerController::WasInputKeyJustPressed`, modifier-key checks, toggles the per-action enabled variable, and calls `USkinnedMeshComponent::ShowMaterialSection` for configured slots on LOD 0.
+  - `AttachedMeshVisibility` toggles the per-action enabled variable and calls `USceneComponent::SetVisibility` on the owning component with child propagation enabled.
+- Shared host AnimBP paths are detected and skip execution graph generation with one deduplicated warning, because `GetOwningComponent` would otherwise be ambiguous across multiple components using the same AnimBP.
+
+Verified:
+
+- `PhyLabEditor Win64 Development` builds after syncing the plugin mirror.
+- Fresh first-create graph probe deletes and regenerates `/Game/Characters/Player/004_lacrimosa/mod/RuntimeGraphProbe` with no AnimBP missing-Skeleton compile errors.
+- `NteCharacterModSpec -ApplyRuntimeActions` on `.scratch/character-mod-workspace/004_lacrimosa_runtime_actions_graph_probe.spec.json` generates hotkey execution graphs for:
+  - `toggle_main_slot0`: `Ctrl+M` -> `ShowMaterialSection`;
+  - `toggle_smoke_attach`: `H` -> `SetVisibility`.
+- `NteAssetInspection` using `.scratch/character-mod-workspace/004_lacrimosa_runtime_actions_graph_probe_assets.txt` loads the generated SaveGame, Widget, main host AnimBP, and attached host AnimBP with 0 errors / 0 warnings and confirms the generated graph calls.
+- Shared-ABP validation on `.scratch/character-mod-workspace/004_lacrimosa_runtime_actions_validation.spec.json` succeeds with the expected shared-host skip warning.
+- `RunUAT BuildPlugin -StrictIncludes` succeeds for `.scratch/PluginBuild_CharacterRuntimeActionGraph_Strict`.
+
+Still open:
+
+- Generate Widget buttons/click handlers from the same action data.
+- Generate SaveGame load/save and initial apply state.
+- Generate OwnerComponentByTags lookup for actions where the host mesh and target mesh differ.
+- Generate CopyPose/Kawaii AnimGraph content for attached meshes instead of only testing EventGraph execution.
