@@ -375,14 +375,28 @@ UEdGraph* EnsureEventGraph(UBlueprint& Blueprint)
 	return Blueprint.UbergraphPages.IsEmpty() ? nullptr : Blueprint.UbergraphPages[0];
 }
 
+UK2Node_Event* FindOrAddAnimEvent(
+	UBlueprint& Blueprint,
+	UEdGraph& Graph,
+	const TCHAR* FunctionName,
+	const int32 NodePosY)
+{
+	if (UK2Node_Event* ExistingEvent = FBlueprintEditorUtils::FindOverrideForFunction(&Blueprint, UAnimInstance::StaticClass(), FunctionName))
+	{
+		return ExistingEvent;
+	}
+	int32 MutableNodePosY = NodePosY;
+	return FKismetEditorUtilities::AddDefaultEventNode(&Blueprint, &Graph, FunctionName, UAnimInstance::StaticClass(), MutableNodePosY);
+}
+
+UK2Node_Event* FindOrAddAnimInitializeEvent(UBlueprint& Blueprint, UEdGraph& Graph)
+{
+	return FindOrAddAnimEvent(Blueprint, Graph, TEXT("BlueprintInitializeAnimation"), -1800);
+}
+
 UK2Node_Event* FindOrAddAnimUpdateEvent(UBlueprint& Blueprint, UEdGraph& Graph)
 {
-	if (UK2Node_Event* ExistingUpdate = FBlueprintEditorUtils::FindOverrideForFunction(&Blueprint, UAnimInstance::StaticClass(), TEXT("BlueprintUpdateAnimation")))
-	{
-		return ExistingUpdate;
-	}
-	int32 NodePosY = 0;
-	return FKismetEditorUtilities::AddDefaultEventNode(&Blueprint, &Graph, TEXT("BlueprintUpdateAnimation"), UAnimInstance::StaticClass(), NodePosY);
+	return FindOrAddAnimEvent(Blueprint, Graph, TEXT("BlueprintUpdateAnimation"), 0);
 }
 
 UEdGraphPin* EnsureSequenceOutputPin(UK2Node_ExecutionSequence& SequenceNode, const int32 Index)
@@ -923,6 +937,17 @@ UEdGraphPin* AddToggledEnabledValue(
 	return FindPinByName(*NotNode, TEXT("ReturnValue"));
 }
 
+UEdGraphPin* AddCurrentEnabledValue(
+	UEdGraph& Graph,
+	const FNteCharacterRuntimeActionPlanItem& Action,
+	const int32 NodePosX,
+	const int32 NodePosY)
+{
+	const FName EnabledVariableName = MakeActionEnabledVariableName(Action);
+	UK2Node_VariableGet* GetEnabledNode = AddRuntimeVariableGetNode(Graph, EnabledVariableName, NodePosX, NodePosY);
+	return GetEnabledNode ? FindPinByName(*GetEnabledNode, EnabledVariableName) : nullptr;
+}
+
 UK2Node_VariableSet* AddSetEnabledNode(
 	UEdGraph& Graph,
 	const FNteCharacterRuntimeActionPlanItem& Action,
@@ -1027,13 +1052,27 @@ UEdGraphPin* AddAttachedMeshVisibilityApplyNodes(
 	return FindThenPin(*SetVisibilityNode);
 }
 
-bool IsGraphSupportedAction(const FNteCharacterRuntimeActionPlanItem& Action, FString& OutReason)
+UEdGraphPin* AddRuntimeActionApplyNodes(
+	UEdGraph& Graph,
+	const FNteCharacterRuntimeActionPlanItem& Action,
+	UEdGraphPin* ExecIn,
+	UEdGraphPin* EnabledValuePin,
+	const int32 NodePosX,
+	const int32 NodePosY)
 {
-	if (Action.Hotkey.IsEmpty())
+	if (Action.ActionType.Equals(TEXT("MaterialSlotVisibility"), ESearchCase::IgnoreCase))
 	{
-		OutReason = TEXT("action has no hotkey; UI click binding is not generated yet");
-		return false;
+		return AddMaterialSlotVisibilityApplyNodes(Graph, Action, ExecIn, EnabledValuePin, NodePosX, NodePosY);
 	}
+	if (Action.ActionType.Equals(TEXT("AttachedMeshVisibility"), ESearchCase::IgnoreCase))
+	{
+		return AddAttachedMeshVisibilityApplyNodes(Graph, ExecIn, EnabledValuePin, NodePosX, NodePosY);
+	}
+	return ExecIn;
+}
+
+bool IsApplySupportedAction(const FNteCharacterRuntimeActionPlanItem& Action, FString& OutReason)
+{
 	if (!Action.TargetLookupMode.Equals(TEXT("OwningComponent"), ESearchCase::IgnoreCase))
 	{
 		OutReason = FString::Printf(TEXT("target lookup mode '%s' is not generated yet"), *Action.TargetLookupMode);
@@ -1057,12 +1096,23 @@ bool IsGraphSupportedAction(const FNteCharacterRuntimeActionPlanItem& Action, FS
 	return false;
 }
 
+bool IsHotkeySupportedAction(const FNteCharacterRuntimeActionPlanItem& Action, FString& OutReason)
+{
+	if (Action.Hotkey.IsEmpty())
+	{
+		OutReason = TEXT("action has no hotkey; only initial state application is generated");
+		return false;
+	}
+	return IsApplySupportedAction(Action, OutReason);
+}
+
 void AddRuntimeExecutionGraphToAnimBlueprint(
 	UBlueprint& Blueprint,
 	const TArray<const FNteCharacterRuntimeActionPlanItem*>& Actions,
 	FNteCharacterRuntimeActionAssetWriteResult& AssetResult)
 {
-	TArray<const FNteCharacterRuntimeActionPlanItem*> GraphActions;
+	TArray<const FNteCharacterRuntimeActionPlanItem*> ApplyActions;
+	TArray<const FNteCharacterRuntimeActionPlanItem*> HotkeyActions;
 	for (const FNteCharacterRuntimeActionPlanItem* Action : Actions)
 	{
 		if (!Action)
@@ -1071,9 +1121,14 @@ void AddRuntimeExecutionGraphToAnimBlueprint(
 		}
 
 		FString UnsupportedReason;
-		if (IsGraphSupportedAction(*Action, UnsupportedReason))
+		if (IsApplySupportedAction(*Action, UnsupportedReason))
 		{
-			GraphActions.Add(Action);
+			ApplyActions.Add(Action);
+			FString HotkeyUnsupportedReason;
+			if (IsHotkeySupportedAction(*Action, HotkeyUnsupportedReason))
+			{
+				HotkeyActions.Add(Action);
+			}
 		}
 		else if (Action->bFirstSliceBlueprintSupported)
 		{
@@ -1081,7 +1136,7 @@ void AddRuntimeExecutionGraphToAnimBlueprint(
 		}
 	}
 
-	if (GraphActions.IsEmpty())
+	if (ApplyActions.IsEmpty())
 	{
 		return;
 	}
@@ -1094,51 +1149,74 @@ void AddRuntimeExecutionGraphToAnimBlueprint(
 	}
 
 	RemoveGeneratedRuntimeNodes(Blueprint);
-	UK2Node_Event* UpdateEvent = FindOrAddAnimUpdateEvent(Blueprint, *EventGraph);
-	if (!UpdateEvent)
+	UK2Node_Event* InitializeEvent = FindOrAddAnimInitializeEvent(Blueprint, *EventGraph);
+	if (!InitializeEvent)
 	{
-		AddError(AssetResult, TEXT("Could not create BlueprintUpdateAnimation event for runtime actions."));
+		AddError(AssetResult, TEXT("Could not create BlueprintInitializeAnimation event for runtime actions."));
 		return;
 	}
 
-	UK2Node_ExecutionSequence* SequenceNode = AddRuntimeK2Node<UK2Node_ExecutionSequence>(*EventGraph, 260, 0);
-	TryLinkPins(FindThenPin(*UpdateEvent), FindExecPin(*SequenceNode));
-
-	for (int32 ActionIndex = 0; ActionIndex < GraphActions.Num(); ++ActionIndex)
+	UK2Node_ExecutionSequence* InitializeSequenceNode = AddRuntimeK2Node<UK2Node_ExecutionSequence>(*EventGraph, 260, -1800);
+	TryLinkPins(FindThenPin(*InitializeEvent), FindExecPin(*InitializeSequenceNode));
+	for (int32 ActionIndex = 0; ActionIndex < ApplyActions.Num(); ++ActionIndex)
 	{
-		const FNteCharacterRuntimeActionPlanItem& Action = *GraphActions[ActionIndex];
-		FRuntimeHotkey Hotkey;
-		if (!ParseRuntimeHotkey(Action.Hotkey, Hotkey))
+		const FNteCharacterRuntimeActionPlanItem& Action = *ApplyActions[ActionIndex];
+		const int32 BaseY = -1800 - ActionIndex * 520;
+		UEdGraphPin* SequenceThenPin = EnsureSequenceOutputPin(*InitializeSequenceNode, ActionIndex);
+		UEdGraphPin* CurrentEnabledValuePin = AddCurrentEnabledValue(*EventGraph, Action, 520, BaseY + 160);
+		AddRuntimeActionApplyNodes(*EventGraph, Action, SequenceThenPin, CurrentEnabledValuePin, 900, BaseY);
+		AssetResult.Actions.Add(FString::Printf(TEXT("generated initial apply graph for action %s"), *Action.Id));
+	}
+
+	if (!HotkeyActions.IsEmpty())
+	{
+		UK2Node_Event* UpdateEvent = FindOrAddAnimUpdateEvent(Blueprint, *EventGraph);
+		if (!UpdateEvent)
 		{
-			AssetResult.Warnings.Add(FString::Printf(TEXT("Skipped execution graph for action '%s': invalid hotkey '%s'."), *Action.Id, *Action.Hotkey));
-			continue;
+			AddError(AssetResult, TEXT("Could not create BlueprintUpdateAnimation event for runtime actions."));
+			return;
 		}
 
-		const int32 BaseY = ActionIndex * 1400;
-		UEdGraphPin* SequenceThenPin = EnsureSequenceOutputPin(*SequenceNode, ActionIndex);
-		UEdGraphPin* HotkeyConditionPin = AddHotkeyCondition(*EventGraph, Hotkey, 520, BaseY);
-		UK2Node_IfThenElse* BranchNode = AddRuntimeK2Node<UK2Node_IfThenElse>(*EventGraph, 2240, BaseY);
-		UEdGraphPin* NewEnabledValuePin = AddToggledEnabledValue(*EventGraph, Action, 2500, BaseY + 160);
-		UK2Node_VariableSet* SetEnabledNode = AddSetEnabledNode(*EventGraph, Action, NewEnabledValuePin, 2820, BaseY);
+		UK2Node_ExecutionSequence* SequenceNode = AddRuntimeK2Node<UK2Node_ExecutionSequence>(*EventGraph, 260, 0);
+		TryLinkPins(FindThenPin(*UpdateEvent), FindExecPin(*SequenceNode));
 
-		TryLinkPins(SequenceThenPin, FindExecPin(*BranchNode));
-		TryLinkPins(HotkeyConditionPin, FindPinByName(*BranchNode, TEXT("Condition")));
-		if (SetEnabledNode)
+		for (int32 ActionIndex = 0; ActionIndex < HotkeyActions.Num(); ++ActionIndex)
 		{
-			TryLinkPins(FindThenPin(*BranchNode), FindExecPin(*SetEnabledNode));
-		}
+			const FNteCharacterRuntimeActionPlanItem& Action = *HotkeyActions[ActionIndex];
+			FRuntimeHotkey Hotkey;
+			if (!ParseRuntimeHotkey(Action.Hotkey, Hotkey))
+			{
+				AssetResult.Warnings.Add(FString::Printf(TEXT("Skipped execution graph for action '%s': invalid hotkey '%s'."), *Action.Id, *Action.Hotkey));
+				continue;
+			}
 
-		UEdGraphPin* ApplyExec = SetEnabledNode ? FindThenPin(*SetEnabledNode) : FindThenPin(*BranchNode);
-		if (Action.ActionType.Equals(TEXT("MaterialSlotVisibility"), ESearchCase::IgnoreCase))
-		{
-			AddMaterialSlotVisibilityApplyNodes(*EventGraph, Action, ApplyExec, NewEnabledValuePin, 3140, BaseY);
-		}
-		else if (Action.ActionType.Equals(TEXT("AttachedMeshVisibility"), ESearchCase::IgnoreCase))
-		{
-			AddAttachedMeshVisibilityApplyNodes(*EventGraph, ApplyExec, NewEnabledValuePin, 3140, BaseY);
-		}
+			const int32 BaseY = ActionIndex * 1400;
+			UEdGraphPin* SequenceThenPin = EnsureSequenceOutputPin(*SequenceNode, ActionIndex);
+			UEdGraphPin* HotkeyConditionPin = AddHotkeyCondition(*EventGraph, Hotkey, 520, BaseY);
+			UK2Node_IfThenElse* BranchNode = AddRuntimeK2Node<UK2Node_IfThenElse>(*EventGraph, 2240, BaseY);
+			UEdGraphPin* NewEnabledValuePin = AddToggledEnabledValue(*EventGraph, Action, 2500, BaseY + 160);
+			UK2Node_VariableSet* SetEnabledNode = AddSetEnabledNode(*EventGraph, Action, NewEnabledValuePin, 2820, BaseY);
 
-		AssetResult.Actions.Add(FString::Printf(TEXT("generated hotkey execution graph for action %s"), *Action.Id));
+			TryLinkPins(SequenceThenPin, FindExecPin(*BranchNode));
+			TryLinkPins(HotkeyConditionPin, FindPinByName(*BranchNode, TEXT("Condition")));
+			if (SetEnabledNode)
+			{
+				TryLinkPins(FindThenPin(*BranchNode), FindExecPin(*SetEnabledNode));
+			}
+
+			UEdGraphPin* ApplyExec = SetEnabledNode ? FindThenPin(*SetEnabledNode) : FindThenPin(*BranchNode);
+			AddRuntimeActionApplyNodes(*EventGraph, Action, ApplyExec, NewEnabledValuePin, 3140, BaseY);
+			AssetResult.Actions.Add(FString::Printf(TEXT("generated hotkey execution graph for action %s"), *Action.Id));
+		}
+	}
+
+	for (int32 ActionIndex = 0; ActionIndex < ApplyActions.Num(); ++ActionIndex)
+	{
+		const FNteCharacterRuntimeActionPlanItem& Action = *ApplyActions[ActionIndex];
+		if (Action.Hotkey.IsEmpty())
+		{
+			AssetResult.Actions.Add(FString::Printf(TEXT("action %s has no hotkey; generated initial apply graph only"), *Action.Id));
+		}
 	}
 
 	FBlueprintEditorUtils::MarkBlueprintAsStructurallyModified(&Blueprint);

@@ -77,6 +77,7 @@ This checkpoint deliberately does not claim final hotkey/UI/material execution. 
 The runtime-action writer now generates the first executable host AnimBP EventGraph slice directly from `CharacterModSpec.RuntimeActions`:
 
 - host AnimBPs are created or repaired with the host mesh Skeleton and preview mesh;
+- `BlueprintInitializeAnimation` applies default enabled states before the first hotkey press;
 - unique host AnimBP paths generate hotkey polling and per-action enabled-state toggles;
 - owning-component `MaterialSlotVisibility` calls `ShowMaterialSection`;
 - owning-component `AttachedMeshVisibility` calls `SetVisibility`;

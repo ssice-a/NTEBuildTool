@@ -287,9 +287,9 @@ Verified:
 - `RunUAT BuildPlugin -StrictIncludes` passes for `.scratch/PluginBuild_CharacterRuntimeActionWriter_Strict3`.
 - Fresh first-create graph probe regenerated `/Game/Characters/Player/004_lacrimosa/mod/RuntimeGraphProbe` with host AnimBPs that have the host mesh Skeleton/preview mesh and no missing-Skeleton compile errors.
 - `NteCharacterModSpec -ApplyRuntimeActions` on `.scratch/character-mod-workspace/004_lacrimosa_runtime_actions_graph_probe.spec.json` generates hotkey execution graphs for `toggle_main_slot0` and `toggle_smoke_attach`.
-- `NteAssetInspection` confirms the graph-probe runtime SaveGame, Widget, main host AnimBP, and attached host AnimBP load with 0 errors / 0 warnings.
+- `NteAssetInspection` confirms the graph-probe runtime SaveGame, Widget, main host AnimBP, and attached host AnimBP load with 0 errors / 0 warnings, including generated initialize/apply and update/hotkey branches.
 - Shared-ABP validation keeps execution graph generation disabled with one deduplicated warning.
-- `RunUAT BuildPlugin -StrictIncludes` passes for `.scratch/PluginBuild_CharacterRuntimeActionGraph_Strict`.
+- `RunUAT BuildPlugin -StrictIncludes` passes for `.scratch/PluginBuild_CharacterRuntimeActionGraph_Strict` and `.scratch/PluginBuild_RuntimeActionInitialApply_Strict`.
 
 Latest verification reports:
 
@@ -326,7 +326,7 @@ Runtime action checkpoint:
 - Runtime asset roots now prefer explicit `RuntimeAnimBlueprintPath` directories and otherwise fall back to `/mod/Runtime`, so generated Widget/SaveGame/runtime assets do not drift into `/mod/Generated`.
 - Character Workspace can add/update `MaterialSlotVisibility` runtime actions from a material-slot row or the Runtime Action button and persists them to the active spec JSON.
 - `NteCharacterRuntimeActionWriter` now creates or updates generated runtime SaveGame, Widget, and host AnimBP Blueprint assets from the plan.
-- The writer records the condensed action plan and per-action fields as Blueprint variables, derives host AnimBP Skeleton/preview mesh from the host mesh path, and generates the first owning-component hotkey EventGraph slice for `MaterialSlotVisibility` and `AttachedMeshVisibility`.
+- The writer records the condensed action plan and per-action fields as Blueprint variables, derives host AnimBP Skeleton/preview mesh from the host mesh path, applies default enabled states in `BlueprintInitializeAnimation`, and generates the first owning-component hotkey EventGraph slice for `MaterialSlotVisibility` and `AttachedMeshVisibility`.
 - The writer checks package existence before loading future Blueprint paths, preventing first-create missing-package load noise.
 - `.scratch/character-mod-workspace/004_lacrimosa_runtime_actions_validation.spec.json` is the focused spec for this data-layer regression.
 - `.scratch/character-mod-workspace/004_lacrimosa_runtime_actions_plan.report.json` and `.scratch/character-mod-workspace/071_chaos_runtime_actions_plan.report.json` are the focused reports for the runtime-action planning regression.

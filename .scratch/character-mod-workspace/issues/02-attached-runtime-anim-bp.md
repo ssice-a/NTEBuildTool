@@ -60,6 +60,7 @@ Implemented:
   - host AnimBPs from the runtime-action plan.
 - The writer stores the condensed action plan and per-action data as Blueprint variables.
 - The writer now creates host AnimBPs with the host mesh Skeleton/preview mesh and generates the first owning-component hotkey EventGraph executor slice:
+  - `BlueprintInitializeAnimation` applies the current/default enabled state on startup;
   - `MaterialSlotVisibility` -> `WasInputKeyJustPressed` / modifier checks / toggle enabled variable / `ShowMaterialSection`;
   - `AttachedMeshVisibility` -> `WasInputKeyJustPressed` / toggle enabled variable / `SetVisibility`.
 - Shared host AnimBP paths skip execution graph generation with one warning because `GetOwningComponent` would be ambiguous.
@@ -77,7 +78,7 @@ Verified:
 - `NteCharacterModSpec -ApplyRuntimeActions` on `.scratch/character-mod-workspace/004_lacrimosa_runtime_actions_graph_probe.spec.json`.
 - `NteAssetInspection` confirms the graph-probe generated SaveGame, Widget, main host AnimBP, and attached host AnimBP load with 0 errors / 0 warnings:
   - `.scratch/character-mod-workspace/004_lacrimosa_runtime_actions_graph_probe_assets.json`
-- `RunUAT BuildPlugin -StrictIncludes` succeeds for `.scratch/PluginBuild_CharacterRuntimeActionGraph_Strict`.
+- `RunUAT BuildPlugin -StrictIncludes` succeeds for `.scratch/PluginBuild_CharacterRuntimeActionGraph_Strict` and `.scratch/PluginBuild_RuntimeActionInitialApply_Strict`.
 
 ## Blockers
 

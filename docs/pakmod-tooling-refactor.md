@@ -990,6 +990,7 @@ Implemented:
 - Host AnimBP EventGraphs now generate hotkey polling for first-slice owning-component actions:
   - `MaterialSlotVisibility` uses `APlayerController::WasInputKeyJustPressed`, modifier-key checks, toggles the per-action enabled variable, and calls `USkinnedMeshComponent::ShowMaterialSection` for configured slots on LOD 0.
   - `AttachedMeshVisibility` toggles the per-action enabled variable and calls `USceneComponent::SetVisibility` on the owning component with child propagation enabled.
+- Host AnimBPs now also generate `BlueprintInitializeAnimation` apply branches, so `DefaultEnabled=false` actions are applied before the first hotkey press.
 - Shared host AnimBP paths are detected and skip execution graph generation with one deduplicated warning, because `GetOwningComponent` would otherwise be ambiguous across multiple components using the same AnimBP.
 
 Verified:
@@ -999,9 +1000,9 @@ Verified:
 - `NteCharacterModSpec -ApplyRuntimeActions` on `.scratch/character-mod-workspace/004_lacrimosa_runtime_actions_graph_probe.spec.json` generates hotkey execution graphs for:
   - `toggle_main_slot0`: `Ctrl+M` -> `ShowMaterialSection`;
   - `toggle_smoke_attach`: `H` -> `SetVisibility`.
-- `NteAssetInspection` using `.scratch/character-mod-workspace/004_lacrimosa_runtime_actions_graph_probe_assets.txt` loads the generated SaveGame, Widget, main host AnimBP, and attached host AnimBP with 0 errors / 0 warnings and confirms the generated graph calls.
+- `NteAssetInspection` using `.scratch/character-mod-workspace/004_lacrimosa_runtime_actions_graph_probe_assets.txt` loads the generated SaveGame, Widget, main host AnimBP, and attached host AnimBP with 0 errors / 0 warnings and confirms the generated initialize/update graph calls.
 - Shared-ABP validation on `.scratch/character-mod-workspace/004_lacrimosa_runtime_actions_validation.spec.json` succeeds with the expected shared-host skip warning.
-- `RunUAT BuildPlugin -StrictIncludes` succeeds for `.scratch/PluginBuild_CharacterRuntimeActionGraph_Strict`.
+- `RunUAT BuildPlugin -StrictIncludes` succeeds for `.scratch/PluginBuild_CharacterRuntimeActionGraph_Strict` and `.scratch/PluginBuild_RuntimeActionInitialApply_Strict`.
 
 Still open:
 
