@@ -249,6 +249,13 @@ Completed:
   - raw FModel `MaterialInstanceConstant` JSON array normalization in the material module;
   - Character Workspace material slot actions apply through the same material plan/writer path;
   - Character Workspace can load/save `CharacterModSpec` JSON, edit the core spec fields, list existing `MaterialOperations`, and upsert new material-slot operations back into the saved spec file.
+- First part of Slice 5:
+  - `NteCharacterRuntimeActionPlan`;
+  - `NteCharacterRuntimeActionWriter`;
+  - `NteCharacterModSpec -ApplyRuntimeActions`;
+  - generated runtime SaveGame / Widget / host AnimBP Blueprint asset skeletons;
+  - auditable runtime-action data variables written to generated Blueprint assets;
+  - runtime-action package seeds merged into `BuildPackagePlanFromCharacterModSpec`.
 
 Verified:
 
@@ -273,6 +280,10 @@ Verified:
 - `RunUAT BuildPlugin -StrictIncludes` passes for `.scratch/PluginBuild_CharacterWorkspaceRuntimeActionUi`.
 - Character Workspace Package action now saves confirmed package settings back to the active `CharacterModSpec` before creating or launching the package job.
 - `RunUAT BuildPlugin -StrictIncludes` passes for `.scratch/PluginBuild_CharacterWorkspacePackageSpecSave`.
+- `NteCharacterModSpec -ApplyRuntimeActions` writes runtime Blueprint asset skeletons for the 004 runtime-action validation spec.
+- A temporary `RuntimeCreateProbe` spec verified first-create runtime Blueprint generation without missing-package load warnings; the generated probe uassets were removed afterward.
+- `NteAssetInspection` confirms the formal generated runtime SaveGame, Widget, and host AnimBP assets load.
+- `RunUAT BuildPlugin -StrictIncludes` passes for `.scratch/PluginBuild_CharacterRuntimeActionWriter_Strict3`.
 
 Latest verification reports:
 
@@ -282,6 +293,9 @@ Latest verification reports:
 - `.scratch/character-mod-workspace/004_lacrimosa_attached_mesh_package_audit_preflight.json`
 - `.scratch/character-mod-workspace/004_lacrimosa_apply_materials_safe.report.json`
 - `.scratch/character-mod-workspace/004_lacrimosa_apply_materials_texture_override.report.json`
+- `.scratch/character-mod-workspace/004_lacrimosa_apply_runtime_actions.report.json`
+- `.scratch/character-mod-workspace/004_lacrimosa_runtime_actions_assets.json`
+- `.scratch/character-mod-workspace/004_lacrimosa_apply_runtime_actions_create_probe.report.json`
 
 Important environment requirement:
 
@@ -292,7 +306,7 @@ Next action:
 Continue with the remaining vertical slices:
 
 1. validate `PlayerUIShow` SCS sync against a real existing UIShow Blueprint once the Mirror Project contains one;
-2. implement the runtime action generator that uses `MeshComponentOwnedTags` to find attached mesh/material-slot targets;
+2. implement the runtime action execution graph that uses `MeshComponentOwnedTags` to find attached mesh/material-slot targets;
 3. expand the Character Workspace material rows from read-only summaries into editable slot-centered rows with remove/reorder affordances;
 4. design and implement the UE-side Kawaii preset editor/data model;
 5. replace the remaining mesh-only UI fragments with spec-first Character Workspace panels;
@@ -305,8 +319,12 @@ Runtime action checkpoint:
 - `NteCharacterRuntimeActionPlan` now converts `RuntimeActions` into a commandlet-visible plan with host AnimBP grouping, target lookup mode, target component tags, generated Widget/SaveGame paths, and first-slice Blueprint support flags.
 - Runtime asset roots now prefer explicit `RuntimeAnimBlueprintPath` directories and otherwise fall back to `/mod/Runtime`, so generated Widget/SaveGame/runtime assets do not drift into `/mod/Generated`.
 - Character Workspace can add/update `MaterialSlotVisibility` runtime actions from a material-slot row or the Runtime Action button and persists them to the active spec JSON.
+- `NteCharacterRuntimeActionWriter` now creates or updates generated runtime SaveGame, Widget, and host AnimBP Blueprint assets from the plan.
+- The writer records the condensed action plan and per-action fields as Blueprint variables. This is the data/reachability skeleton; actual execution graph nodes are still pending.
+- The writer checks package existence before loading future Blueprint paths, preventing first-create missing-package load noise.
 - `.scratch/character-mod-workspace/004_lacrimosa_runtime_actions_validation.spec.json` is the focused spec for this data-layer regression.
 - `.scratch/character-mod-workspace/004_lacrimosa_runtime_actions_plan.report.json` and `.scratch/character-mod-workspace/071_chaos_runtime_actions_plan.report.json` are the focused reports for the runtime-action planning regression.
+- `.scratch/character-mod-workspace/004_lacrimosa_apply_runtime_actions.report.json` is the focused report for runtime-action asset writing.
 
 Kawaii preset checkpoint:
 

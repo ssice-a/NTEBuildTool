@@ -59,3 +59,15 @@ The first vertical path is now implemented and smoke-tested:
 - A 004 Lacrimosa attached-mesh smoke spec cooked and packaged to pak/utoc/ucas.
 
 The remaining unproven branch is real `PlayerUIShow` SCS synchronization, because the current Mirror Project test content does not contain a loadable source-style `PlayerUIShow_*` Blueprint.
+
+## 2026-07-12 runtime-action writer checkpoint
+
+The runtime-action path now has a spec-first asset writer:
+
+- `NteCharacterModSpec -ApplyRuntimeActions` consumes `NteCharacterRuntimeActionPlan`.
+- `NteCharacterRuntimeActionWriter` creates or updates generated SaveGame, Widget, and host AnimBP Blueprint assets.
+- Generated assets store auditable runtime-action data variables and the condensed action-plan JSON.
+- Runtime Blueprint package seeds are merged into `BuildPackagePlanFromCharacterModSpec`.
+- First-create missing-package load noise is avoided by checking package existence before loading future Blueprint paths.
+
+This checkpoint deliberately does not claim final hotkey/UI/material execution. The next ADR-significant proof is graph generation for `MaterialSlotVisibility` and `AttachedMeshVisibility` from the same `CharacterModSpec.RuntimeActions` model.

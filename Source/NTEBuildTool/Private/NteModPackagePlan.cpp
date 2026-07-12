@@ -4,6 +4,8 @@
 
 #include "NteCharacterMaterialPlan.h"
 #include "NteCharacterModSpec.h"
+#include "NteCharacterRuntimeActionPlan.h"
+#include "NteCharacterRuntimeActionWriter.h"
 #include "NteEditorAssetUtils.h"
 
 #include "AssetRegistry/AssetRegistryModule.h"
@@ -313,6 +315,12 @@ bool BuildPackagePlanFromCharacterModSpec(
 	for (const FString& MaterialSeed : NTEBuildTool::Character::CollectCharacterMaterialPlanPackageSeeds(MaterialPlan))
 	{
 		EffectiveSeedPackages.AddUnique(MaterialSeed);
+	}
+	const NTEBuildTool::Character::FNteCharacterRuntimeActionPlan RuntimeActionPlan =
+		NTEBuildTool::Character::BuildCharacterRuntimeActionPlanFromSpec(Spec);
+	for (const FString& RuntimeSeed : NTEBuildTool::Character::CollectCharacterRuntimeActionPlanPackageSeeds(RuntimeActionPlan))
+	{
+		EffectiveSeedPackages.AddUnique(RuntimeSeed);
 	}
 	EffectiveSeedPackages.Sort();
 	if (EffectiveSeedPackages.IsEmpty())

@@ -47,12 +47,36 @@ Implemented:
   - `.scratch/character-mod-workspace/004_lacrimosa_runtime_actions_plan.report.json`
   - `.scratch/character-mod-workspace/071_chaos_runtime_actions_plan.report.json`
 
+## 2026-07-12 checkpoint
+
+Implemented:
+
+- Added `NteCharacterRuntimeActionWriter`.
+- Added `NteCharacterModSpec -ApplyRuntimeActions`.
+- Runtime-action package seeds now include generated SaveGame, Widget, and host AnimBP Blueprint paths.
+- The writer creates or updates:
+  - `/mod/Runtime/BP_NTE_CharacterActionSaveGame`
+  - `/mod/Runtime/WBP_NTE_CharacterActions`
+  - host AnimBPs from the runtime-action plan.
+- The writer stores the condensed action plan and per-action data as Blueprint variables. This is a data/reachability skeleton, not the final EventGraph executor.
+- First-create package load noise is avoided by checking loaded packages and `FPackageName::DoesPackageExist` before attempting to load future Blueprint paths.
+
+Verified:
+
+- `NteCharacterModSpec -ApplyRuntimeActions` on `.scratch/character-mod-workspace/004_lacrimosa_runtime_actions_validation.spec.json`.
+- `.scratch/character-mod-workspace/004_lacrimosa_apply_runtime_actions.report.json`.
+- Temporary first-create probe report `.scratch/character-mod-workspace/004_lacrimosa_apply_runtime_actions_create_probe.report.json`; generated probe uassets were removed after validation.
+- `NteAssetInspection` confirms the formal generated runtime SaveGame, Widget, and AnimBP assets load:
+  - `.scratch/character-mod-workspace/004_lacrimosa_runtime_actions_assets.json`
+- `RunUAT BuildPlugin -StrictIncludes` succeeds for `.scratch/PluginBuild_CharacterRuntimeActionWriter_Strict3`.
+
 ## Blockers
 
 - Need concrete template/graph-generation design for CopyPose + Kawaii + output pose.
 - Need action executor graph generation for the first runtime slice:
   - `AttachedMeshVisibility`;
   - `MaterialSlotVisibility`.
+- Need Widget button creation/click binding and SaveGame load/save graph generation.
 - Need Kawaii schema compatibility before final cooked physics AnimBPs are trusted.
 
 ## Tests

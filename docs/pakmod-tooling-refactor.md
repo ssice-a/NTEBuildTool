@@ -947,3 +947,34 @@ Verified:
 - `PhyLabEditor Win64 Development` builds after syncing the plugin mirror.
 - `RunUAT BuildPlugin -StrictIncludes` succeeds for `.scratch/PluginBuild_CharacterWorkspaceRuntimeActionUi`.
 - `RunUAT BuildPlugin -StrictIncludes` succeeds for `.scratch/PluginBuild_CharacterWorkspacePackageSpecSave`.
+
+## 2026-07-12 CharacterModSpec runtime-action writer checkpoint
+
+The runtime-action module now has a first asset-writing slice. This is intentionally not the final execution graph yet; it proves that `CharacterModSpec.RuntimeActions` can generate stable, package-reachable runtime Blueprint assets without returning to the legacy PostProcess template generator.
+
+Implemented:
+
+- Added `NteCharacterRuntimeActionWriter`.
+- `NteCharacterModSpec -ApplyRuntimeActions` consumes `NteCharacterRuntimeActionPlan`.
+- The writer creates or updates:
+  - a generated SaveGame Blueprint under the planned runtime root;
+  - a generated Widget Blueprint under the planned runtime root;
+  - each host AnimBP referenced by the runtime-action plan.
+- Generated assets store auditable action data variables, including the condensed action plan JSON, action count, action ids, labels, types, target mesh ids, material slots, and default enabled states.
+- Runtime action package seeds now include the generated SaveGame, Widget, and host AnimBP packages, so `BuildPackagePlanFromCharacterModSpec` and the commandlet report can see them before packaging.
+- First-create load noise is avoided by checking in-memory packages and `FPackageName::DoesPackageExist` before loading future Blueprint package paths.
+
+Verified:
+
+- `PhyLabEditor Win64 Development` builds after syncing the plugin mirror.
+- `NteCharacterModSpec -ApplyRuntimeActions` on `.scratch/character-mod-workspace/004_lacrimosa_runtime_actions_validation.spec.json` updates the runtime assets with 0 writer errors and 0 writer warnings.
+- A temporary `RuntimeCreateProbe` spec created new SaveGame, Widget, and AnimBP Blueprint assets with no missing-package load warnings; the temporary uassets were removed after validation.
+- `NteAssetInspection` using `.scratch/character-mod-workspace/004_lacrimosa_runtime_actions_assets.txt` confirms the formal runtime SaveGame, Widget, and AnimBP assets all load.
+- `RunUAT BuildPlugin -StrictIncludes` succeeds for `.scratch/PluginBuild_CharacterRuntimeActionWriter_Strict3`.
+
+Still open:
+
+- Build the actual hotkey/UI/save/apply execution graph.
+- Connect `MaterialSlotVisibility` to `ShowMaterialSection` for skinned mesh targets.
+- Connect `AttachedMeshVisibility` to component visibility using `MeshComponentOwnedTags` / action target tags.
+- Generate Widget buttons and click bindings from the same action data.

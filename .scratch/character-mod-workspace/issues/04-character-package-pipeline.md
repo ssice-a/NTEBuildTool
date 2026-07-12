@@ -18,6 +18,7 @@ Build Package Plan and Package Job directly from `CharacterModSpec`.
 - replacement textures
 - material-plan-derived output MI paths when `MaterialOperations.OutputMaterialPath` is empty
 - runtime action material references
+- runtime action generated SaveGame / Widget / host AnimBP Blueprint paths
 
 `NteCharacterModSpec` commandlet now includes `PackageSeeds` and `PackagePlan` in its report, using the formal `BuildPackagePlanFromCharacterModSpec` API.
 
@@ -76,3 +77,14 @@ Remaining:
 `BuildPackagePlanFromCharacterModSpec` now merges `CollectCharacterMaterialPlanPackageSeeds`.
 
 This matters because material output paths can be derived by `NteCharacterMaterialPlan`; package planning must include the effective generated MI path even when the raw spec left `OutputMaterialPath` empty.
+
+## 2026-07-12 runtime action seed update
+
+`BuildPackagePlanFromCharacterModSpec` now merges `CollectCharacterRuntimeActionPlanPackageSeeds`.
+
+This matters because runtime SaveGame, Widget, and host AnimBP Blueprint assets can be generated from `CharacterModSpec.RuntimeActions`; package planning must include those assets even before the execution graph is fully generated.
+
+Verified:
+
+- `.scratch/character-mod-workspace/004_lacrimosa_apply_runtime_actions.report.json` includes runtime Blueprint seeds.
+- `RunUAT BuildPlugin -StrictIncludes` succeeds for `.scratch/PluginBuild_CharacterRuntimeActionWriter_Strict3`.

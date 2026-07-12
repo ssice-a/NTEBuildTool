@@ -9,6 +9,7 @@
 #include "NteCharacterMaterialWriter.h"
 #include "NteCharacterModSpec.h"
 #include "NteCharacterRuntimeActionPlan.h"
+#include "NteCharacterRuntimeActionWriter.h"
 #include "NteJsonFileUtils.h"
 #include "NteModPackageJob.h"
 #include "NteModPackagePlan.h"
@@ -100,7 +101,7 @@ UNteCharacterModSpecCommandlet::UNteCharacterModSpecCommandlet()
 	ShowErrorCount = true;
 	UseCommandletResultAsExitCode = true;
 	HelpDescription = TEXT("Validates an NTE CharacterModSpec JSON and writes a report.");
-	HelpUsage = TEXT("UnrealEditor-Cmd.exe <Project>.uproject -run=NteCharacterModSpec -Spec=<json> [-Output=<json>] [-ApplyAppearance] [-ApplyMaterials] [-WritePackageJob] [-BuildPackage] [-FailOnWarnings]");
+	HelpUsage = TEXT("UnrealEditor-Cmd.exe <Project>.uproject -run=NteCharacterModSpec -Spec=<json> [-Output=<json>] [-ApplyAppearance] [-ApplyMaterials] [-ApplyRuntimeActions] [-WritePackageJob] [-BuildPackage] [-FailOnWarnings]");
 }
 
 int32 UNteCharacterModSpecCommandlet::Main(const FString& Params)
@@ -134,6 +135,10 @@ int32 UNteCharacterModSpecCommandlet::Main(const FString& Params)
 	{
 		PackageSeeds.AddUnique(MaterialSeed);
 	}
+	for (const FString& RuntimeSeed : NTEBuildTool::Character::CollectCharacterRuntimeActionPlanPackageSeeds(RuntimeActionPlan))
+	{
+		PackageSeeds.AddUnique(RuntimeSeed);
+	}
 	PackageSeeds.Sort();
 	const bool bApplyAppearance = FParse::Param(*Params, TEXT("ApplyAppearance"));
 	NTEBuildTool::Character::FNteAppearanceAssemblyWriteResult AppearanceWriteResult;
@@ -146,6 +151,12 @@ int32 UNteCharacterModSpecCommandlet::Main(const FString& Params)
 	if (bApplyMaterials && !Validation.HasErrors())
 	{
 		MaterialWriteResult = NTEBuildTool::Character::WriteCharacterMaterials(MaterialPlan);
+	}
+	const bool bApplyRuntimeActions = FParse::Param(*Params, TEXT("ApplyRuntimeActions"));
+	NTEBuildTool::Character::FNteCharacterRuntimeActionWriteResult RuntimeActionWriteResult;
+	if (bApplyRuntimeActions && !Validation.HasErrors())
+	{
+		RuntimeActionWriteResult = NTEBuildTool::Character::WriteCharacterRuntimeActions(RuntimeActionPlan);
 	}
 
 	FString PackagePlanError;
@@ -197,6 +208,11 @@ int32 UNteCharacterModSpecCommandlet::Main(const FString& Params)
 	if (bApplyMaterials)
 	{
 		Root->SetObjectField(TEXT("MaterialWriteResult"), NTEBuildTool::Character::CharacterMaterialWriteResultToJson(MaterialWriteResult));
+	}
+	Root->SetBoolField(TEXT("ApplyRuntimeActions"), bApplyRuntimeActions);
+	if (bApplyRuntimeActions)
+	{
+		Root->SetObjectField(TEXT("RuntimeActionWriteResult"), NTEBuildTool::Character::CharacterRuntimeActionWriteResultToJson(RuntimeActionWriteResult));
 	}
 	if (bHasPackagePlan)
 	{
@@ -268,6 +284,17 @@ int32 UNteCharacterModSpecCommandlet::Main(const FString& Params)
 			UE_LOG(LogNTEBuildTool, Error, TEXT("%s"), *WriteError);
 		}
 	}
+	if (bApplyRuntimeActions)
+	{
+		for (const FString& Warning : RuntimeActionWriteResult.Warnings)
+		{
+			UE_LOG(LogNTEBuildTool, Warning, TEXT("%s"), *Warning);
+		}
+		for (const FString& WriteError : RuntimeActionWriteResult.Errors)
+		{
+			UE_LOG(LogNTEBuildTool, Error, TEXT("%s"), *WriteError);
+		}
+	}
 	if (bWritePackageJob && !bHasPackageJob && !PackageJobError.IsEmpty())
 	{
 		UE_LOG(LogNTEBuildTool, Error, TEXT("%s"), *PackageJobError);
@@ -288,11 +315,14 @@ int32 UNteCharacterModSpecCommandlet::Main(const FString& Params)
 	const bool bFailOnWarnings = FParse::Param(*Params, TEXT("FailOnWarnings"));
 	const bool bHasReportWarnings = Validation.HasWarnings()
 		|| !MaterialPlan.Warnings.IsEmpty()
+		|| !RuntimeActionPlan.Warnings.IsEmpty()
 		|| (bApplyAppearance && AppearanceWriteResult.Warnings.Num() > 0)
-		|| (bApplyMaterials && MaterialWriteResult.Warnings.Num() > 0);
+		|| (bApplyMaterials && MaterialWriteResult.Warnings.Num() > 0)
+		|| (bApplyRuntimeActions && RuntimeActionWriteResult.Warnings.Num() > 0);
 	if (Validation.HasErrors()
 		|| (bApplyAppearance && AppearanceWriteResult.HasErrors())
 		|| (bApplyMaterials && MaterialWriteResult.HasErrors())
+		|| (bApplyRuntimeActions && RuntimeActionWriteResult.HasErrors())
 		|| (bWritePackageJob && !bHasPackageJob)
 		|| (bBuildPackage && !bHasPackageBuild)
 		|| (bFailOnWarnings && bHasReportWarnings))
