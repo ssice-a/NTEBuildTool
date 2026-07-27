@@ -1,0 +1,2070 @@
+[
+  {
+    "Type": "HTPlayerAppearance",
+    "Name": "MeshAsset_Player051",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'HTPlayerAppearance'",
+    "Package": "/Game/Characters/Player/051_female/MeshAsset_Player051",
+    "Properties": {
+      "FashionMeshData": {
+        "CharacterMesh": {
+          "ObjectName": "SkeletalMesh'player_051_female_skin'",
+          "ObjectPath": "/Game/Characters/Player/051_female/player_051_female_skin.179"
+        },
+        "AnimInstance": {
+          "ObjectName": "AnimBlueprintGeneratedClass'Player051_Female_AnimBP_C'",
+          "ObjectPath": "/Game/Characters/Player/051_female/Player051_Female_AnimBP.0"
+        }
+      },
+      "CapsuleHalfHeight": 82.0,
+      "CapsuleRadius": 29.5,
+      "RelativeLocation": {
+        "X": 0.0,
+        "Y": 0.0,
+        "Z": -84.0
+      },
+      "AppearanceWeapon": {
+        "ObjectName": "BlueprintGeneratedClass'Weapon_Female051_Player_C'",
+        "ObjectPath": "/Game/Blueprints/Weapon/Player/Weapon_Female051_Player.0"
+      },
+      "ParticleMap": [
+        {
+          "Key": "NS_Common_Player_SlowClimb",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_Common_Player_SlowClimb'",
+              "ObjectPath": "/Game/FX/Nia/Player/FX_Foot/NS_Common_Player_SlowClimb.16"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "NS_Common_Player_SlowClimb_002",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_Common_Player_SlowClimb_002'",
+              "ObjectPath": "/Game/FX/Nia/Player/FX_Foot/NS_Common_Player_SlowClimb_002.16"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "NS_mon_dead_06",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_mon_dead_06'",
+              "ObjectPath": "/Game/FX/Nia/Monster/Common/NS_mon_dead_06.33"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "NS_common_swim_005",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_common_swim_005'",
+              "ObjectPath": "/Game/FX/Nia/Scene/swim/NS_common_swim_005.68"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "NS_common_swim_004_1",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_common_swim_004_1'",
+              "ObjectPath": "/Game/FX/Nia/Scene/swim/NS_common_swim_004_1.10"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "NS_common_swim_004_3",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_common_swim_004_3'",
+              "ObjectPath": "/Game/FX/Nia/Scene/swim/NS_common_swim_004_3.15"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "NS_common_swim_004",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_common_swim_004'",
+              "ObjectPath": "/Game/FX/Nia/Scene/swim/NS_common_swim_004.12"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "NS_common_swim_005_1",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_common_swim_005_1'",
+              "ObjectPath": "/Game/FX/Nia/Scene/swim/NS_common_swim_005_1.47"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "NS_Player_Common_001",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_Player_Common_001'",
+              "ObjectPath": "/Game/FX/Nia/Player/FX_Player_Common/NS_Player_Common_001.49"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "NS_common_swim_001_1",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_common_swim_001_1'",
+              "ObjectPath": "/Game/FX/Nia/Scene/swim/NS_common_swim_001_1.15"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "NS_common_swim_008",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_common_swim_008'",
+              "ObjectPath": "/Game/FX/Nia/Scene/swim/NS_common_swim_008.12"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "NS_common_swim_007",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_common_swim_007'",
+              "ObjectPath": "/Game/FX/Nia/Scene/swim/NS_common_swim_007.27"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "NS_common_swim_speedloop_in_foot",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_common_swim_speedloop_in_foot'",
+              "ObjectPath": "/Game/FX/Nia/Scene/swim/NS_common_swim_speedloop_in_foot.11"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "NS_common_swim_007_body",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_common_swim_007_body'",
+              "ObjectPath": "/Game/FX/Nia/Scene/swim/NS_common_swim_007_body.51"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "NS_common_swim_006_1",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_common_swim_006_1'",
+              "ObjectPath": "/Game/FX/Nia/Scene/swim/NS_common_swim_006_1.12"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "NS_common_swim_004_2",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_common_swim_004_2'",
+              "ObjectPath": "/Game/FX/Nia/Scene/swim/NS_common_swim_004_2.15"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "NS_common_swim_006",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_common_swim_006'",
+              "ObjectPath": "/Game/FX/Nia/Scene/swim/NS_common_swim_006.11"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "NS_Player_Female_Skill_21a1",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_Player_Female_Skill_21a1'",
+              "ObjectPath": "/Game/FX/Nia/Player/FX_Player_Female/New/NS_Player_Female_Skill_21a1.9"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "NS_Player_Female_Skill_027_New",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_Player_Female_Skill_027_New'",
+              "ObjectPath": "/Game/FX/Nia/Player/FX_Player_Female/New/NS_Player_Female_Skill_027_New.36"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "NS_Player_Female_Skill_017a2_New",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_Player_Female_Skill_017a2_New'",
+              "ObjectPath": "/Game/FX/Nia/Player/FX_Player_Female/New/NS_Player_Female_Skill_017a2_New.37"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "NS_Player_Female_New_skill_skill_1",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_Player_Female_New_skill_skill_1'",
+              "ObjectPath": "/Game/FX/Nia/Player/FX_Player_Female/New/NS_Player_Female_New_skill_skill_1.106"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "NS_Player_Female_New_Skill_004d2",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_Player_Female_New_Skill_004d2'",
+              "ObjectPath": "/Game/FX/Nia/Player/FX_Player_Female/New/NS_Player_Female_New_Skill_004d2.106"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "NS_Player_Female_New_skill_skill_3",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_Player_Female_New_skill_skill_3'",
+              "ObjectPath": "/Game/FX/Nia/Player/FX_Player_Female/New/NS_Player_Female_New_skill_skill_3.9"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "NS_player_009_weapon_Disappear",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_player_009_weapon_Disappear'",
+              "ObjectPath": "/Game/FX/Nia/Common/Weapon/NS_player_009_weapon_Disappear.10"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "NS_Player_Female_New_skill_skill_2",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_Player_Female_New_skill_skill_2'",
+              "ObjectPath": "/Game/FX/Nia/Player/FX_Player_Female/New/NS_Player_Female_New_skill_skill_2.100"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "NS_Player_Female_New_skill_skill_6",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_Player_Female_New_skill_skill_6'",
+              "ObjectPath": "/Game/FX/Nia/Player/FX_Player_Female/New/NS_Player_Female_New_skill_skill_6.50"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "NS_Player_Female_Skill_024",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_Player_Female_Skill_024'",
+              "ObjectPath": "/Game/FX/Nia/Player/FX_Player_Female/NS_Player_Female_Skill_024.7"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "NS_Player_Female_New_Skill_001a",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_Player_Female_New_Skill_001a'",
+              "ObjectPath": "/Game/FX/Nia/Player/FX_Player_Female/New/NS_Player_Female_New_Skill_001a.53"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "NS_Player_Female_New_Skill_004d5",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_Player_Female_New_Skill_004d5'",
+              "ObjectPath": "/Game/FX/Nia/Player/FX_Player_Female/New/NS_Player_Female_New_Skill_004d5.46"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "NS_Player_Female_Skill_027_002",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_Player_Female_Skill_027_002'",
+              "ObjectPath": "/Game/FX/Nia/Player/FX_Player_Female/New/NS_Player_Female_Skill_027_002.35"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "NS_Player_Female_New_Skill_002b2",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_Player_Female_New_Skill_002b2'",
+              "ObjectPath": "/Game/FX/Nia/Player/FX_Player_Female/New/NS_Player_Female_New_Skill_002b2.86"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "NS_Player_Female_New_Skill_004b",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_Player_Female_New_Skill_004b'",
+              "ObjectPath": "/Game/FX/Nia/Player/FX_Player_Female/New/NS_Player_Female_New_Skill_004b.53"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "NS_Player_Female_New_Skill_003d",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_Player_Female_New_Skill_003d'",
+              "ObjectPath": "/Game/FX/Nia/Player/FX_Player_Female/New/NS_Player_Female_New_Skill_003d.12"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "NS_Player_Female_New_Skill_004c",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_Player_Female_New_Skill_004c'",
+              "ObjectPath": "/Game/FX/Nia/Player/FX_Player_Female/New/NS_Player_Female_New_Skill_004c.52"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "NS_Player_Female_New_Skill_004d",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_Player_Female_New_Skill_004d'",
+              "ObjectPath": "/Game/FX/Nia/Player/FX_Player_Female/New/NS_Player_Female_New_Skill_004d.81"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "NS_Player_Female_New_Skill_003a",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_Player_Female_New_Skill_003a'",
+              "ObjectPath": "/Game/FX/Nia/Player/FX_Player_Female/New/NS_Player_Female_New_Skill_003a.52"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "NS_Player_Female_New_Skill_003b",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_Player_Female_New_Skill_003b'",
+              "ObjectPath": "/Game/FX/Nia/Player/FX_Player_Female/New/NS_Player_Female_New_Skill_003b.45"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "NS_Player_Female_New_Skill_003c",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_Player_Female_New_Skill_003c'",
+              "ObjectPath": "/Game/FX/Nia/Player/FX_Player_Female/New/NS_Player_Female_New_Skill_003c.50"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "NS_Player_Female_New_Skill_002a",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_Player_Female_New_Skill_002a'",
+              "ObjectPath": "/Game/FX/Nia/Player/FX_Player_Female/New/NS_Player_Female_New_Skill_002a.55"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "NS_Player_Female_New_Skill_002c",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_Player_Female_New_Skill_002c'",
+              "ObjectPath": "/Game/FX/Nia/Player/FX_Player_Female/New/NS_Player_Female_New_Skill_002c.56"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "NS_Player_Common_009",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_Player_Common_009'",
+              "ObjectPath": "/Game/FX/Nia/Player/FX_Player_Common/NS_Player_Common_009.32"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "NS_Player_Common_007",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_Player_Common_007'",
+              "ObjectPath": "/Game/FX/Nia/Player/FX_Player_Common/NS_Player_Common_007.15"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "NS_Player_Female_Skill_015_004",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_Player_Female_Skill_015_004'",
+              "ObjectPath": "/Game/FX/Nia/Player/FX_Player_Female/New/NS_Player_Female_Skill_015_004.54"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "NS_Player_Female_Skill_027_001",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_Player_Female_Skill_027_001'",
+              "ObjectPath": "/Game/FX/Nia/Player/FX_Player_Female/New/NS_Player_Female_Skill_027_001.26"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "NS_Player_Female_Skill_025",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_Player_Female_Skill_025'",
+              "ObjectPath": "/Game/FX/Nia/Player/FX_Player_Female/NS_Player_Female_Skill_025.7"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "NS_Player_Female_Show_002",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_Player_Female_Show_002'",
+              "ObjectPath": "/Game/FX/Nia/Player/FX_Player_Female/New/NS_Player_Female_Show_002.82"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "NS_Player_Female_Skill_027",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_Player_Female_Skill_027'",
+              "ObjectPath": "/Game/FX/Nia/Player/FX_Player_Female/New/NS_Player_Female_Skill_027.17"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "NS_Player_Female_Skill_013",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_Player_Female_Skill_013'",
+              "ObjectPath": "/Game/FX/Nia/Player/FX_Player_Female/NS_Player_Female_Skill_013.21"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "NS_Player_Female_Skill_015_002",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_Player_Female_Skill_015_002'",
+              "ObjectPath": "/Game/FX/Nia/Player/FX_Player_Female/New/NS_Player_Female_Skill_015_002.51"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "NS_Player_Female_Skill_017a2",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_Player_Female_Skill_017a2'",
+              "ObjectPath": "/Game/FX/Nia/Player/FX_Player_Female/New/NS_Player_Female_Skill_017a2.26"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "NS_Player_Female_Skill_015_001",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_Player_Female_Skill_015_001'",
+              "ObjectPath": "/Game/FX/Nia/Player/FX_Player_Female/New/NS_Player_Female_Skill_015_001.29"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "NS_Player_Female_New_Skill_002b",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_Player_Female_New_Skill_002b'",
+              "ObjectPath": "/Game/FX/Nia/Player/FX_Player_Female/New/NS_Player_Female_New_Skill_002b.55"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "NS_common_swim_007_body1",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_common_swim_007_body1'",
+              "ObjectPath": "/Game/FX/Nia/Scene/swim/NS_common_swim_007_body1.11"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "NS_common_swim_speedloop_in_hand",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_common_swim_speedloop_in_hand'",
+              "ObjectPath": "/Game/FX/Nia/Scene/swim/NS_common_swim_speedloop_in_hand.11"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "NS_Player_Common_003",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_Player_Common_003'",
+              "ObjectPath": "/Game/FX/Nia/Player/FX_Player_Common/NS_Player_Common_003.11"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "NS_Cleanplate02",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_Cleanplate02'",
+              "ObjectPath": "/Game/FX/Nia/Common/Clean/NS_Cleanplate02.28"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "NS_Player046_Unarmed_Act02",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_Player046_Unarmed_Act02'",
+              "ObjectPath": "/Game/FX/Nia/Player/FX_Player_Female/Unarmed/NS_Player046_Unarmed_Act02.45"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "NS_Player046_Unarmed_Act04",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_Player046_Unarmed_Act04'",
+              "ObjectPath": "/Game/FX/Nia/Player/FX_Player_Female/Unarmed/NS_Player046_Unarmed_Act04.45"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "NS_Player046_Unarmed_Act05",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_Player046_Unarmed_Act05'",
+              "ObjectPath": "/Game/FX/Nia/Player/FX_Player_Female/Unarmed/NS_Player046_Unarmed_Act05.65"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "NS_Player046_Unarmed_Act01_1",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_Player046_Unarmed_Act01_1'",
+              "ObjectPath": "/Game/FX/Nia/Player/FX_Player_Female/Unarmed/NS_Player046_Unarmed_Act01_1.45"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "NS_Player046_Unarmed_Block01",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_Player046_Unarmed_Block01'",
+              "ObjectPath": "/Game/FX/Nia/Player/FX_Player_Female/Unarmed/NS_Player046_Unarmed_Block01.55"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "NS_Player046_Unarmed_END02",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_Player046_Unarmed_END02'",
+              "ObjectPath": "/Game/FX/Nia/Player/FX_Player_Female/Unarmed/NS_Player046_Unarmed_END02.11"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "NS_Player046_Unarmed_END",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_Player046_Unarmed_END'",
+              "ObjectPath": "/Game/FX/Nia/Player/FX_Player_Female/Unarmed/NS_Player046_Unarmed_END.79"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "NS_Male_Boss34_001",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_Male_Boss34_001'",
+              "ObjectPath": "/Game/FX/Nia/Player/FX_Player_Common/NS_Male_Boss34_001.16"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "NS_Male_Boss34_007",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_Male_Boss34_007'",
+              "ObjectPath": "/Game/FX/Nia/Player/FX_Player_Common/NS_Male_Boss34_007.8"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "NS_Male_Boss34_005",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_Male_Boss34_005'",
+              "ObjectPath": "/Game/FX/Nia/Player/FX_Player_Common/NS_Male_Boss34_005.16"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "NS_Male_Boss34_002",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_Male_Boss34_002'",
+              "ObjectPath": "/Game/FX/Nia/Player/FX_Player_Common/NS_Male_Boss34_002.9"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "NS_Male_Boss34_004",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_Male_Boss34_004'",
+              "ObjectPath": "/Game/FX/Nia/Player/FX_Player_Common/NS_Male_Boss34_004.20"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "NS_Player_Unarmed_END03",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_Player_Unarmed_END03'",
+              "ObjectPath": "/Game/FX/Nia/Player/FX_Player_Female/Unarmed/NS_Player_Unarmed_END03.48"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "NS_Player_Unarmed_END04",
+          "Value": {
+            "ParticleSystem": {
+              "ObjectName": "NiagaraSystem'NS_Player_Unarmed_END04'",
+              "ObjectPath": "/Game/FX/Nia/Player/FX_Player_Female/Unarmed/NS_Player_Unarmed_END04.26"
+            },
+            "bUseSoftLoad": false,
+            "SoftParticleSystem": {
+              "AssetPathName": "",
+              "SubPathString": ""
+            }
+          }
+        }
+      ],
+      "ParticleMapWithParams": [
+        {
+          "Key": "FullAwaken",
+          "Value": {
+            "ParticleEffectParamsArray": [
+              {
+                "bUseSoftObject": true,
+                "SoftPSTemplate": {
+                  "AssetPathName": "/Game/FX/Nia/Common/Player/NS_Player_051_Fulllevel.NS_Player_051_Fulllevel",
+                  "SubPathString": ""
+                },
+                "bCheckAppearance": false,
+                "PSTemplate": null,
+                "AddTags": [
+                  "HiddenInCamera"
+                ],
+                "LocationOffset": {
+                  "X": 0.0,
+                  "Y": 0.0,
+                  "Z": 0.0
+                },
+                "RotationOffset": {
+                  "Pitch": 0.0,
+                  "Yaw": 0.0,
+                  "Roll": 0.0
+                },
+                "Scale": {
+                  "X": 1.0,
+                  "Y": 1.0,
+                  "Z": 1.0
+                },
+                "SocketName": "Root",
+                "Attached": true,
+                "IgnoreHitEffectOpt": false,
+                "UseParentBoundBox": false,
+                "bAcceptCustomDilation": true,
+                "bAttachRootComponent": false,
+                "AdaptiveScale": false,
+                "UserParameters": [],
+                "DirectionForce": null,
+                "SavedParticleSystem": null
+              }
+            ]
+          }
+        }
+      ],
+      "AudioEventMap": [
+        {
+          "Key": "Play_Sfx_Player_Cloth_Shirt_Switch",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Player/PlayerCloth/Player_Cloth_Shirt/Play_Sfx_Player_Cloth_Shirt_Switch.Play_Sfx_Player_Cloth_Shirt_Switch",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Fts_Sneaker_Switch",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Player/PlayerMove/Sfx_Player_Move_Sneaker/Play_Sfx_Player_Fts_Sneaker_Switch.Play_Sfx_Player_Fts_Sneaker_Switch",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Move_Cmn_Climb",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Player/PlayerMove/Sfx_Player_Move_Cmn_Climb/Play_Sfx_Player_Move_Cmn_Climb.Play_Sfx_Player_Move_Cmn_Climb",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Cloth_Shirt_Roll",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Player/PlayerCloth/Player_Cloth_Shirt/Play_Sfx_Player_Cloth_Shirt_Roll.Play_Sfx_Player_Cloth_Shirt_Roll",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Cloth_Shirt_Land_High",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Player/PlayerCloth/Player_Cloth_Shirt/Play_Sfx_Player_Cloth_Shirt_Land_High.Play_Sfx_Player_Cloth_Shirt_Land_High",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Vo_Shouts_ZERO_F_ClimbIn",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Voice/Shouts/ZERO/Play_Vo_Shouts_ZERO_F_ClimbIn.Play_Vo_Shouts_ZERO_F_ClimbIn",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Fts_Climb_Sprint_Sneaker_Switch",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Player/PlayerMove/Sfx_Player_Move_Sneaker/Play_Sfx_Player_Fts_Climb_Sprint_Sneaker_Switch.Play_Sfx_Player_Fts_Climb_Sprint_Sneaker_Switch",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Move_Fly_Wind_TurnRight",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Player/PlayerMove/Sfx_Player_Move_Fly/XiuPa/Play_Sfx_Player_Move_Fly_Wind_TurnRight.Play_Sfx_Player_Move_Fly_Wind_TurnRight",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Move_Fly_Wind_TurnLeft",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Player/PlayerMove/Sfx_Player_Move_Fly/XiuPa/Play_Sfx_Player_Move_Fly_Wind_TurnLeft.Play_Sfx_Player_Move_Fly_Wind_TurnLeft",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Fts_Land_Low_Sneaker_Switch",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Player/PlayerMove/Sfx_Player_Move_Sneaker/Play_Sfx_Player_Fts_Land_Low_Sneaker_Switch.Play_Sfx_Player_Fts_Land_Low_Sneaker_Switch",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Move_Fly_Wind_Turn",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Player/PlayerMove/Sfx_Player_Move_Fly/XiuPa/Play_Sfx_Player_Move_Fly_Wind_Turn.Play_Sfx_Player_Move_Fly_Wind_Turn",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Vo_Shouts_ZERO_F_HPain",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Voice/Shouts/ZERO/Play_Vo_Shouts_ZERO_F_HPain.Play_Vo_Shouts_ZERO_F_HPain",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Vo_Char_ZERO_F_hstruck",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Voice/Char/ZERO/Play_Vo_Char_ZERO_F_hstruck.Play_Vo_Char_ZERO_F_hstruck",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Vo_Shouts_ZERO_F_Pain",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Voice/Shouts/ZERO/Play_Vo_Shouts_ZERO_F_Pain.Play_Vo_Shouts_ZERO_F_Pain",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Vo_Char_ZERO_F_struck",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Voice/Char/ZERO/Play_Vo_Char_ZERO_F_struck.Play_Vo_Char_ZERO_F_struck",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Vo_Shouts_ZERO_F_Dead",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Voice/Shouts/ZERO/Play_Vo_Shouts_ZERO_F_Dead.Play_Vo_Shouts_ZERO_F_Dead",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Vo_Char_ZERO_F_dead",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Voice/Char/ZERO/Play_Vo_Char_ZERO_F_dead.Play_Vo_Char_ZERO_F_dead",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Vo_Shouts_ZERO_F_Drown",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Voice/Shouts/ZERO/Play_Vo_Shouts_ZERO_F_Drown.Play_Vo_Shouts_ZERO_F_Drown",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Move_Cmn_Swim_Bubble_Big",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Player/PlayerMove/Sfx_Player_Move_Cmn_Swim/Play_Sfx_Player_Move_Cmn_Swim_Bubble_Big.Play_Sfx_Player_Move_Cmn_Swim_Bubble_Big",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Move_Cmn_Swim_Deep",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Player/PlayerMove/Sfx_Player_Move_Cmn_Swim/Play_Sfx_Player_Move_Cmn_Swim_Deep.Play_Sfx_Player_Move_Cmn_Swim_Deep",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Move_Cmn_Swim_Small",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Player/PlayerMove/Sfx_Player_Move_Cmn_Swim/Play_Sfx_Player_Move_Cmn_Swim_Small.Play_Sfx_Player_Move_Cmn_Swim_Small",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Move_Cmn_Swim_Foot",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Player/PlayerMove/Sfx_Player_Move_Cmn_Swim/Play_Sfx_Player_Move_Cmn_Swim_Foot.Play_Sfx_Player_Move_Cmn_Swim_Foot",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Move_Cmn_Swim",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Player/PlayerMove/Sfx_Player_Move_Cmn_Swim/Play_Sfx_Player_Move_Cmn_Swim.Play_Sfx_Player_Move_Cmn_Swim",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Move_Cmn_Swim_Bubble_Small",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Player/PlayerMove/Sfx_Player_Move_Cmn_Swim/Play_Sfx_Player_Move_Cmn_Swim_Bubble_Small.Play_Sfx_Player_Move_Cmn_Swim_Bubble_Small",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Move_Cmn_Swim_3dB",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Player/PlayerMove/Sfx_Player_Move_Cmn_Swim/Play_Sfx_Player_Move_Cmn_Swim_3dB.Play_Sfx_Player_Move_Cmn_Swim_3dB",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Move_Cmn_Swim_Bubble_Middle",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Player/PlayerMove/Sfx_Player_Move_Cmn_Swim/Play_Sfx_Player_Move_Cmn_Swim_Bubble_Middle.Play_Sfx_Player_Move_Cmn_Swim_Bubble_Middle",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Move_Cmn_Swim_Heavy",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Player/PlayerMove/Sfx_Player_Move_Cmn_Swim/Play_Sfx_Player_Move_Cmn_Swim_Heavy.Play_Sfx_Player_Move_Cmn_Swim_Heavy",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Move_BodyFall_Start",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Player/PlayerMove/Sfx_Player_Move_BodyFall/Play_Sfx_Player_Move_BodyFall_Start.Play_Sfx_Player_Move_BodyFall_Start",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Move_BodyFall_Lp",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Player/PlayerMove/Sfx_Player_Move_BodyFall/Play_Sfx_Player_Move_BodyFall_Lp.Play_Sfx_Player_Move_BodyFall_Lp",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Stop_Sfx_Player_Move_BodyFall_Lp",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Player/PlayerMove/Sfx_Player_Move_BodyFall/Stop_Sfx_Player_Move_BodyFall_Lp.Stop_Sfx_Player_Move_BodyFall_Lp",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Move_BodyFall_End",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Player/PlayerMove/Sfx_Player_Move_BodyFall/Play_Sfx_Player_Move_BodyFall_End.Play_Sfx_Player_Move_BodyFall_End",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Wpn_Female_Containment_Pre",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Weapon/Weapon_Female/Play_Sfx_Player_Wpn_Female_Containment_Pre.Play_Sfx_Player_Wpn_Female_Containment_Pre",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Wpn_Female_Containment",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Weapon/Weapon_Female/Play_Sfx_Player_Wpn_Female_Containment.Play_Sfx_Player_Wpn_Female_Containment",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Move_Cmn_Swim_Heavy_3dB",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Player/PlayerMove/Sfx_Player_Move_Cmn_Swim/Play_Sfx_Player_Move_Cmn_Swim_Heavy_3dB.Play_Sfx_Player_Move_Cmn_Swim_Heavy_3dB",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Move_Cmn_Jump_Soft",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Player/PlayerMove/Sfx_Player_Move_Cmn_Jump/Play_Sfx_Player_Move_Cmn_Jump_Soft.Play_Sfx_Player_Move_Cmn_Jump_Soft",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Move_Cmn_Jump_High",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Player/PlayerMove/Sfx_Player_Move_Cmn_Jump/Play_Sfx_Player_Move_Cmn_Jump_High.Play_Sfx_Player_Move_Cmn_Jump_High",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Vo_Shouts_ZERO_F_JumpUp2",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Voice/Shouts/ZERO/Play_Vo_Shouts_ZERO_F_JumpUp2.Play_Vo_Shouts_ZERO_F_JumpUp2",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Vo_Shouts_ZERO_F_JumpRoll",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Voice/Shouts/ZERO/Play_Vo_Shouts_ZERO_F_JumpRoll.Play_Vo_Shouts_ZERO_F_JumpRoll",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Vo_Shouts_ZERO_F_JumpUp",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Voice/Shouts/ZERO/Play_Vo_Shouts_ZERO_F_JumpUp.Play_Vo_Shouts_ZERO_F_JumpUp",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Cmn_Pendant_LeatherGear_Light",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Player/PlayerCloth/Player_Cmn_Pendant/Player_Cmn_Pendant_LeatherGear/Play_Sfx_Player_Cmn_Pendant_LeatherGear_Light.Play_Sfx_Player_Cmn_Pendant_LeatherGear_Light",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Cmn_Pendant_Metal_DogTags_Heavy",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Player/PlayerCloth/Player_Cmn_Pendant/Player_Cmn_Pendant_Metal_DogTags/Play_Sfx_Player_Cmn_Pendant_Metal_DogTags_Heavy.Play_Sfx_Player_Cmn_Pendant_Metal_DogTags_Heavy",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Fts_Land_High_Sneaker_Switch",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Player/PlayerMove/Sfx_Player_Move_Sneaker/Play_Sfx_Player_Fts_Land_High_Sneaker_Switch.Play_Sfx_Player_Fts_Land_High_Sneaker_Switch",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_MiniGame_MaJiang_ZiMo",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/MiniGame/MiniGame/MiniGame_MaJiang/Play_Sfx_MiniGame_MaJiang_ZiMo.Play_Sfx_MiniGame_MaJiang_ZiMo",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_MiniGame_MaJiang_Play_Pre",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/MiniGame/MiniGame/MiniGame_MaJiang/Play_Sfx_MiniGame_MaJiang_Play_Pre.Play_Sfx_MiniGame_MaJiang_Play_Pre",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_MiniGame_MaJiang_Play_Hit",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/MiniGame/MiniGame/MiniGame_MaJiang/Play_Sfx_MiniGame_MaJiang_Play_Hit.Play_Sfx_MiniGame_MaJiang_Play_Hit",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Cmn_Pendant_LeatherGear_Light_Low",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Player/PlayerCloth/Player_Cmn_Pendant/Player_Cmn_Pendant_LeatherGear/Play_Sfx_Player_Cmn_Pendant_LeatherGear_Light_Low.Play_Sfx_Player_Cmn_Pendant_LeatherGear_Light_Low",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Fts_Stop_Sneaker_Switch",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Player/PlayerMove/Sfx_Player_Move_Sneaker/Play_Sfx_Player_Fts_Stop_Sneaker_Switch.Play_Sfx_Player_Fts_Stop_Sneaker_Switch",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Wpn_Female_QTE_01",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Weapon/Weapon_Female/Play_Sfx_Player_Wpn_Female_QTE_01.Play_Sfx_Player_Wpn_Female_QTE_01",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Vo_Shouts_ZERO_F_QTE",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Voice/Shouts/ZERO/Play_Vo_Shouts_ZERO_F_QTE.Play_Vo_Shouts_ZERO_F_QTE",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Vo_Char_ZERO_F_QTE",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Voice/Char/ZERO/Play_Vo_Char_ZERO_F_QTE.Play_Vo_Char_ZERO_F_QTE",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Wpn_Female_QTE_02",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Weapon/Weapon_Female/Play_Sfx_Player_Wpn_Female_QTE_02.Play_Sfx_Player_Wpn_Female_QTE_02",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Wpn_Female_QTE_03",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Weapon/Weapon_Female/Play_Sfx_Player_Wpn_Female_QTE_03.Play_Sfx_Player_Wpn_Female_QTE_03",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Wpn_Female_End_04",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Weapon/Weapon_Female/Play_Sfx_Player_Wpn_Female_End_04.Play_Sfx_Player_Wpn_Female_End_04",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Wpn_Female_End_06",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Weapon/Weapon_Female/Play_Sfx_Player_Wpn_Female_End_06.Play_Sfx_Player_Wpn_Female_End_06",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Wpn_Female_Melee01",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Weapon/Weapon_Female/Play_Sfx_Player_Wpn_Female_Melee01.Play_Sfx_Player_Wpn_Female_Melee01",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Wpn_Female_Show01",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Weapon/Weapon_Female/Play_Sfx_Player_Wpn_Female_Show01.Play_Sfx_Player_Wpn_Female_Show01",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Vo_Char_CA_Player_02_f",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Voice/Char/ZERO/Play_Vo_Char_CA_Player_02_f.Play_Vo_Char_CA_Player_02_f",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Wpn_Female_Show02",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Weapon/Weapon_Female/Play_Sfx_Player_Wpn_Female_Show02.Play_Sfx_Player_Wpn_Female_Show02",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Vo_Char_CA_Player_01_f",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Voice/Char/ZERO/Play_Vo_Char_CA_Player_01_f.Play_Vo_Char_CA_Player_01_f",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Wpn_Female_Sword_Slide_03",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Weapon/Weapon_Female/Play_Sfx_Player_Wpn_Female_Sword_Slide_03.Play_Sfx_Player_Wpn_Female_Sword_Slide_03",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Wpn_Female_End_AirAtk",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Weapon/Weapon_Female/Play_Sfx_Player_Wpn_Female_End_AirAtk.Play_Sfx_Player_Wpn_Female_End_AirAtk",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Wpn_Female_End_AirAtk_01",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Weapon/Weapon_Female/Play_Sfx_Player_Wpn_Female_End_AirAtk_01.Play_Sfx_Player_Wpn_Female_End_AirAtk_01",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Vo_Char_ZERO_F_aoe",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Voice/Char/ZERO/Play_Vo_Char_ZERO_F_aoe.Play_Vo_Char_ZERO_F_aoe",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Wpn_Female_UltralSkillSkill_Pre",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Weapon/Weapon_Female/Play_Sfx_Player_Wpn_Female_UltralSkillSkill_Pre.Play_Sfx_Player_Wpn_Female_UltralSkillSkill_Pre",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Wpn_Female_UltralSkillSkill_Atk",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Weapon/Weapon_Female/Play_Sfx_Player_Wpn_Female_UltralSkillSkill_Atk.Play_Sfx_Player_Wpn_Female_UltralSkillSkill_Atk",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Wpn_Female_UltralSkillSkill_Rise",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Weapon/Weapon_Female/Play_Sfx_Player_Wpn_Female_UltralSkillSkill_Rise.Play_Sfx_Player_Wpn_Female_UltralSkillSkill_Rise",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Wpn_Female_UltralSkillSkill_Exp",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Weapon/Weapon_Female/Play_Sfx_Player_Wpn_Female_UltralSkillSkill_Exp.Play_Sfx_Player_Wpn_Female_UltralSkillSkill_Exp",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Wpn_Female_End_UltralSkillSkill",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Weapon/Weapon_Female/Play_Sfx_Player_Wpn_Female_End_UltralSkillSkill.Play_Sfx_Player_Wpn_Female_End_UltralSkillSkill",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Wpn_Female_End_UltralSkillSkill_01",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Weapon/Weapon_Female/Play_Sfx_Player_Wpn_Female_End_UltralSkillSkill_01.Play_Sfx_Player_Wpn_Female_End_UltralSkillSkill_01",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Wpn_Female_Skill_Pre",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Weapon/Weapon_Female/Play_Sfx_Player_Wpn_Female_Skill_Pre.Play_Sfx_Player_Wpn_Female_Skill_Pre",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Vo_Shouts_ZERO_F_Sk",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Voice/Shouts/ZERO/Play_Vo_Shouts_ZERO_F_Sk.Play_Vo_Shouts_ZERO_F_Sk",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Vo_Char_ZERO_F_skill",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Voice/Char/ZERO/Play_Vo_Char_ZERO_F_skill.Play_Vo_Char_ZERO_F_skill",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Wpn_Female_Skill_PowerUp",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Weapon/Weapon_Female/Play_Sfx_Player_Wpn_Female_Skill_PowerUp.Play_Sfx_Player_Wpn_Female_Skill_PowerUp",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Wpn_Female_Skill_Exp",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Weapon/Weapon_Female/Play_Sfx_Player_Wpn_Female_Skill_Exp.Play_Sfx_Player_Wpn_Female_Skill_Exp",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Wpn_Female_End_Disappear_01",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Weapon/Weapon_Female/Play_Sfx_Player_Wpn_Female_End_Disappear_01.Play_Sfx_Player_Wpn_Female_End_Disappear_01",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Vo_Shouts_ZERO_F_Return03",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Voice/Shouts/ZERO/Play_Vo_Shouts_ZERO_F_Return03.Play_Vo_Shouts_ZERO_F_Return03",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Wpn_Female_End_Disappear_02",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Weapon/Weapon_Female/Play_Sfx_Player_Wpn_Female_End_Disappear_02.Play_Sfx_Player_Wpn_Female_End_Disappear_02",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Wpn_Female_End_Disappear_03",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Weapon/Weapon_Female/Play_Sfx_Player_Wpn_Female_End_Disappear_03.Play_Sfx_Player_Wpn_Female_End_Disappear_03",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Vo_Shouts_ZERO_F_Atk01",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Voice/Shouts/ZERO/Play_Vo_Shouts_ZERO_F_Atk01.Play_Vo_Shouts_ZERO_F_Atk01",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Wpn_Female_End_02",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Weapon/Weapon_Female/Play_Sfx_Player_Wpn_Female_End_02.Play_Sfx_Player_Wpn_Female_End_02",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Vo_Shouts_ZERO_F_Return01",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Voice/Shouts/ZERO/Play_Vo_Shouts_ZERO_F_Return01.Play_Vo_Shouts_ZERO_F_Return01",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Wpn_Female_End_01",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Weapon/Weapon_Female/Play_Sfx_Player_Wpn_Female_End_01.Play_Sfx_Player_Wpn_Female_End_01",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Wpn_Female_Melee05_Pre_New",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Weapon/Weapon_Female/Play_Sfx_Player_Wpn_Female_Melee05_Pre_New.Play_Sfx_Player_Wpn_Female_Melee05_Pre_New",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Vo_Shouts_ZERO_F_Atk05",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Voice/Shouts/ZERO/Play_Vo_Shouts_ZERO_F_Atk05.Play_Vo_Shouts_ZERO_F_Atk05",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Wpn_Female_Melee05_Atk_New",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Weapon/Weapon_Female/Play_Sfx_Player_Wpn_Female_Melee05_Atk_New.Play_Sfx_Player_Wpn_Female_Melee05_Atk_New",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Wpn_Female_Sword_Slide_04",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Weapon/Weapon_Female/Play_Sfx_Player_Wpn_Female_Sword_Slide_04.Play_Sfx_Player_Wpn_Female_Sword_Slide_04",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Wpn_Female_End_05_New",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Weapon/Weapon_Female/Play_Sfx_Player_Wpn_Female_End_05_New.Play_Sfx_Player_Wpn_Female_End_05_New",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Wpn_Female_End_05_New_01",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Weapon/Weapon_Female/Play_Sfx_Player_Wpn_Female_End_05_New_01.Play_Sfx_Player_Wpn_Female_End_05_New_01",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Wpn_Female_Melee04_Atk01",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Weapon/Weapon_Female/Play_Sfx_Player_Wpn_Female_Melee04_Atk01.Play_Sfx_Player_Wpn_Female_Melee04_Atk01",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Vo_Shouts_ZERO_F_Atk04",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Voice/Shouts/ZERO/Play_Vo_Shouts_ZERO_F_Atk04.Play_Vo_Shouts_ZERO_F_Atk04",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Wpn_Female_Melee04_Atk02",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Weapon/Weapon_Female/Play_Sfx_Player_Wpn_Female_Melee04_Atk02.Play_Sfx_Player_Wpn_Female_Melee04_Atk02",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Wpn_Female_Melee04_Kick",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Weapon/Weapon_Female/Play_Sfx_Player_Wpn_Female_Melee04_Kick.Play_Sfx_Player_Wpn_Female_Melee04_Kick",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Wpn_Female_Melee03_Atk01",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Weapon/Weapon_Female/Play_Sfx_Player_Wpn_Female_Melee03_Atk01.Play_Sfx_Player_Wpn_Female_Melee03_Atk01",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Vo_Shouts_ZERO_F_Atk03",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Voice/Shouts/ZERO/Play_Vo_Shouts_ZERO_F_Atk03.Play_Vo_Shouts_ZERO_F_Atk03",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Wpn_Female_Melee03_Atk02",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Weapon/Weapon_Female/Play_Sfx_Player_Wpn_Female_Melee03_Atk02.Play_Sfx_Player_Wpn_Female_Melee03_Atk02",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Wpn_Female_Melee03_Kick",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Weapon/Weapon_Female/Play_Sfx_Player_Wpn_Female_Melee03_Kick.Play_Sfx_Player_Wpn_Female_Melee03_Kick",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Wpn_Female_Melee02_Atk",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Weapon/Weapon_Female/Play_Sfx_Player_Wpn_Female_Melee02_Atk.Play_Sfx_Player_Wpn_Female_Melee02_Atk",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Vo_Shouts_ZERO_F_Atk02",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Voice/Shouts/ZERO/Play_Vo_Shouts_ZERO_F_Atk02.Play_Vo_Shouts_ZERO_F_Atk02",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Wpn_Female_Melee02_Spin",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Weapon/Weapon_Female/Play_Sfx_Player_Wpn_Female_Melee02_Spin.Play_Sfx_Player_Wpn_Female_Melee02_Spin",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Wpn_Female_End_CatchSword",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Weapon/Weapon_Female/Play_Sfx_Player_Wpn_Female_End_CatchSword.Play_Sfx_Player_Wpn_Female_End_CatchSword",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Wpn_Female_End_02_New",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Weapon/Weapon_Female/Play_Sfx_Player_Wpn_Female_End_02_New.Play_Sfx_Player_Wpn_Female_End_02_New",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Wpn_Female_End_02_New_01",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Weapon/Weapon_Female/Play_Sfx_Player_Wpn_Female_End_02_New_01.Play_Sfx_Player_Wpn_Female_End_02_New_01",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Wpn_Female_End_02_New_02",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Weapon/Weapon_Female/Play_Sfx_Player_Wpn_Female_End_02_New_02.Play_Sfx_Player_Wpn_Female_End_02_New_02",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Wpn_Female_End_01_01_New",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Weapon/Weapon_Female/Play_Sfx_Player_Wpn_Female_End_01_01_New.Play_Sfx_Player_Wpn_Female_End_01_01_New",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Wpn_Female_End_01_01_New_01",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Weapon/Weapon_Female/Play_Sfx_Player_Wpn_Female_End_01_01_New_01.Play_Sfx_Player_Wpn_Female_End_01_01_New_01",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Vo_Shouts_ZERO_F_Evade",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Voice/Shouts/ZERO/Play_Vo_Shouts_ZERO_F_Evade.Play_Vo_Shouts_ZERO_F_Evade",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Vo_Shouts_ZERO_F_Atk_evade",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Voice/Shouts/ZERO/Play_Vo_Shouts_ZERO_F_Atk_evade.Play_Vo_Shouts_ZERO_F_Atk_evade",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Wpn_Female_Perfect_Atk",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Weapon/Weapon_Female/Play_Sfx_Player_Wpn_Female_Perfect_Atk.Play_Sfx_Player_Wpn_Female_Perfect_Atk",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Vo_Shouts_ZERO_F_Atk_evade_Hit",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Voice/Shouts/ZERO/Play_Vo_Shouts_ZERO_F_Atk_evade_Hit.Play_Vo_Shouts_ZERO_F_Atk_evade_Hit",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Wpn_Cmn_Evade_Soft",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Weapon/Weapon_Cmn/Play_Sfx_Player_Wpn_Cmn_Evade_Soft.Play_Sfx_Player_Wpn_Cmn_Evade_Soft",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Play_Sfx_Player_Move_AirAttack_Lp",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Player/PlayerMove/Sfx_Player_Move_AirAttack/Play_Sfx_Player_Move_AirAttack_Lp.Play_Sfx_Player_Move_AirAttack_Lp",
+              "SubPathString": ""
+            }
+          }
+        },
+        {
+          "Key": "Stop_Sfx_Player_Move_AirAttack_Lp",
+          "Value": {
+            "SoftAudioEvent": {
+              "AssetPathName": "/Game/WwiseAudio/Events/Player/PlayerMove/Sfx_Player_Move_AirAttack/Stop_Sfx_Player_Move_AirAttack_Lp.Stop_Sfx_Player_Move_AirAttack_Lp",
+              "SubPathString": ""
+            }
+          }
+        }
+      ]
+    }
+  }
+]

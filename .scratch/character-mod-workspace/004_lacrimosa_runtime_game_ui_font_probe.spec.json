@@ -1,0 +1,41 @@
+{
+  "Format": "NTE.CharacterModSpec",
+  "Version": 1,
+  "WorkspaceName": "004_lacrimosa_runtime_game_ui_font_probe",
+  "Appearance": {
+    "AppearanceRowName": "Player004",
+    "PlayerAppearanceAssetPath": "/Game/Characters/Player/004_lacrimosa/mod/Generated/MeshAsset_Player004_NTE_AttachedSmoke",
+    "UIActorClassPath": ""
+  },
+  "MainMeshPath": "/Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+  "MainAnimBlueprintPath": "/Game/Characters/Player/004_lacrimosa/mod/RuntimeGameUiProbe/ABP_NTE_MainGameUiProbe",
+  "RuntimeActions": [
+    {
+      "Id": "toggle_main_slot0",
+      "Label": "Main Slot 0",
+      "Hotkey": "Ctrl+M",
+      "TargetMeshId": "main",
+      "ActionType": "MaterialSlotVisibility",
+      "MaterialSlots": [0],
+      "DefaultEnabled": true
+    }
+  ],
+  "RuntimeUi": {
+    "EnableUi": true,
+    "ToggleUiHotkey": "F9",
+    "Title": "NTE Game UI Font Probe",
+    "DefaultVisible": false,
+    "FontPath": "/Game/Resources/UI/Fonts/Font_All",
+    "BodyFontTypeface": "Light",
+    "TitleFontTypeface": "Heavy",
+    "BodyFontSize": 20,
+    "TitleFontSize": 24
+  },
+  "KawaiiPresets": [],
+  "Package": {
+    "ModName": "lacrimosa004_runtime_game_ui_font_probe_P",
+    "ModsDir": "F:/Neverness To Everness/Client/WindowsNoEditor/HT/Content/Paks/Mods",
+    "JobFilename": "F:/NTE/PhyLab/Saved/NTEBuildTool/Packages/lacrimosa004_runtime_game_ui_font_probe_P/lacrimosa004_runtime_game_ui_font_probe_P.job.json",
+    "BuildAfterCreate": false
+  }
+}

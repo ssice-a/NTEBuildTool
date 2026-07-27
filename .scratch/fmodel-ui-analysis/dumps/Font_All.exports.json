@@ -1,0 +1,49 @@
+[
+  {
+    "Type": "Font",
+    "Name": "Font_All",
+    "Flags": "RF_Public | RF_Standalone | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'Font'",
+    "Package": "/Game/Resources/UI/Fonts/Font_All",
+    "Properties": {
+      "FontCacheType": "EFontCacheType::Runtime",
+      "LegacyFontSize": 64,
+      "CompositeFont": {
+        "DefaultTypeface": {
+          "Fonts": [
+            {
+              "Name": "Thin",
+              "Font": {
+                "LocalFontFaceAsset": {
+                  "ObjectName": "FontFace'HYQiHei-65S'",
+                  "ObjectPath": "/Game/Resources/UI/Fonts/HYQH/HYQiHei-65S.0"
+                },
+                "SubFaceIndex": 0
+              }
+            },
+            {
+              "Name": "Light",
+              "Font": {
+                "LocalFontFaceAsset": {
+                  "ObjectName": "FontFace'HYQiHei-65S'",
+                  "ObjectPath": "/Game/Resources/UI/Fonts/HYQH/HYQiHei-65S.0"
+                },
+                "SubFaceIndex": 0
+              }
+            },
+            {
+              "Name": "Heavy",
+              "Font": {
+                "LocalFontFaceAsset": {
+                  "ObjectName": "FontFace'HYQiHei-80W'",
+                  "ObjectPath": "/Game/Resources/UI/Fonts/HYQH/HYQiHei-80W.0"
+                },
+                "SubFaceIndex": 0
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+]

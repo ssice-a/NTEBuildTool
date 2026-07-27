@@ -1,0 +1,229 @@
+[
+  {
+    "Type": "BlueprintGeneratedClass",
+    "Name": "PlayerUIShow_075_rpg_level2_C",
+    "Flags": "RF_Public | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'BlueprintGeneratedClass'",
+    "Package": "/Game/Blueprints/Character/PlayerUIShow/PlayerUIShow_075_rpg_level2",
+    "Super": {
+      "ObjectName": "BlueprintGeneratedClass'BP_UIShowSimpleCharacterBase_C'",
+      "ObjectPath": "/Game/Blueprints/Character/Player/BP_UIShowSimpleCharacterBase.0"
+    },
+    "Properties": {
+      "SimpleConstructionScript": {
+        "ObjectName": "SimpleConstructionScript'PlayerUIShow_075_rpg_level2_C:SimpleConstructionScript_0'",
+        "ObjectPath": "/Game/Blueprints/Character/PlayerUIShow/PlayerUIShow_075_rpg_level2.6"
+      }
+    },
+    "ChildProperties": [
+      {
+        "Type": "ObjectProperty",
+        "Name": "player_075_oneir_ear_skin",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 8,
+        "PropertyFlags": "BlueprintVisible | InstancedReference | NonTransactional",
+        "PropertyClass": {
+          "ObjectName": "Class'SkeletalMeshComponent'",
+          "ObjectPath": "/Script/Engine"
+        }
+      }
+    ],
+    "ClassFlags": "CLASS_Config | CLASS_NoExport | CLASS_CompiledFromBlueprint | CLASS_HasInstancedReference",
+    "ClassWithin": {
+      "ObjectName": "Class'Object'",
+      "ObjectPath": "/Script/CoreUObject"
+    },
+    "ClassConfigName": "Engine",
+    "bCooked": true,
+    "ClassDefaultObject": {
+      "ObjectName": "PlayerUIShow_075_rpg_level2_C'Default__PlayerUIShow_075_rpg_level2_C'",
+      "ObjectPath": "/Game/Blueprints/Character/PlayerUIShow/PlayerUIShow_075_rpg_level2.1"
+    },
+    "EditorTags": {
+      "BlueprintType": "BPTYPE_Normal"
+    }
+  },
+  {
+    "Type": "PlayerUIShow_075_rpg_level2_C",
+    "Name": "Default__PlayerUIShow_075_rpg_level2_C",
+    "Flags": "RF_Public | RF_ClassDefaultObject | RF_ArchetypeObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "BlueprintGeneratedClass'/Game/Blueprints/Character/PlayerUIShow/PlayerUIShow_075_rpg_level2.PlayerUIShow_075_rpg_level2_C'",
+    "Package": "/Game/Blueprints/Character/PlayerUIShow/PlayerUIShow_075_rpg_level2",
+    "Template": {
+      "ObjectName": "BP_UIShowSimpleCharacterBase_C'Default__BP_UIShowSimpleCharacterBase_C'",
+      "ObjectPath": "/Game/Blueprints/Character/Player/BP_UIShowSimpleCharacterBase.1"
+    },
+    "Properties": {
+      "Mesh": {
+        "ObjectName": "SkeletalMeshComponent'Default__PlayerUIShow_075_rpg_level2_C:Mesh'",
+        "ObjectPath": "/Game/Blueprints/Character/PlayerUIShow/PlayerUIShow_075_rpg_level2.7"
+      },
+      "DefaultWeapons": [
+        {
+          "ObjectName": "BlueprintGeneratedClass'Weapon_Player_Oneiroi_C'",
+          "ObjectPath": "/Game/Blueprints/Weapon/Player/Weapon_Player_Oneiroi.0"
+        }
+      ],
+      "DefaultCharacterID": "1075",
+      "RootComponent": {
+        "ObjectName": "SceneComponent'Default__PlayerUIShow_075_rpg_level2_C:RootComponent'",
+        "ObjectPath": "/Game/Blueprints/Character/PlayerUIShow/PlayerUIShow_075_rpg_level2.2"
+      }
+    }
+  },
+  {
+    "Type": "SceneComponent",
+    "Name": "RootComponent",
+    "Flags": "RF_Public | RF_Transactional | RF_ArchetypeObject | RF_DefaultSubObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'SceneComponent'",
+    "Outer": {
+      "ObjectName": "PlayerUIShow_075_rpg_level2_C'Default__PlayerUIShow_075_rpg_level2_C'",
+      "ObjectPath": "/Game/Blueprints/Character/PlayerUIShow/PlayerUIShow_075_rpg_level2.1"
+    },
+    "Template": {
+      "ObjectName": "SceneComponent'Default__BP_UIShowSimpleCharacterBase_C:RootComponent'",
+      "ObjectPath": "/Game/Blueprints/Character/Player/BP_UIShowSimpleCharacterBase.3"
+    }
+  },
+  {
+    "Type": "SceneComponent",
+    "Name": "DefaultSceneRoot_GEN_VARIABLE",
+    "Flags": "RF_Public | RF_Transactional | RF_ArchetypeObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'SceneComponent'",
+    "Outer": {
+      "ObjectName": "BlueprintGeneratedClass'PlayerUIShow_075_rpg_level2_C'",
+      "ObjectPath": "/Game/Blueprints/Character/PlayerUIShow/PlayerUIShow_075_rpg_level2.0"
+    }
+  },
+  {
+    "Type": "SCS_Node",
+    "Name": "SCS_Node_0",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'SCS_Node'",
+    "Outer": {
+      "ObjectName": "SimpleConstructionScript'PlayerUIShow_075_rpg_level2_C:SimpleConstructionScript_0'",
+      "ObjectPath": "/Game/Blueprints/Character/PlayerUIShow/PlayerUIShow_075_rpg_level2.6"
+    },
+    "Properties": {
+      "ComponentClass": {
+        "ObjectName": "Class'SceneComponent'",
+        "ObjectPath": "/Script/Engine"
+      },
+      "ComponentTemplate": {
+        "ObjectName": "SceneComponent'PlayerUIShow_075_rpg_level2_C:DefaultSceneRoot_GEN_VARIABLE'",
+        "ObjectPath": "/Game/Blueprints/Character/PlayerUIShow/PlayerUIShow_075_rpg_level2.3"
+      },
+      "VariableGuid": "DAE1940D-40D6AFA9-94EA61A1-5ABC7E98",
+      "InternalVariableName": "DefaultSceneRoot"
+    }
+  },
+  {
+    "Type": "SCS_Node",
+    "Name": "SCS_Node_2",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'SCS_Node'",
+    "Outer": {
+      "ObjectName": "SimpleConstructionScript'PlayerUIShow_075_rpg_level2_C:SimpleConstructionScript_0'",
+      "ObjectPath": "/Game/Blueprints/Character/PlayerUIShow/PlayerUIShow_075_rpg_level2.6"
+    },
+    "Properties": {
+      "ComponentClass": {
+        "ObjectName": "Class'SkeletalMeshComponent'",
+        "ObjectPath": "/Script/Engine"
+      },
+      "ComponentTemplate": {
+        "ObjectName": "SkeletalMeshComponent'PlayerUIShow_075_rpg_level2_C:player_075_oneir_ear_skin_GEN_VARIABLE'",
+        "ObjectPath": "/Game/Blueprints/Character/PlayerUIShow/PlayerUIShow_075_rpg_level2.8"
+      },
+      "AttachToName": "Bip001-Head",
+      "ParentComponentOrVariableName": "Mesh",
+      "bIsParentComponentNative": true,
+      "VariableGuid": "EC360021-489FD896-F87D5B81-B237A9C6",
+      "InternalVariableName": "player_075_oneir_ear_skin"
+    }
+  },
+  {
+    "Type": "SimpleConstructionScript",
+    "Name": "SimpleConstructionScript_0",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'SimpleConstructionScript'",
+    "Outer": {
+      "ObjectName": "BlueprintGeneratedClass'PlayerUIShow_075_rpg_level2_C'",
+      "ObjectPath": "/Game/Blueprints/Character/PlayerUIShow/PlayerUIShow_075_rpg_level2.0"
+    },
+    "Properties": {
+      "RootNodes": [
+        {
+          "ObjectName": "SCS_Node'PlayerUIShow_075_rpg_level2_C:SimpleConstructionScript_0.SCS_Node_2'",
+          "ObjectPath": "/Game/Blueprints/Character/PlayerUIShow/PlayerUIShow_075_rpg_level2.5"
+        }
+      ],
+      "AllNodes": [
+        {
+          "ObjectName": "SCS_Node'PlayerUIShow_075_rpg_level2_C:SimpleConstructionScript_0.SCS_Node_2'",
+          "ObjectPath": "/Game/Blueprints/Character/PlayerUIShow/PlayerUIShow_075_rpg_level2.5"
+        }
+      ],
+      "DefaultSceneRootNode": {
+        "ObjectName": "SCS_Node'PlayerUIShow_075_rpg_level2_C:SimpleConstructionScript_0.SCS_Node_0'",
+        "ObjectPath": "/Game/Blueprints/Character/PlayerUIShow/PlayerUIShow_075_rpg_level2.4"
+      }
+    }
+  },
+  {
+    "Type": "SkeletalMeshComponent",
+    "Name": "Mesh",
+    "Flags": "RF_Public | RF_Transactional | RF_ArchetypeObject | RF_DefaultSubObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'SkeletalMeshComponent'",
+    "Outer": {
+      "ObjectName": "PlayerUIShow_075_rpg_level2_C'Default__PlayerUIShow_075_rpg_level2_C'",
+      "ObjectPath": "/Game/Blueprints/Character/PlayerUIShow/PlayerUIShow_075_rpg_level2.1"
+    },
+    "Template": {
+      "ObjectName": "SkeletalMeshComponent'Default__BP_UIShowSimpleCharacterBase_C:Mesh'",
+      "ObjectPath": "/Game/Blueprints/Character/Player/BP_UIShowSimpleCharacterBase.6"
+    },
+    "Properties": {
+      "AnimClass": {
+        "ObjectName": "AnimBlueprintGeneratedClass'Player075_Oneiroi_UIAnimBP_C'",
+        "ObjectPath": "/Game/Characters/Player/075_oneir/Player075_Oneiroi_UIAnimBP.0"
+      },
+      "SkeletalMesh": {
+        "ObjectName": "SkeletalMesh'player_075_oneiroi_rpg_level2_skin'",
+        "ObjectPath": "/Game/Maps_4N/Characters/Player/075_oneiroi_rpg_level2/player_075_oneiroi_rpg_level2_skin.86"
+      },
+      "SkinnedAsset": {
+        "ObjectName": "SkeletalMesh'player_075_oneiroi_rpg_level2_skin'",
+        "ObjectPath": "/Game/Maps_4N/Characters/Player/075_oneiroi_rpg_level2/player_075_oneiroi_rpg_level2_skin.86"
+      },
+      "AttachParent": {
+        "ObjectName": "SceneComponent'Default__PlayerUIShow_075_rpg_level2_C:RootComponent'",
+        "ObjectPath": "/Game/Blueprints/Character/PlayerUIShow/PlayerUIShow_075_rpg_level2.2"
+      }
+    }
+  },
+  {
+    "Type": "SkeletalMeshComponent",
+    "Name": "player_075_oneir_ear_skin_GEN_VARIABLE",
+    "Flags": "RF_Public | RF_Transactional | RF_ArchetypeObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'SkeletalMeshComponent'",
+    "Outer": {
+      "ObjectName": "BlueprintGeneratedClass'PlayerUIShow_075_rpg_level2_C'",
+      "ObjectPath": "/Game/Blueprints/Character/PlayerUIShow/PlayerUIShow_075_rpg_level2.0"
+    },
+    "Properties": {
+      "AnimClass": {
+        "ObjectName": "AnimBlueprintGeneratedClass'oneir_ear_AB_C'",
+        "ObjectPath": "/Game/Characters/Player/075_oneir/ear_physics/oneir_ear_AB.0"
+      },
+      "SkeletalMesh": {
+        "ObjectName": "SkeletalMesh'player_075_oneir_ear_skin'",
+        "ObjectPath": "/Game/Characters/Player/075_oneir/ear_physics/player_075_oneir_ear_skin.1"
+      },
+      "SkinnedAsset": {
+        "ObjectName": "SkeletalMesh'player_075_oneir_ear_skin'",
+        "ObjectPath": "/Game/Characters/Player/075_oneir/ear_physics/player_075_oneir_ear_skin.1"
+      }
+    }
+  }
+]

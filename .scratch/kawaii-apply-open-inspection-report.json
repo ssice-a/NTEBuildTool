@@ -1,0 +1,402 @@
+﻿{
+	"Format": "NTE.AssetInspection",
+	"Version": 1,
+	"Assets": [
+		{
+			"Path": "/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Anim/ABP_NTE_hair_tail_Kawaii",
+			"Loads": true,
+			"Class": "AnimBlueprint",
+			"ObjectPath": "/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Anim/ABP_NTE_hair_tail_Kawaii.ABP_NTE_hair_tail_Kawaii",
+			"GeneratedClass": "/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Anim/ABP_NTE_hair_tail_Kawaii.ABP_NTE_hair_tail_Kawaii_C",
+			"ParentClass": "/Script/Engine.AnimInstance",
+			"StandardTemplateModel":
+			{
+				"SaveGameVisibleCapacity": 0,
+				"PostProcessVisibleCapacity": 0,
+				"PostProcessInputCapacity": 0,
+				"WidgetButtonCapacity": 0,
+				"WidgetLabelCapacity": 0,
+				"RuntimeStateCapacity": 0,
+				"SaveGameVisibleGroups": [],
+				"PostProcessVisibleGroups": [],
+				"PostProcessInputGroups": [],
+				"WidgetButtonGroups": [],
+				"WidgetLabelGroups": []
+			},
+			"BinaryPatternReadable": true,
+			"BinaryPatterns": [
+				"Up"
+			],
+			"LooksLikeStandardPostProcessTemplateRuntime": false,
+			"Graphs": [
+				{
+					"GraphType": "Ubergraph",
+					"Name": "EventGraph",
+					"Class": "EdGraph",
+					"NodeCount": 1,
+					"Nodes": [
+						{
+							"Name": "K2Node_Event_0",
+							"Class": "K2Node_Event",
+							"Title": "事件蓝图更新动画",
+							"NodeGuid": "BA7A406B-4E2A-2254-0813-F393770752FC",
+							"HasValidNodeGuid": true,
+							"Pins": [
+								{
+									"Name": "OutputDelegate",
+									"Direction": "Output",
+									"Category": "delegate",
+									"SubCategory": "None",
+									"SubCategoryObject": "",
+									"DefaultValue": "",
+									"DefaultTextValue": "",
+									"DefaultObject": "",
+									"Orphaned": false,
+									"NotConnectable": false,
+									"LinkedToCount": 0,
+									"LinkedTo": []
+								},
+								{
+									"Name": "then",
+									"Direction": "Output",
+									"Category": "exec",
+									"SubCategory": "None",
+									"SubCategoryObject": "",
+									"DefaultValue": "",
+									"DefaultTextValue": "",
+									"DefaultObject": "",
+									"Orphaned": false,
+									"NotConnectable": false,
+									"LinkedToCount": 0,
+									"LinkedTo": []
+								},
+								{
+									"Name": "DeltaTimeX",
+									"Direction": "Output",
+									"Category": "real",
+									"SubCategory": "float",
+									"SubCategoryObject": "",
+									"DefaultValue": "0.0",
+									"DefaultTextValue": "",
+									"DefaultObject": "",
+									"Orphaned": false,
+									"NotConnectable": false,
+									"LinkedToCount": 0,
+									"LinkedTo": []
+								}
+							]
+						}
+					]
+				},
+				{
+					"GraphType": "Function",
+					"Name": "AnimGraph",
+					"Class": "AnimationGraph",
+					"NodeCount": 5,
+					"Nodes": [
+						{
+							"Name": "AnimGraphNode_Root_0",
+							"Class": "AnimGraphNode_Root",
+							"Title": "输出姿势\nAnimGraph",
+							"NodeGuid": "43C60B5D-498A-727B-2A28-48969B100453",
+							"HasValidNodeGuid": true,
+							"Pins": [
+								{
+									"Name": "Result",
+									"Direction": "Input",
+									"Category": "struct",
+									"SubCategory": "None",
+									"SubCategoryObject": "/Script/Engine.PoseLink",
+									"DefaultValue": "(LinkID=-1,SourceLinkID=-1)",
+									"DefaultTextValue": "",
+									"DefaultObject": "",
+									"Orphaned": false,
+									"NotConnectable": false,
+									"LinkedToCount": 1,
+									"LinkedTo": [
+										{
+											"NodeName": "AnimGraphNode_ComponentToLocalSpace_0",
+											"NodeClass": "AnimGraphNode_ComponentToLocalSpace",
+											"NodeTitle": "从组件空间到本地",
+											"PinName": "Pose"
+										}
+									]
+								}
+							]
+						},
+						{
+							"Name": "AnimGraphNode_CopyPoseFromMesh_0",
+							"Class": "AnimGraphNode_CopyPoseFromMesh",
+							"Title": "从网格体复制姿势",
+							"NodeGuid": "5C2A9F73-46C8-D5A1-6833-38900C3404B0",
+							"HasValidNodeGuid": true,
+							"Pins": [
+								{
+									"Name": "SourceMeshComponent",
+									"Direction": "Input",
+									"Category": "object",
+									"SubCategory": "None",
+									"SubCategoryObject": "/Script/Engine.SkeletalMeshComponent",
+									"DefaultValue": "",
+									"DefaultTextValue": "",
+									"DefaultObject": "",
+									"Orphaned": false,
+									"NotConnectable": false,
+									"LinkedToCount": 0,
+									"LinkedTo": []
+								},
+								{
+									"Name": "Pose",
+									"Direction": "Output",
+									"Category": "struct",
+									"SubCategory": "None",
+									"SubCategoryObject": "/Script/Engine.PoseLink",
+									"DefaultValue": "",
+									"DefaultTextValue": "",
+									"DefaultObject": "",
+									"Orphaned": false,
+									"NotConnectable": false,
+									"LinkedToCount": 1,
+									"LinkedTo": [
+										{
+											"NodeName": "AnimGraphNode_LocalToComponentSpace_0",
+											"NodeClass": "AnimGraphNode_LocalToComponentSpace",
+											"NodeTitle": "本地到组件空间",
+											"PinName": "LocalPose"
+										}
+									]
+								}
+							]
+						},
+						{
+							"Name": "AnimGraphNode_LocalToComponentSpace_0",
+							"Class": "AnimGraphNode_LocalToComponentSpace",
+							"Title": "本地到组件空间",
+							"NodeGuid": "E3A6DC70-4E49-A53A-C011-C6AFEBA101B1",
+							"HasValidNodeGuid": true,
+							"Pins": [
+								{
+									"Name": "LocalPose",
+									"Direction": "Input",
+									"Category": "struct",
+									"SubCategory": "None",
+									"SubCategoryObject": "/Script/Engine.PoseLink",
+									"DefaultValue": "(LinkID=-1,SourceLinkID=-1)",
+									"DefaultTextValue": "",
+									"DefaultObject": "",
+									"Orphaned": false,
+									"NotConnectable": false,
+									"LinkedToCount": 1,
+									"LinkedTo": [
+										{
+											"NodeName": "AnimGraphNode_CopyPoseFromMesh_0",
+											"NodeClass": "AnimGraphNode_CopyPoseFromMesh",
+											"NodeTitle": "从网格体复制姿势",
+											"PinName": "Pose"
+										}
+									]
+								},
+								{
+									"Name": "ComponentPose",
+									"Direction": "Output",
+									"Category": "struct",
+									"SubCategory": "None",
+									"SubCategoryObject": "/Script/Engine.ComponentSpacePoseLink",
+									"DefaultValue": "",
+									"DefaultTextValue": "",
+									"DefaultObject": "",
+									"Orphaned": false,
+									"NotConnectable": false,
+									"LinkedToCount": 1,
+									"LinkedTo": [
+										{
+											"NodeName": "AnimGraphNode_KawaiiPhysics_0",
+											"NodeClass": "AnimGraphNode_KawaiiPhysics",
+											"NodeTitle": "Kawaii Physics\nRoot: hair_tail_01\nTag:  NTE.HairTail ",
+											"PinName": "ComponentPose"
+										}
+									]
+								}
+							]
+						},
+						{
+							"Name": "AnimGraphNode_ComponentToLocalSpace_0",
+							"Class": "AnimGraphNode_ComponentToLocalSpace",
+							"Title": "从组件空间到本地",
+							"NodeGuid": "962FE34A-4771-8D58-560E-EB806764FFF1",
+							"HasValidNodeGuid": true,
+							"Pins": [
+								{
+									"Name": "ComponentPose",
+									"Direction": "Input",
+									"Category": "struct",
+									"SubCategory": "None",
+									"SubCategoryObject": "/Script/Engine.ComponentSpacePoseLink",
+									"DefaultValue": "(LinkID=-1,SourceLinkID=-1)",
+									"DefaultTextValue": "",
+									"DefaultObject": "",
+									"Orphaned": false,
+									"NotConnectable": false,
+									"LinkedToCount": 1,
+									"LinkedTo": [
+										{
+											"NodeName": "AnimGraphNode_KawaiiPhysics_0",
+											"NodeClass": "AnimGraphNode_KawaiiPhysics",
+											"NodeTitle": "Kawaii Physics\nRoot: hair_tail_01\nTag:  NTE.HairTail ",
+											"PinName": "Pose"
+										}
+									]
+								},
+								{
+									"Name": "Pose",
+									"Direction": "Output",
+									"Category": "struct",
+									"SubCategory": "None",
+									"SubCategoryObject": "/Script/Engine.PoseLink",
+									"DefaultValue": "",
+									"DefaultTextValue": "",
+									"DefaultObject": "",
+									"Orphaned": false,
+									"NotConnectable": false,
+									"LinkedToCount": 1,
+									"LinkedTo": [
+										{
+											"NodeName": "AnimGraphNode_Root_0",
+											"NodeClass": "AnimGraphNode_Root",
+											"NodeTitle": "输出姿势\nAnimGraph",
+											"PinName": "Result"
+										}
+									]
+								}
+							]
+						},
+						{
+							"Name": "AnimGraphNode_KawaiiPhysics_0",
+							"Class": "AnimGraphNode_KawaiiPhysics",
+							"Title": "Kawaii Physics\nRoot: hair_tail_01\nTag:  NTE.HairTail ",
+							"NodeGuid": "DE69D822-4CDC-35DE-434C-908256860A3C",
+							"HasValidNodeGuid": true,
+							"Pins": [
+								{
+									"Name": "ComponentPose",
+									"Direction": "Input",
+									"Category": "struct",
+									"SubCategory": "None",
+									"SubCategoryObject": "/Script/Engine.ComponentSpacePoseLink",
+									"DefaultValue": "(LinkID=-1,SourceLinkID=-1)",
+									"DefaultTextValue": "",
+									"DefaultObject": "",
+									"Orphaned": false,
+									"NotConnectable": false,
+									"LinkedToCount": 1,
+									"LinkedTo": [
+										{
+											"NodeName": "AnimGraphNode_LocalToComponentSpace_0",
+											"NodeClass": "AnimGraphNode_LocalToComponentSpace",
+											"NodeTitle": "本地到组件空间",
+											"PinName": "ComponentPose"
+										}
+									]
+								},
+								{
+									"Name": "bAlphaBoolEnabled",
+									"Direction": "Input",
+									"Category": "bool",
+									"SubCategory": "None",
+									"SubCategoryObject": "",
+									"DefaultValue": "True",
+									"DefaultTextValue": "",
+									"DefaultObject": "",
+									"Orphaned": false,
+									"NotConnectable": false,
+									"LinkedToCount": 0,
+									"LinkedTo": []
+								},
+								{
+									"Name": "Alpha",
+									"Direction": "Input",
+									"Category": "real",
+									"SubCategory": "float",
+									"SubCategoryObject": "",
+									"DefaultValue": "1.000000",
+									"DefaultTextValue": "",
+									"DefaultObject": "",
+									"Orphaned": false,
+									"NotConnectable": false,
+									"LinkedToCount": 0,
+									"LinkedTo": []
+								},
+								{
+									"Name": "AlphaCurveName",
+									"Direction": "Input",
+									"Category": "name",
+									"SubCategory": "None",
+									"SubCategoryObject": "",
+									"DefaultValue": "None",
+									"DefaultTextValue": "",
+									"DefaultObject": "",
+									"Orphaned": false,
+									"NotConnectable": false,
+									"LinkedToCount": 0,
+									"LinkedTo": []
+								},
+								{
+									"Name": "Pose",
+									"Direction": "Output",
+									"Category": "struct",
+									"SubCategory": "None",
+									"SubCategoryObject": "/Script/Engine.ComponentSpacePoseLink",
+									"DefaultValue": "",
+									"DefaultTextValue": "",
+									"DefaultObject": "",
+									"Orphaned": false,
+									"NotConnectable": false,
+									"LinkedToCount": 1,
+									"LinkedTo": [
+										{
+											"NodeName": "AnimGraphNode_ComponentToLocalSpace_0",
+											"NodeClass": "AnimGraphNode_ComponentToLocalSpace",
+											"NodeTitle": "从组件空间到本地",
+											"PinName": "ComponentPose"
+										}
+									]
+								}
+							]
+						}
+					]
+				}
+			],
+			"AnimGraphSummary":
+			{
+				"HasAnimGraph": true,
+				"AnimGraphName": "AnimGraph",
+				"NodeCount": 5,
+				"CopyPoseFromMeshCount": 1,
+				"LocalToComponentSpaceCount": 1,
+				"KawaiiPhysicsCount": 1,
+				"ComponentToLocalSpaceCount": 1,
+				"RootCount": 1,
+				"CopyPoseLinkedToLocalToComponent": true,
+				"LocalToComponentLinkedToKawaii": true,
+				"KawaiiLinkedToComponentToLocal": true,
+				"ComponentToLocalLinkedToRoot": true,
+				"HasExpectedAttachedKawaiiChain": true,
+				"CopyPoseNodes": [
+					{
+						"Name": "AnimGraphNode_CopyPoseFromMesh_0",
+						"Title": "从网格体复制姿势",
+						"UseAttachedParent": true
+					}
+				],
+				"KawaiiNodes": [
+					{
+						"Name": "AnimGraphNode_KawaiiPhysics_0",
+						"Title": "Kawaii Physics\nRoot: hair_tail_01\nTag:  NTE.HairTail ",
+						"RootBone": "hair_tail_01",
+						"LinkedToComponentToLocal": true
+					}
+				]
+			}
+		}
+	]
+}

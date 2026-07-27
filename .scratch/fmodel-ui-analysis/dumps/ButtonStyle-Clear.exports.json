@@ -1,0 +1,75 @@
+[
+  {
+    "Type": "BlueprintGeneratedClass",
+    "Name": "ButtonStyle-Clear_C",
+    "Flags": "RF_Public | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'BlueprintGeneratedClass'",
+    "Package": "/Game/UI/Blueprints/ButtonStyle-Clear",
+    "SuperStruct": {
+      "ObjectName": "Class'CommonButtonStyle'",
+      "ObjectPath": "/Script/CommonUI"
+    },
+    "ClassFlags": "CLASS_CompiledFromBlueprint",
+    "ClassWithin": {
+      "ObjectName": "Class'Object'",
+      "ObjectPath": "/Script/CoreUObject"
+    },
+    "ClassConfigName": "Engine",
+    "bCooked": true,
+    "ClassDefaultObject": {
+      "ObjectName": "ButtonStyle-Clear_C'Default__ButtonStyle-Clear_C'",
+      "ObjectPath": "/Game/UI/Blueprints/ButtonStyle-Clear.1"
+    },
+    "EditorTags": {
+      "BlueprintType": "BPTYPE_Normal"
+    }
+  },
+  {
+    "Type": "ButtonStyle-Clear_C",
+    "Name": "Default__ButtonStyle-Clear_C",
+    "Flags": "RF_Public | RF_Transactional | RF_ClassDefaultObject | RF_ArchetypeObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "BlueprintGeneratedClass'/Game/UI/Blueprints/ButtonStyle-Clear.ButtonStyle-Clear_C'",
+    "Package": "/Game/UI/Blueprints/ButtonStyle-Clear",
+    "Properties": {
+      "NormalBase": {
+        "DrawAs": "ESlateBrushDrawType::NoDrawType"
+      },
+      "NormalHovered": {
+        "TintColor": {
+          "SpecifiedColor": {
+            "R": 0.635417,
+            "G": 0.635417,
+            "B": 0.635417,
+            "A": 1.0,
+            "Hex": "D1D1D1"
+          }
+        },
+        "DrawAs": "ESlateBrushDrawType::NoDrawType"
+      },
+      "NormalPressed": {
+        "TintColor": {
+          "SpecifiedColor": {
+            "R": 0.197917,
+            "G": 0.197917,
+            "B": 0.197917,
+            "A": 1.0,
+            "Hex": "7B7B7B"
+          }
+        },
+        "DrawAs": "ESlateBrushDrawType::NoDrawType"
+      },
+      "SelectedBase": {
+        "DrawAs": "ESlateBrushDrawType::NoDrawType"
+      },
+      "SelectedHovered": {
+        "DrawAs": "ESlateBrushDrawType::NoDrawType"
+      },
+      "SelectedPressed": {
+        "DrawAs": "ESlateBrushDrawType::NoDrawType"
+      },
+      "Disabled": {
+        "DrawAs": "ESlateBrushDrawType::NoDrawType"
+      }
+    }
+  }
+]

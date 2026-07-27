@@ -1,0 +1,269 @@
+﻿{
+	"Format": "NTE.AssetInspection",
+	"Version": 1,
+	"Assets": [
+		{
+			"Path": "/Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+			"Loads": true,
+			"Class": "SkeletalMesh",
+			"ObjectPath": "/Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin.player_004_lacrimosa_skin",
+			"Materials": [
+				{
+					"Index": 0,
+					"SlotName": "MI_player_004_lacrimosa_01",
+					"ImportedSlotName": "MI_player_004_lacrimosa_01",
+					"Material": "/Game/Characters/Player/004_lacrimosa/ter_new/cloth_ter/MI_player_004_lacrimosa_01",
+					"MaterialObjectPath": "/Game/Characters/Player/004_lacrimosa/ter_new/cloth_ter/MI_player_004_lacrimosa_01.MI_player_004_lacrimosa_01",
+					"MaterialClass": "MaterialInstanceConstant"
+				},
+				{
+					"Index": 1,
+					"SlotName": "MI_player_004_lacrimosa_03",
+					"ImportedSlotName": "MI_player_004_lacrimosa_03",
+					"Material": "/Game/Characters/Player/004_lacrimosa/ter_new/cloth_ter/MI_player_004_lacrimosa_03",
+					"MaterialObjectPath": "/Game/Characters/Player/004_lacrimosa/ter_new/cloth_ter/MI_player_004_lacrimosa_03.MI_player_004_lacrimosa_03",
+					"MaterialClass": "MaterialInstanceConstant"
+				},
+				{
+					"Index": 2,
+					"SlotName": "MI_player_004_lacrimosa_02",
+					"ImportedSlotName": "MI_player_004_lacrimosa_02",
+					"Material": "/Game/Characters/Player/004_lacrimosa/ter_new/cloth_ter/MI_player_004_lacrimosa_02",
+					"MaterialObjectPath": "/Game/Characters/Player/004_lacrimosa/ter_new/cloth_ter/MI_player_004_lacrimosa_02.MI_player_004_lacrimosa_02",
+					"MaterialClass": "MaterialInstanceConstant"
+				},
+				{
+					"Index": 3,
+					"SlotName": "MI_player_004_lacrimosa_hair_01",
+					"ImportedSlotName": "MI_player_004_lacrimosa_hair_01",
+					"Material": "/Game/Characters/Player/004_lacrimosa/ter_new/hair_ter/MI_player_004_lacrimosa_hair_01",
+					"MaterialObjectPath": "/Game/Characters/Player/004_lacrimosa/ter_new/hair_ter/MI_player_004_lacrimosa_hair_01.MI_player_004_lacrimosa_hair_01",
+					"MaterialClass": "MaterialInstanceConstant"
+				},
+				{
+					"Index": 4,
+					"SlotName": "MI_player_004_lacrimosa_hair_02",
+					"ImportedSlotName": "MI_player_004_lacrimosa_hair_02",
+					"Material": "/Game/Characters/Player/004_lacrimosa/ter_new/hair_ter/MI_player_004_lacrimosa_hair_02",
+					"MaterialObjectPath": "/Game/Characters/Player/004_lacrimosa/ter_new/hair_ter/MI_player_004_lacrimosa_hair_02.MI_player_004_lacrimosa_hair_02",
+					"MaterialClass": "MaterialInstanceConstant"
+				},
+				{
+					"Index": 5,
+					"SlotName": "MI_common_face_mask",
+					"ImportedSlotName": "MI_common_face_mask",
+					"Material": "/Game/Characters/Player/Common_ter/common_face_mask/MI_common_face_mask",
+					"MaterialObjectPath": "/Game/Characters/Player/Common_ter/common_face_mask/MI_common_face_mask.MI_common_face_mask",
+					"MaterialClass": "MaterialInstanceConstant"
+				},
+				{
+					"Index": 6,
+					"SlotName": "eye_bantou",
+					"ImportedSlotName": "eye_bantou",
+					"Material": "/Game/Characters/Player/Common_ter/eye_bantou",
+					"MaterialObjectPath": "/Game/Characters/Player/Common_ter/eye_bantou.eye_bantou",
+					"MaterialClass": "MaterialInstanceConstant"
+				},
+				{
+					"Index": 7,
+					"SlotName": "MI_player_004_lacrimosa_face",
+					"ImportedSlotName": "MI_player_004_lacrimosa_face",
+					"Material": "/Game/Characters/Player/004_lacrimosa/ter_new/face_ter/MI_player_004_lacrimosa_face",
+					"MaterialObjectPath": "/Game/Characters/Player/004_lacrimosa/ter_new/face_ter/MI_player_004_lacrimosa_face.MI_player_004_lacrimosa_face",
+					"MaterialClass": "MaterialInstanceConstant"
+				},
+				{
+					"Index": 8,
+					"SlotName": "MI_player_004_lacrimosa_eyelash",
+					"ImportedSlotName": "MI_player_004_lacrimosa_eyelash",
+					"Material": "/Game/Characters/Player/004_lacrimosa/ter_new/face_ter/MI_player_004_lacrimosa_eyelash",
+					"MaterialObjectPath": "/Game/Characters/Player/004_lacrimosa/ter_new/face_ter/MI_player_004_lacrimosa_eyelash.MI_player_004_lacrimosa_eyelash",
+					"MaterialClass": "MaterialInstanceConstant"
+				},
+				{
+					"Index": 9,
+					"SlotName": "MI_player_004_lacrimosa_eye",
+					"ImportedSlotName": "MI_player_004_lacrimosa_eye",
+					"Material": "/Game/Characters/Player/004_lacrimosa/ter_new/face_ter/MI_player_004_lacrimosa_eye",
+					"MaterialObjectPath": "/Game/Characters/Player/004_lacrimosa/ter_new/face_ter/MI_player_004_lacrimosa_eye.MI_player_004_lacrimosa_eye",
+					"MaterialClass": "MaterialInstanceConstant"
+				},
+				{
+					"Index": 10,
+					"SlotName": "MI_player_004_lacrimosa_gaoguang",
+					"ImportedSlotName": "MI_player_004_lacrimosa_gaoguang",
+					"Material": "/Game/Characters/Player/004_lacrimosa/ter_new/face_ter/MI_player_004_lacrimosa_gaoguang",
+					"MaterialObjectPath": "/Game/Characters/Player/004_lacrimosa/ter_new/face_ter/MI_player_004_lacrimosa_gaoguang.MI_player_004_lacrimosa_gaoguang",
+					"MaterialClass": "MaterialInstanceConstant"
+				},
+				{
+					"Index": 11,
+					"SlotName": "eye_touming",
+					"ImportedSlotName": "eye_touming",
+					"Material": "/Game/Characters/Player/Common_ter/eye_touming",
+					"MaterialObjectPath": "/Game/Characters/Player/Common_ter/eye_touming.eye_touming",
+					"MaterialClass": "MaterialInstanceConstant"
+				},
+				{
+					"Index": 12,
+					"SlotName": "shangyi",
+					"ImportedSlotName": "shangyi",
+					"Material": "/Game/Characters/Player/004_lacrimosa/ter_new/cloth_ter/MI_player_004_lacrimosa_01",
+					"MaterialObjectPath": "/Game/Characters/Player/004_lacrimosa/ter_new/cloth_ter/MI_player_004_lacrimosa_01.MI_player_004_lacrimosa_01",
+					"MaterialClass": "MaterialInstanceConstant"
+				},
+				{
+					"Index": 13,
+					"SlotName": "piaodai",
+					"ImportedSlotName": "piaodai",
+					"Material": "/Game/Characters/Player/004_lacrimosa/ter_new/cloth_ter/MI_player_004_lacrimosa_01",
+					"MaterialObjectPath": "/Game/Characters/Player/004_lacrimosa/ter_new/cloth_ter/MI_player_004_lacrimosa_01.MI_player_004_lacrimosa_01",
+					"MaterialClass": "MaterialInstanceConstant"
+				},
+				{
+					"Index": 14,
+					"SlotName": "xiezi",
+					"ImportedSlotName": "xiezi",
+					"Material": "/Game/Characters/Player/004_lacrimosa/ter_new/cloth_ter/MI_player_004_lacrimosa_01",
+					"MaterialObjectPath": "/Game/Characters/Player/004_lacrimosa/ter_new/cloth_ter/MI_player_004_lacrimosa_01.MI_player_004_lacrimosa_01",
+					"MaterialClass": "MaterialInstanceConstant"
+				},
+				{
+					"Index": 15,
+					"SlotName": "qunzi",
+					"ImportedSlotName": "qunzi",
+					"Material": "/Game/Characters/Player/004_lacrimosa/ter_new/cloth_ter/MI_player_004_lacrimosa_02",
+					"MaterialObjectPath": "/Game/Characters/Player/004_lacrimosa/ter_new/cloth_ter/MI_player_004_lacrimosa_02.MI_player_004_lacrimosa_02",
+					"MaterialClass": "MaterialInstanceConstant"
+				},
+				{
+					"Index": 16,
+					"SlotName": "shangyi1",
+					"ImportedSlotName": "shangyi1",
+					"Material": "/Game/Characters/Player/004_lacrimosa/ter_new/cloth_ter/MI_player_004_lacrimosa_02",
+					"MaterialObjectPath": "/Game/Characters/Player/004_lacrimosa/ter_new/cloth_ter/MI_player_004_lacrimosa_02.MI_player_004_lacrimosa_02",
+					"MaterialClass": "MaterialInstanceConstant"
+				},
+				{
+					"Index": 17,
+					"SlotName": "body",
+					"ImportedSlotName": "body",
+					"Material": "/Game/Characters/Player/004_lacrimosa/mod/Materials/MI_mod_body",
+					"MaterialObjectPath": "/Game/Characters/Player/004_lacrimosa/mod/Materials/MI_mod_body.MI_mod_body",
+					"MaterialClass": "MaterialInstanceConstant"
+				}
+			],
+			"PostProcessAnimBlueprintClass": "",
+			"LodSections": [
+				{
+					"LodIndex": 0,
+					"SectionIndex": 0,
+					"MaterialIndex": 0,
+					"NumTriangles": 1234
+				},
+				{
+					"LodIndex": 0,
+					"SectionIndex": 1,
+					"MaterialIndex": 1,
+					"NumTriangles": 334
+				},
+				{
+					"LodIndex": 0,
+					"SectionIndex": 2,
+					"MaterialIndex": 2,
+					"NumTriangles": 2372
+				},
+				{
+					"LodIndex": 0,
+					"SectionIndex": 3,
+					"MaterialIndex": 3,
+					"NumTriangles": 5168
+				},
+				{
+					"LodIndex": 0,
+					"SectionIndex": 4,
+					"MaterialIndex": 4,
+					"NumTriangles": 7179
+				},
+				{
+					"LodIndex": 0,
+					"SectionIndex": 5,
+					"MaterialIndex": 5,
+					"NumTriangles": 2905
+				},
+				{
+					"LodIndex": 0,
+					"SectionIndex": 6,
+					"MaterialIndex": 6,
+					"NumTriangles": 56
+				},
+				{
+					"LodIndex": 0,
+					"SectionIndex": 7,
+					"MaterialIndex": 7,
+					"NumTriangles": 5070
+				},
+				{
+					"LodIndex": 0,
+					"SectionIndex": 8,
+					"MaterialIndex": 8,
+					"NumTriangles": 950
+				},
+				{
+					"LodIndex": 0,
+					"SectionIndex": 9,
+					"MaterialIndex": 9,
+					"NumTriangles": 482
+				},
+				{
+					"LodIndex": 0,
+					"SectionIndex": 10,
+					"MaterialIndex": 10,
+					"NumTriangles": 162
+				},
+				{
+					"LodIndex": 0,
+					"SectionIndex": 11,
+					"MaterialIndex": 11,
+					"NumTriangles": 704
+				},
+				{
+					"LodIndex": 0,
+					"SectionIndex": 12,
+					"MaterialIndex": 12,
+					"NumTriangles": 14140
+				},
+				{
+					"LodIndex": 0,
+					"SectionIndex": 13,
+					"MaterialIndex": 13,
+					"NumTriangles": 2000
+				},
+				{
+					"LodIndex": 0,
+					"SectionIndex": 14,
+					"MaterialIndex": 14,
+					"NumTriangles": 5028
+				},
+				{
+					"LodIndex": 0,
+					"SectionIndex": 15,
+					"MaterialIndex": 15,
+					"NumTriangles": 15214
+				},
+				{
+					"LodIndex": 0,
+					"SectionIndex": 16,
+					"MaterialIndex": 16,
+					"NumTriangles": 10301
+				},
+				{
+					"LodIndex": 0,
+					"SectionIndex": 17,
+					"MaterialIndex": 17,
+					"NumTriangles": 26072
+				}
+			]
+		}
+	]
+}

@@ -1,0 +1,797 @@
+﻿{
+	"Format": "NTE.CharacterModSpecReport",
+	"Version": 1,
+	"SpecFile": "F:/NTE/NTEBuildTool/.scratch/character-mod-workspace/004_lacrimosa_legacy_toggle_migration_probe.spec.json",
+	"Summary":
+	{
+		"WorkspaceName": "004_lacrimosa_legacy_toggle_migration_probe",
+		"MainMeshPath": "/Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+		"PlayerAppearanceAssetPath": "/Game/Characters/Player/004_lacrimosa/mod/Generated/MeshAsset_Player004_NTE_AttachedSmoke",
+		"UIActorClassPath": "",
+		"AttachedMeshCount": 1,
+		"MaterialOperationCount": 0,
+		"RuntimeActionCount": 4,
+		"KawaiiPresetCount": 0,
+		"ModName": "lacrimosa004_runtime_action_migration_probe_P",
+		"ModsDir": "F:/Neverness To Everness/Client/WindowsNoEditor/HT/Content/Paks/Mods"
+	},
+	"ErrorCount": 0,
+	"WarningCount": 1,
+	"Errors": [],
+	"Warnings": [
+		"UIActorClassPath is empty; UI preview sync cannot update PlayerUIShow yet."
+	],
+	"PackageSeeds": [
+		"/Game/Characters/Player/004_lacrimosa/mod/Generated/MeshAsset_Player004_NTE_AttachedSmoke",
+		"/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Anim/ABP_NTE_hair_tail_Kawaii",
+		"/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Anim/BP_NTE_CharacterActionSaveGame",
+		"/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Anim/WBP_NTE_CharacterActions",
+		"/Game/Characters/Player/004_lacrimosa/mod/RuntimeLegacyToggleMigrationProbe/ABP_NTE_MainLegacyToggleMigrationProbe",
+		"/Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin"
+	],
+	"AppearanceAssemblyPlan":
+	{
+		"PlayerAppearanceAssetPath": "/Game/Characters/Player/004_lacrimosa/mod/Generated/MeshAsset_Player004_NTE_AttachedSmoke",
+		"MainMesh":
+		{
+			"Id": "main",
+			"Label": "Main",
+			"CharacterMeshPath": "/Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+			"AnimInstancePath": "/Game/Characters/Player/004_lacrimosa/mod/RuntimeLegacyToggleMigrationProbe/ABP_NTE_MainLegacyToggleMigrationProbe",
+			"MeshComponentOwnedTags": [],
+			"RelativeLocation":
+			{
+				"X": 0,
+				"Y": 0,
+				"Z": 0
+			},
+			"RelativeRotation":
+			{
+				"Pitch": 0,
+				"Yaw": 0,
+				"Roll": 0
+			},
+			"RelativeScale3D":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			},
+			"SyncToUIShow": false,
+			"RuntimeActionsEnabled": false
+		},
+		"AttachedMeshes": [
+			{
+				"Id": "hair_tail",
+				"Label": "Hair Tail",
+				"CharacterMeshPath": "/Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+				"AnimInstancePath": "/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Anim/ABP_NTE_hair_tail_Kawaii",
+				"SocketName": "Bip001-Head",
+				"MeshComponentOwnedTags": [
+					"NTE.Attached.hair_tail"
+				],
+				"RelativeLocation":
+				{
+					"X": 0,
+					"Y": 0,
+					"Z": 0
+				},
+				"RelativeRotation":
+				{
+					"Pitch": 0,
+					"Yaw": 0,
+					"Roll": 0
+				},
+				"RelativeScale3D":
+				{
+					"X": 1,
+					"Y": 1,
+					"Z": 1
+				},
+				"SyncToUIShow": false,
+				"RuntimeActionsEnabled": false
+			}
+		],
+		"Errors": [],
+		"Warnings": [
+			"UIActorClassPath is empty; runtime MeshAsset can be planned, but PlayerUIShow preview sync cannot be planned."
+		]
+	},
+	"MaterialPlan":
+	{
+		"Operations": [],
+		"OperationCount": 0,
+		"Errors": [],
+		"Warnings": []
+	},
+	"RuntimeActionPlan":
+	{
+		"RuntimeAssetRootPath": "/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Anim",
+		"WidgetBlueprintPath": "/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Anim/WBP_NTE_CharacterActions",
+		"SaveGameBlueprintPath": "/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Anim/BP_NTE_CharacterActionSaveGame",
+		"SaveSlotName": "NTE_CharacterActionState_Characters_Player_004_lacrimosa_mod_Kawaii_Anim",
+		"RuntimeUi":
+		{
+			"EnableUi": true,
+			"ToggleUiHotkey": "Ctrl+Slash",
+			"Title": "Character Options",
+			"DefaultVisible": false,
+			"FontPath": "/Game/Resources/UI/Fonts/Font_All",
+			"BodyFontTypeface": "Light",
+			"TitleFontTypeface": "Heavy",
+			"BodyFontSize": 20,
+			"TitleFontSize": 24,
+			"Errors": [],
+			"Warnings": []
+		},
+		"Hosts": [
+			{
+				"MeshId": "main",
+				"HostKind": "MainAnimBlueprint",
+				"MeshPath": "/Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+				"AnimBlueprintPath": "/Game/Characters/Player/004_lacrimosa/mod/RuntimeLegacyToggleMigrationProbe/ABP_NTE_MainLegacyToggleMigrationProbe",
+				"ActionIds": [
+					"outerwear",
+					"skirt",
+					"shoes",
+					"top"
+				],
+				"Errors": [],
+				"Warnings": []
+			}
+		],
+		"HostCount": 1,
+		"Actions": [
+			{
+				"Id": "outerwear",
+				"Label": "外套",
+				"ActionType": "MaterialSlotVisibility",
+				"TargetMeshId": "main",
+				"TargetKind": "MainMesh",
+				"TargetMeshPath": "/Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+				"HostMeshId": "main",
+				"HostKind": "MainAnimBlueprint",
+				"HostMeshPath": "/Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+				"HostAnimBlueprintPath": "/Game/Characters/Player/004_lacrimosa/mod/RuntimeLegacyToggleMigrationProbe/ABP_NTE_MainLegacyToggleMigrationProbe",
+				"TargetLookupMode": "OwningComponent",
+				"TargetComponentTags": [],
+				"MaterialSlots": [ 12 ],
+				"ScalarValue": 0,
+				"VectorValue":
+				{
+					"R": 1,
+					"G": 1,
+					"B": 1,
+					"A": 1
+				},
+				"MorphValue": 0,
+				"DefaultEnabled": true,
+				"FirstSliceBlueprintSupported": true,
+				"Errors": [],
+				"Warnings": []
+			},
+			{
+				"Id": "skirt",
+				"Label": "裙子",
+				"ActionType": "MaterialSlotVisibility",
+				"TargetMeshId": "main",
+				"TargetKind": "MainMesh",
+				"TargetMeshPath": "/Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+				"HostMeshId": "main",
+				"HostKind": "MainAnimBlueprint",
+				"HostMeshPath": "/Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+				"HostAnimBlueprintPath": "/Game/Characters/Player/004_lacrimosa/mod/RuntimeLegacyToggleMigrationProbe/ABP_NTE_MainLegacyToggleMigrationProbe",
+				"TargetLookupMode": "OwningComponent",
+				"TargetComponentTags": [],
+				"MaterialSlots": [ 1, 13, 15 ],
+				"ScalarValue": 0,
+				"VectorValue":
+				{
+					"R": 1,
+					"G": 1,
+					"B": 1,
+					"A": 1
+				},
+				"MorphValue": 0,
+				"DefaultEnabled": true,
+				"FirstSliceBlueprintSupported": true,
+				"Errors": [],
+				"Warnings": []
+			},
+			{
+				"Id": "shoes",
+				"Label": "鞋子",
+				"ActionType": "MaterialSlotVisibility",
+				"TargetMeshId": "main",
+				"TargetKind": "MainMesh",
+				"TargetMeshPath": "/Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+				"HostMeshId": "main",
+				"HostKind": "MainAnimBlueprint",
+				"HostMeshPath": "/Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+				"HostAnimBlueprintPath": "/Game/Characters/Player/004_lacrimosa/mod/RuntimeLegacyToggleMigrationProbe/ABP_NTE_MainLegacyToggleMigrationProbe",
+				"TargetLookupMode": "OwningComponent",
+				"TargetComponentTags": [],
+				"MaterialSlots": [ 14 ],
+				"ScalarValue": 0,
+				"VectorValue":
+				{
+					"R": 1,
+					"G": 1,
+					"B": 1,
+					"A": 1
+				},
+				"MorphValue": 0,
+				"DefaultEnabled": true,
+				"FirstSliceBlueprintSupported": true,
+				"Errors": [],
+				"Warnings": []
+			},
+			{
+				"Id": "top",
+				"Label": "上衣",
+				"ActionType": "MaterialSlotVisibility",
+				"TargetMeshId": "main",
+				"TargetKind": "MainMesh",
+				"TargetMeshPath": "/Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+				"HostMeshId": "main",
+				"HostKind": "MainAnimBlueprint",
+				"HostMeshPath": "/Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+				"HostAnimBlueprintPath": "/Game/Characters/Player/004_lacrimosa/mod/RuntimeLegacyToggleMigrationProbe/ABP_NTE_MainLegacyToggleMigrationProbe",
+				"TargetLookupMode": "OwningComponent",
+				"TargetComponentTags": [],
+				"MaterialSlots": [ 16 ],
+				"ScalarValue": 0,
+				"VectorValue":
+				{
+					"R": 1,
+					"G": 1,
+					"B": 1,
+					"A": 1
+				},
+				"MorphValue": 0,
+				"DefaultEnabled": true,
+				"FirstSliceBlueprintSupported": true,
+				"Errors": [],
+				"Warnings": []
+			}
+		],
+		"ActionCount": 4,
+		"Errors": [],
+		"Warnings": []
+	},
+	"KawaiiPlan":
+	{
+		"KawaiiAssetRootPath": "/Game/Characters/Player/004_lacrimosa/mod/Kawaii",
+		"PresetCount": 0,
+		"Presets": [],
+		"PackageSeeds": [],
+		"Errors": [],
+		"Warnings": []
+	},
+	"SyncKawaiiFromAssets": false,
+	"KawaiiPresetPlan":
+	{
+		"PresetCount": 0,
+		"Presets": []
+	},
+	"ApplyAppearance": true,
+	"AppearanceAssemblyWriteResult":
+	{
+		"SavedPackageCount": 1,
+		"WrittenUIShowComponentCount": 0,
+		"ErrorCount": 0,
+		"WarningCount": 2,
+		"SavedPackages": [
+			"/Game/Characters/Player/004_lacrimosa/mod/Generated/MeshAsset_Player004_NTE_AttachedSmoke"
+		],
+		"WrittenUIShowComponents": [],
+		"Errors": [],
+		"Warnings": [
+			"UIActorClassPath is empty; runtime MeshAsset can be planned, but PlayerUIShow preview sync cannot be planned.",
+			"UIActorClassPath is empty; skipped PlayerUIShow SCS sync."
+		]
+	},
+	"ApplyMaterials": false,
+	"ApplyRuntimeActions": true,
+	"RuntimeActionWriteResult":
+	{
+		"RuntimeAssetRootPath": "/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Anim",
+		"WidgetBlueprintPath": "/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Anim/WBP_NTE_CharacterActions",
+		"SaveGameBlueprintPath": "/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Anim/BP_NTE_CharacterActionSaveGame",
+		"SaveSlotName": "NTE_CharacterActionState_Characters_Player_004_lacrimosa_mod_Kawaii_Anim",
+		"Assets": [
+			{
+				"AssetPath": "/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Anim/BP_NTE_CharacterActionSaveGame",
+				"AssetKind": "SaveGameBlueprint",
+				"Created": true,
+				"Updated": true,
+				"Actions": [
+					"created blueprint /Game/Characters/Player/004_lacrimosa/mod/Kawaii/Anim/BP_NTE_CharacterActionSaveGame",
+					"added variable NTE_CharacterActionPlanJson",
+					"added variable NTE_CharacterActionCount",
+					"added variable NTE_Runtime_SaveSlotName",
+					"added variable NTE_RuntimeUi_EnableUi",
+					"added variable NTE_RuntimeUi_ToggleHotkey",
+					"added variable NTE_RuntimeUi_Title",
+					"added variable NTE_RuntimeUi_DefaultVisible",
+					"added variable NTE_RuntimeUi_CurrentVisible",
+					"added variable NTE_Action_outerwear_Id",
+					"added variable NTE_Action_outerwear_Label",
+					"added variable NTE_Action_outerwear_Type",
+					"added variable NTE_Action_outerwear_TargetMeshId",
+					"added variable NTE_Action_outerwear_MaterialSlots",
+					"added variable NTE_Action_outerwear_Enabled",
+					"added variable NTE_Action_skirt_Id",
+					"added variable NTE_Action_skirt_Label",
+					"added variable NTE_Action_skirt_Type",
+					"added variable NTE_Action_skirt_TargetMeshId",
+					"added variable NTE_Action_skirt_MaterialSlots",
+					"added variable NTE_Action_skirt_Enabled",
+					"added variable NTE_Action_shoes_Id",
+					"added variable NTE_Action_shoes_Label",
+					"added variable NTE_Action_shoes_Type",
+					"added variable NTE_Action_shoes_TargetMeshId",
+					"added variable NTE_Action_shoes_MaterialSlots",
+					"added variable NTE_Action_shoes_Enabled",
+					"added variable NTE_Action_top_Id",
+					"added variable NTE_Action_top_Label",
+					"added variable NTE_Action_top_Type",
+					"added variable NTE_Action_top_TargetMeshId",
+					"added variable NTE_Action_top_MaterialSlots",
+					"added variable NTE_Action_top_Enabled",
+					"saved /Game/Characters/Player/004_lacrimosa/mod/Kawaii/Anim/BP_NTE_CharacterActionSaveGame"
+				],
+				"Warnings": [],
+				"Errors": []
+			},
+			{
+				"AssetPath": "/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Anim/WBP_NTE_CharacterActions",
+				"AssetKind": "WidgetBlueprint",
+				"Created": true,
+				"Updated": true,
+				"Actions": [
+					"created blueprint /Game/Characters/Player/004_lacrimosa/mod/Kawaii/Anim/WBP_NTE_CharacterActions",
+					"added variable NTE_CharacterActionPlanJson",
+					"added variable NTE_CharacterActionCount",
+					"added variable NTE_Runtime_SaveSlotName",
+					"added variable NTE_RuntimeUi_EnableUi",
+					"added variable NTE_RuntimeUi_ToggleHotkey",
+					"added variable NTE_RuntimeUi_Title",
+					"added variable NTE_RuntimeUi_DefaultVisible",
+					"added variable NTE_RuntimeUi_CurrentVisible",
+					"added variable NTE_Action_outerwear_Id",
+					"added variable NTE_Action_outerwear_Label",
+					"added variable NTE_Action_outerwear_Type",
+					"added variable NTE_Action_outerwear_TargetMeshId",
+					"added variable NTE_Action_outerwear_MaterialSlots",
+					"added variable NTE_Action_outerwear_Enabled",
+					"added variable NTE_Action_skirt_Id",
+					"added variable NTE_Action_skirt_Label",
+					"added variable NTE_Action_skirt_Type",
+					"added variable NTE_Action_skirt_TargetMeshId",
+					"added variable NTE_Action_skirt_MaterialSlots",
+					"added variable NTE_Action_skirt_Enabled",
+					"added variable NTE_Action_shoes_Id",
+					"added variable NTE_Action_shoes_Label",
+					"added variable NTE_Action_shoes_Type",
+					"added variable NTE_Action_shoes_TargetMeshId",
+					"added variable NTE_Action_shoes_MaterialSlots",
+					"added variable NTE_Action_shoes_Enabled",
+					"added variable NTE_Action_top_Id",
+					"added variable NTE_Action_top_Label",
+					"added variable NTE_Action_top_Type",
+					"added variable NTE_Action_top_TargetMeshId",
+					"added variable NTE_Action_top_MaterialSlots",
+					"added variable NTE_Action_top_Enabled",
+					"added variable NTE_Runtime_SaveObject",
+					"uses source-game font /Game/Resources/UI/Fonts/Font_All",
+					"created runtime widget NTE_CharacterActions_Root:CanvasPanel",
+					"created runtime widget NTE_CharacterActions_WindowPanel:VerticalBox",
+					"created runtime widget NTE_CharacterActions_Title:TextBlock",
+					"created runtime widget NTE_CharacterActions_ButtonList:VerticalBox",
+					"created runtime widget NTE_ActionButton_outerwear:Button",
+					"created runtime widget NTE_ActionLabel_outerwear:TextBlock",
+					"created runtime widget NTE_ActionButton_skirt:Button",
+					"created runtime widget NTE_ActionLabel_skirt:TextBlock",
+					"created runtime widget NTE_ActionButton_shoes:Button",
+					"created runtime widget NTE_ActionLabel_shoes:TextBlock",
+					"created runtime widget NTE_ActionButton_top:Button",
+					"created runtime widget NTE_ActionLabel_top:TextBlock",
+					"rebuilt runtime widget layout with 4 action button(s)",
+					"generated widget SaveGame click state graph for action outerwear",
+					"generated widget SaveGame click state graph for action skirt",
+					"generated widget SaveGame click state graph for action shoes",
+					"generated widget SaveGame click state graph for action top",
+					"generated widget click bindings for 4 action button(s)",
+					"saved /Game/Characters/Player/004_lacrimosa/mod/Kawaii/Anim/WBP_NTE_CharacterActions"
+				],
+				"Warnings": [],
+				"Errors": []
+			},
+			{
+				"AssetPath": "/Game/Characters/Player/004_lacrimosa/mod/RuntimeLegacyToggleMigrationProbe/ABP_NTE_MainLegacyToggleMigrationProbe",
+				"AssetKind": "MainAnimBlueprint:main",
+				"Created": false,
+				"Updated": true,
+				"Actions": [
+					"loaded existing AnimBlueprint /Game/Characters/Player/004_lacrimosa/mod/RuntimeLegacyToggleMigrationProbe/ABP_NTE_MainLegacyToggleMigrationProbe",
+					"updated variable default NTE_CharacterActionPlanJson",
+					"updated variable default NTE_CharacterActionCount",
+					"updated variable default NTE_Runtime_SaveSlotName",
+					"updated variable default NTE_RuntimeUi_EnableUi",
+					"updated variable default NTE_RuntimeUi_ToggleHotkey",
+					"updated variable default NTE_RuntimeUi_Title",
+					"updated variable default NTE_RuntimeUi_DefaultVisible",
+					"updated variable default NTE_RuntimeUi_CurrentVisible",
+					"updated variable default NTE_Action_outerwear_Id",
+					"updated variable default NTE_Action_outerwear_Label",
+					"updated variable default NTE_Action_outerwear_Type",
+					"updated variable default NTE_Action_outerwear_TargetMeshId",
+					"updated variable default NTE_Action_outerwear_MaterialSlots",
+					"updated variable default NTE_Action_outerwear_Enabled",
+					"updated variable default NTE_Action_skirt_Id",
+					"updated variable default NTE_Action_skirt_Label",
+					"updated variable default NTE_Action_skirt_Type",
+					"updated variable default NTE_Action_skirt_TargetMeshId",
+					"updated variable default NTE_Action_skirt_MaterialSlots",
+					"updated variable default NTE_Action_skirt_Enabled",
+					"updated variable default NTE_Action_shoes_Id",
+					"updated variable default NTE_Action_shoes_Label",
+					"updated variable default NTE_Action_shoes_Type",
+					"updated variable default NTE_Action_shoes_TargetMeshId",
+					"updated variable default NTE_Action_shoes_MaterialSlots",
+					"updated variable default NTE_Action_shoes_Enabled",
+					"updated variable default NTE_Action_top_Id",
+					"updated variable default NTE_Action_top_Label",
+					"updated variable default NTE_Action_top_Type",
+					"updated variable default NTE_Action_top_TargetMeshId",
+					"updated variable default NTE_Action_top_MaterialSlots",
+					"updated variable default NTE_Action_top_Enabled",
+					"changed variable type NTE_Runtime_SaveObject",
+					"generated runtime SaveGame load/create graph for slot NTE_CharacterActionState_Characters_Player_004_lacrimosa_mod_Kawaii_Anim",
+					"generated SaveGame initial apply graph for action outerwear",
+					"generated SaveGame initial apply graph for action skirt",
+					"generated SaveGame initial apply graph for action shoes",
+					"generated SaveGame initial apply graph for action top",
+					"generated runtime UI initialize graph",
+					"generated runtime UI toggle hotkey graph for Ctrl+Slash",
+					"generated SaveGame polling apply graph for 4 action(s)",
+					"action outerwear has no hotkey; generated initial apply graph only",
+					"action skirt has no hotkey; generated initial apply graph only",
+					"action shoes has no hotkey; generated initial apply graph only",
+					"action top has no hotkey; generated initial apply graph only",
+					"saved /Game/Characters/Player/004_lacrimosa/mod/RuntimeLegacyToggleMigrationProbe/ABP_NTE_MainLegacyToggleMigrationProbe"
+				],
+				"Warnings": [],
+				"Errors": []
+			}
+		],
+		"AssetCount": 3,
+		"SavedPackages": [
+			"/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Anim/BP_NTE_CharacterActionSaveGame",
+			"/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Anim/WBP_NTE_CharacterActions",
+			"/Game/Characters/Player/004_lacrimosa/mod/RuntimeLegacyToggleMigrationProbe/ABP_NTE_MainLegacyToggleMigrationProbe"
+		],
+		"Warnings": [],
+		"Errors": []
+	},
+	"ApplyKawaii": false,
+	"PackagePlan":
+	{
+		"CandidateCount": 26,
+		"Candidates": [
+			{
+				"PackageName": "/Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+				"Kind": "Selected",
+				"Reason": "from CharacterModSpec",
+				"DefaultIncluded": true
+			},
+			{
+				"PackageName": "/Game/Characters/Player/004_lacrimosa/mod/Runtime/ABP_NTE_ModToggle_PostProcess",
+				"Kind": "Runtime",
+				"Reason": "hard dependency of /Game/Characters/Player/004_lacrimosa/mod/Generated/MeshAsset_Player004_NTE_AttachedSmoke; hard dependency of /Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+				"DefaultIncluded": true
+			},
+			{
+				"PackageName": "/Game/Characters/Player/004_lacrimosa/mod/Generated/MeshAsset_Player004_NTE_AttachedSmoke",
+				"Kind": "Mod",
+				"Reason": "from CharacterModSpec",
+				"DefaultIncluded": true
+			},
+			{
+				"PackageName": "/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Anim/ABP_NTE_hair_tail_Kawaii",
+				"Kind": "Mod",
+				"Reason": "hard dependency of /Game/Characters/Player/004_lacrimosa/mod/Generated/MeshAsset_Player004_NTE_AttachedSmoke; from CharacterModSpec",
+				"DefaultIncluded": true
+			},
+			{
+				"PackageName": "/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Anim/BP_NTE_CharacterActionSaveGame",
+				"Kind": "Mod",
+				"Reason": "from CharacterModSpec",
+				"DefaultIncluded": true
+			},
+			{
+				"PackageName": "/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Anim/WBP_NTE_CharacterActions",
+				"Kind": "Mod",
+				"Reason": "from CharacterModSpec",
+				"DefaultIncluded": true
+			},
+			{
+				"PackageName": "/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Data/DA_NTE_hair_tail_kawaii_KawaiiConstraints",
+				"Kind": "Mod",
+				"Reason": "hard dependency of /Game/Characters/Player/004_lacrimosa/mod/Kawaii/Anim/ABP_NTE_hair_tail_Kawaii",
+				"DefaultIncluded": true
+			},
+			{
+				"PackageName": "/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Data/DA_NTE_hair_tail_kawaii_KawaiiLimits",
+				"Kind": "Mod",
+				"Reason": "hard dependency of /Game/Characters/Player/004_lacrimosa/mod/Kawaii/Anim/ABP_NTE_hair_tail_Kawaii",
+				"DefaultIncluded": true
+			},
+			{
+				"PackageName": "/Game/Characters/Player/004_lacrimosa/mod/Materials/MI_mod_body",
+				"Kind": "Mod",
+				"Reason": "hard dependency of /Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+				"DefaultIncluded": true
+			},
+			{
+				"PackageName": "/Game/Characters/Player/004_lacrimosa/mod/RuntimeLegacyToggleMigrationProbe/ABP_NTE_MainLegacyToggleMigrationProbe",
+				"Kind": "Mod",
+				"Reason": "from CharacterModSpec",
+				"DefaultIncluded": true
+			},
+			{
+				"PackageName": "/Game/Characters/Player/004_lacrimosa/mod/RuntimeLegacyToggleMigrationProbe/BP_NTE_CharacterActionSaveGame",
+				"Kind": "Mod",
+				"Reason": "hard dependency of /Game/Characters/Player/004_lacrimosa/mod/RuntimeLegacyToggleMigrationProbe/ABP_NTE_MainLegacyToggleMigrationProbe",
+				"DefaultIncluded": true
+			},
+			{
+				"PackageName": "/Game/Characters/Player/004_lacrimosa/mod/RuntimeLegacyToggleMigrationProbe/WBP_NTE_CharacterActions",
+				"Kind": "Mod",
+				"Reason": "hard dependency of /Game/Characters/Player/004_lacrimosa/mod/RuntimeLegacyToggleMigrationProbe/ABP_NTE_MainLegacyToggleMigrationProbe",
+				"DefaultIncluded": true
+			},
+			{
+				"PackageName": "/Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin_Skeleton",
+				"Kind": "Skeleton",
+				"Reason": "hard dependency of /Game/Characters/Player/004_lacrimosa/mod/Kawaii/Anim/ABP_NTE_hair_tail_Kawaii; hard dependency of /Game/Characters/Player/004_lacrimosa/mod/RuntimeLegacyToggleMigrationProbe/ABP_NTE_MainLegacyToggleMigrationProbe; hard dependency of /Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+				"DefaultIncluded": false
+			},
+			{
+				"PackageName": "/Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin_PhysicsAsset",
+				"Kind": "Physics",
+				"Reason": "hard dependency of /Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+				"DefaultIncluded": false
+			},
+			{
+				"PackageName": "/Game/Characters/Player/Common_ter/eye_bantou",
+				"Kind": "Source",
+				"Reason": "hard dependency of /Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+				"DefaultIncluded": false
+			},
+			{
+				"PackageName": "/Game/Characters/Player/Common_ter/eye_touming",
+				"Kind": "Source",
+				"Reason": "hard dependency of /Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+				"DefaultIncluded": false
+			},
+			{
+				"PackageName": "/Game/Characters/Player/004_lacrimosa/ter_new/cloth_ter/MI_player_004_lacrimosa_01",
+				"Kind": "Proxy",
+				"Reason": "hard dependency of /Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+				"DefaultIncluded": false
+			},
+			{
+				"PackageName": "/Game/Characters/Player/004_lacrimosa/ter_new/cloth_ter/MI_player_004_lacrimosa_02",
+				"Kind": "Proxy",
+				"Reason": "hard dependency of /Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+				"DefaultIncluded": false
+			},
+			{
+				"PackageName": "/Game/Characters/Player/004_lacrimosa/ter_new/cloth_ter/MI_player_004_lacrimosa_03",
+				"Kind": "Proxy",
+				"Reason": "hard dependency of /Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+				"DefaultIncluded": false
+			},
+			{
+				"PackageName": "/Game/Characters/Player/004_lacrimosa/ter_new/face_ter/MI_player_004_lacrimosa_eye",
+				"Kind": "Proxy",
+				"Reason": "hard dependency of /Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+				"DefaultIncluded": false
+			},
+			{
+				"PackageName": "/Game/Characters/Player/004_lacrimosa/ter_new/face_ter/MI_player_004_lacrimosa_eyelash",
+				"Kind": "Proxy",
+				"Reason": "hard dependency of /Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+				"DefaultIncluded": false
+			},
+			{
+				"PackageName": "/Game/Characters/Player/004_lacrimosa/ter_new/face_ter/MI_player_004_lacrimosa_face",
+				"Kind": "Proxy",
+				"Reason": "hard dependency of /Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+				"DefaultIncluded": false
+			},
+			{
+				"PackageName": "/Game/Characters/Player/004_lacrimosa/ter_new/face_ter/MI_player_004_lacrimosa_gaoguang",
+				"Kind": "Proxy",
+				"Reason": "hard dependency of /Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+				"DefaultIncluded": false
+			},
+			{
+				"PackageName": "/Game/Characters/Player/004_lacrimosa/ter_new/hair_ter/MI_player_004_lacrimosa_hair_01",
+				"Kind": "Proxy",
+				"Reason": "hard dependency of /Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+				"DefaultIncluded": false
+			},
+			{
+				"PackageName": "/Game/Characters/Player/004_lacrimosa/ter_new/hair_ter/MI_player_004_lacrimosa_hair_02",
+				"Kind": "Proxy",
+				"Reason": "hard dependency of /Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+				"DefaultIncluded": false
+			},
+			{
+				"PackageName": "/Game/Characters/Player/Common_ter/common_face_mask/MI_common_face_mask",
+				"Kind": "Proxy",
+				"Reason": "hard dependency of /Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+				"DefaultIncluded": false
+			}
+		],
+		"IncludedPackages": [
+			"/Game/Characters/Player/004_lacrimosa/mod/Generated/MeshAsset_Player004_NTE_AttachedSmoke",
+			"/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Anim/ABP_NTE_hair_tail_Kawaii",
+			"/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Anim/BP_NTE_CharacterActionSaveGame",
+			"/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Anim/WBP_NTE_CharacterActions",
+			"/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Data/DA_NTE_hair_tail_kawaii_KawaiiConstraints",
+			"/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Data/DA_NTE_hair_tail_kawaii_KawaiiLimits",
+			"/Game/Characters/Player/004_lacrimosa/mod/Materials/MI_mod_body",
+			"/Game/Characters/Player/004_lacrimosa/mod/Runtime/ABP_NTE_ModToggle_PostProcess",
+			"/Game/Characters/Player/004_lacrimosa/mod/RuntimeLegacyToggleMigrationProbe/ABP_NTE_MainLegacyToggleMigrationProbe",
+			"/Game/Characters/Player/004_lacrimosa/mod/RuntimeLegacyToggleMigrationProbe/BP_NTE_CharacterActionSaveGame",
+			"/Game/Characters/Player/004_lacrimosa/mod/RuntimeLegacyToggleMigrationProbe/WBP_NTE_CharacterActions",
+			"/Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin"
+		]
+	},
+	"WritePackageJob": false,
+	"BuildPackage": false,
+	"NormalizedSpec":
+	{
+		"Format": "NTE.CharacterModSpec",
+		"Version": 1,
+		"WorkspaceName": "004_lacrimosa_legacy_toggle_migration_probe",
+		"Appearance":
+		{
+			"AppearanceRowName": "Player004",
+			"PlayerAppearanceAssetPath": "/Game/Characters/Player/004_lacrimosa/mod/Generated/MeshAsset_Player004_NTE_AttachedSmoke"
+		},
+		"MainMeshPath": "/Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+		"MainAnimBlueprintPath": "/Game/Characters/Player/004_lacrimosa/mod/RuntimeLegacyToggleMigrationProbe/ABP_NTE_MainLegacyToggleMigrationProbe",
+		"AttachedMeshes": [
+			{
+				"Id": "hair_tail",
+				"Label": "Hair Tail",
+				"MeshPath": "/Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+				"RuntimeAnimBlueprintPath": "/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Anim/ABP_NTE_hair_tail_Kawaii",
+				"SocketName": "Bip001-Head",
+				"MeshComponentOwnedTags": [
+					"NTE.Attached.hair_tail"
+				],
+				"RelativeLocation":
+				{
+					"X": 0,
+					"Y": 0,
+					"Z": 0
+				},
+				"RelativeRotation":
+				{
+					"Pitch": 0,
+					"Yaw": 0,
+					"Roll": 0
+				},
+				"RelativeScale":
+				{
+					"X": 1,
+					"Y": 1,
+					"Z": 1
+				},
+				"SyncToUIShow": false,
+				"EnableRuntimeActions": false
+			}
+		],
+		"MaterialOperations": [],
+		"RuntimeActions": [
+			{
+				"Id": "outerwear",
+				"Label": "外套",
+				"TargetMeshId": "main",
+				"ActionType": "MaterialSlotVisibility",
+				"TargetComponentTags": [],
+				"MaterialSlots": [ 12 ],
+				"ScalarValue": 0,
+				"VectorValue":
+				{
+					"R": 1,
+					"G": 1,
+					"B": 1,
+					"A": 1
+				},
+				"MorphValue": 0,
+				"DefaultEnabled": true
+			},
+			{
+				"Id": "skirt",
+				"Label": "裙子",
+				"TargetMeshId": "main",
+				"ActionType": "MaterialSlotVisibility",
+				"TargetComponentTags": [],
+				"MaterialSlots": [ 1, 13, 15 ],
+				"ScalarValue": 0,
+				"VectorValue":
+				{
+					"R": 1,
+					"G": 1,
+					"B": 1,
+					"A": 1
+				},
+				"MorphValue": 0,
+				"DefaultEnabled": true
+			},
+			{
+				"Id": "shoes",
+				"Label": "鞋子",
+				"TargetMeshId": "main",
+				"ActionType": "MaterialSlotVisibility",
+				"TargetComponentTags": [],
+				"MaterialSlots": [ 14 ],
+				"ScalarValue": 0,
+				"VectorValue":
+				{
+					"R": 1,
+					"G": 1,
+					"B": 1,
+					"A": 1
+				},
+				"MorphValue": 0,
+				"DefaultEnabled": true
+			},
+			{
+				"Id": "top",
+				"Label": "上衣",
+				"TargetMeshId": "main",
+				"ActionType": "MaterialSlotVisibility",
+				"TargetComponentTags": [],
+				"MaterialSlots": [ 16 ],
+				"ScalarValue": 0,
+				"VectorValue":
+				{
+					"R": 1,
+					"G": 1,
+					"B": 1,
+					"A": 1
+				},
+				"MorphValue": 0,
+				"DefaultEnabled": true
+			}
+		],
+		"RuntimeUi":
+		{
+			"EnableUi": true,
+			"ToggleUiHotkey": "Ctrl+Slash",
+			"Title": "Character Options",
+			"DefaultVisible": false,
+			"FontPath": "/Game/Resources/UI/Fonts/Font_All",
+			"BodyFontTypeface": "Light",
+			"TitleFontTypeface": "Heavy",
+			"BodyFontSize": 20,
+			"TitleFontSize": 24
+		},
+		"KawaiiPresets": [],
+		"Package":
+		{
+			"ModName": "lacrimosa004_runtime_action_migration_probe_P",
+			"ModsDir": "F:/Neverness To Everness/Client/WindowsNoEditor/HT/Content/Paks/Mods",
+			"JobFilename": "F:/NTE/PhyLab/Saved/NTEBuildTool/Packages/lacrimosa004_runtime_action_migration_probe_P/lacrimosa004_runtime_action_migration_probe_P.job.json",
+			"BuildAfterCreate": false
+		}
+	}
+}

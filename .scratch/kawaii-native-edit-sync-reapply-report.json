@@ -1,0 +1,789 @@
+﻿{
+	"Format": "NTE.CharacterModSpecReport",
+	"Version": 1,
+	"SpecFile": "F:/NTE/NTEBuildTool/.scratch/kawaii-native-edit-sync.synced.spec.json",
+	"Summary":
+	{
+		"WorkspaceName": "004_lacrimosa_kawaii_preset_validation",
+		"MainMeshPath": "/Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+		"PlayerAppearanceAssetPath": "/Game/Characters/Player/004_lacrimosa/mod/Generated/MeshAsset_Player004_NTE_AttachedSmoke",
+		"UIActorClassPath": "",
+		"AttachedMeshCount": 1,
+		"MaterialOperationCount": 0,
+		"RuntimeActionCount": 0,
+		"KawaiiPresetCount": 1,
+		"ModName": "lacrimosa004_kawaii_preset_validation_P",
+		"ModsDir": "F:/Neverness To Everness/Client/WindowsNoEditor/HT/Content/Paks/Mods"
+	},
+	"ErrorCount": 0,
+	"WarningCount": 7,
+	"Errors": [],
+	"Warnings": [
+		"UIActorClassPath is empty; UI preview sync cannot update PlayerUIShow yet.",
+		"Kawaii preset references bone 'hair_side_01' that is not present on target mesh /Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin.",
+		"Kawaii preset references bone 'hair_side_socket' that is not present on target mesh /Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin.",
+		"Kawaii preset references bone 'hair_tail_01' that is not present on target mesh /Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin.",
+		"Kawaii preset references bone 'hair_tail_socket' that is not present on target mesh /Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin.",
+		"Kawaii preset references bone 'weapon_root' that is not present on target mesh /Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin.",
+		"KawaiiPhysicsTag 'NTE.HairTail' is not registered in GameplayTags. The cooked asset can still be generated, but UE/game logs may warn until the tag exists."
+	],
+	"PackageSeeds": [
+		"/Game/Characters/Player/004_lacrimosa/mod/Generated/MeshAsset_Player004_NTE_AttachedSmoke",
+		"/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Anim/ABP_NTE_hair_tail_Kawaii",
+		"/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Data/DA_NTE_hair_tail_kawaii_KawaiiConstraints",
+		"/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Data/DA_NTE_hair_tail_kawaii_KawaiiLimits",
+		"/Game/Characters/Player/004_lacrimosa/mod/Physics/DA_KawaiiBoneConstraints_Test",
+		"/Game/Characters/Player/004_lacrimosa/mod/Physics/DA_KawaiiLimits_Test",
+		"/Game/Characters/Player/004_lacrimosa/mod/Runtime/ABP_NTE_ModToggle_PostProcess",
+		"/Game/Characters/Player/004_lacrimosa/mod/Runtime/BP_NTE_CharacterActionSaveGame",
+		"/Game/Characters/Player/004_lacrimosa/mod/Runtime/WBP_NTE_CharacterActions",
+		"/Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin"
+	],
+	"AppearanceAssemblyPlan":
+	{
+		"PlayerAppearanceAssetPath": "/Game/Characters/Player/004_lacrimosa/mod/Generated/MeshAsset_Player004_NTE_AttachedSmoke",
+		"MainMesh":
+		{
+			"Id": "main",
+			"Label": "Main",
+			"CharacterMeshPath": "/Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+			"AnimInstancePath": "/Game/Characters/Player/004_lacrimosa/mod/Runtime/ABP_NTE_ModToggle_PostProcess",
+			"MeshComponentOwnedTags": [],
+			"RelativeLocation":
+			{
+				"X": 0,
+				"Y": 0,
+				"Z": 0
+			},
+			"RelativeRotation":
+			{
+				"Pitch": 0,
+				"Yaw": 0,
+				"Roll": 0
+			},
+			"RelativeScale3D":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			},
+			"SyncToUIShow": false,
+			"RuntimeActionsEnabled": false
+		},
+		"AttachedMeshes": [
+			{
+				"Id": "hair_tail",
+				"Label": "Hair Tail",
+				"CharacterMeshPath": "/Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+				"AnimInstancePath": "/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Anim/ABP_NTE_hair_tail_Kawaii",
+				"SocketName": "Bip001-Head",
+				"MeshComponentOwnedTags": [
+					"NTE.Attached.hair_tail"
+				],
+				"RelativeLocation":
+				{
+					"X": 0,
+					"Y": 0,
+					"Z": 0
+				},
+				"RelativeRotation":
+				{
+					"Pitch": 0,
+					"Yaw": 0,
+					"Roll": 0
+				},
+				"RelativeScale3D":
+				{
+					"X": 1,
+					"Y": 1,
+					"Z": 1
+				},
+				"SyncToUIShow": false,
+				"RuntimeActionsEnabled": false
+			}
+		],
+		"Errors": [],
+		"Warnings": [
+			"UIActorClassPath is empty; runtime MeshAsset can be planned, but PlayerUIShow preview sync cannot be planned."
+		]
+	},
+	"MaterialPlan":
+	{
+		"Operations": [],
+		"OperationCount": 0,
+		"Errors": [],
+		"Warnings": []
+	},
+	"RuntimeActionPlan":
+	{
+		"RuntimeAssetRootPath": "/Game/Characters/Player/004_lacrimosa/mod/Runtime",
+		"WidgetBlueprintPath": "/Game/Characters/Player/004_lacrimosa/mod/Runtime/WBP_NTE_CharacterActions",
+		"SaveGameBlueprintPath": "/Game/Characters/Player/004_lacrimosa/mod/Runtime/BP_NTE_CharacterActionSaveGame",
+		"SaveSlotName": "NTE_CharacterActionState_Characters_Player_004_lacrimosa_mod_Runtime",
+		"RuntimeUi":
+		{
+			"EnableUi": false,
+			"DefaultVisible": false,
+			"Errors": [],
+			"Warnings": []
+		},
+		"Hosts": [],
+		"HostCount": 0,
+		"Actions": [],
+		"ActionCount": 0,
+		"Errors": [],
+		"Warnings": []
+	},
+	"KawaiiPlan":
+	{
+		"KawaiiAssetRootPath": "/Game/Characters/Player/004_lacrimosa/mod/Kawaii",
+		"PresetCount": 1,
+		"Presets": [
+			{
+				"Id": "hair_tail_kawaii",
+				"Label": "Hair Tail Kawaii",
+				"TargetMeshId": "hair_tail",
+				"TargetKind": "AttachedMesh",
+				"TargetMeshPath": "/Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+				"TargetMeshLoaded": true,
+				"TargetSkeletonPath": "/Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin_Skeleton",
+				"ReferencedBones": [
+					"Bip001-Head",
+					"hair_side_01",
+					"hair_side_socket",
+					"hair_tail_01",
+					"hair_tail_socket",
+					"weapon_root"
+				],
+				"MissingBones": [
+					"hair_side_01",
+					"hair_side_socket",
+					"hair_tail_01",
+					"hair_tail_socket",
+					"weapon_root"
+				],
+				"SourceKind": "Manual",
+				"SourceAnimBlueprintJson": "F:/F-model/Output/Exports/HT/Content/Characters/Player/004_lacrimosa/Anim/ABP_Source.json",
+				"SourceNodeName": "AnimGraphNode_KawaiiPhysics",
+				"SchemaStatus": "Unknown",
+				"RootBone": "hair_tail_01",
+				"ExcludeBones": [
+					"hair_tail_socket"
+				],
+				"PhysicsSettings":
+				{
+					"Damping": 0.10000000149011612,
+					"Stiffness": 0.05000000074505806,
+					"WorldDampingLocation": 0,
+					"WorldDampingRotation": 0,
+					"Radius": 3,
+					"LimitAngle": 35,
+					"ForwardMoveOffset": 0,
+					"HasForwardMoveOffset": true
+				},
+				"DummyBoneLength": 5,
+				"BoneForwardAxis": "X_Positive",
+				"TargetFramerate": 60,
+				"OverrideTargetFramerate": false,
+				"WarmUpFrames": 0,
+				"UseWarmUpWhenResetDynamics": true,
+				"NeedWarmUp": false,
+				"TeleportDistanceThreshold": 0,
+				"TeleportRotationThreshold": 0,
+				"PlanarConstraint": "None",
+				"ResetBoneTransformWhenBoneNotFound": false,
+				"AdditionalRootBoneCount": 1,
+				"CollisionLimitCount": 1,
+				"CurveCount": 0,
+				"SphericalLimitsDataCount": 1,
+				"CapsuleLimitsDataCount": 0,
+				"BoxLimitsDataCount": 0,
+				"PlanarLimitsDataCount": 0,
+				"BoneConstraintCount": 0,
+				"BoneConstraintsDataCount": 0,
+				"KawaiiAssetRootPath": "/Game/Characters/Player/004_lacrimosa/mod/Kawaii",
+				"RuntimeAnimBlueprintPath": "/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Anim/ABP_NTE_hair_tail_Kawaii",
+				"DerivedRuntimeAnimBlueprintPath": false,
+				"LimitsDataAssetPath": "/Game/Characters/Player/004_lacrimosa/mod/Physics/DA_KawaiiLimits_Test",
+				"OutputLimitsDataAssetPath": "/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Data/DA_NTE_hair_tail_kawaii_KawaiiLimits",
+				"DerivedOutputLimitsDataAssetPath": false,
+				"BoneConstraintsDataAssetPath": "/Game/Characters/Player/004_lacrimosa/mod/Physics/DA_KawaiiBoneConstraints_Test",
+				"OutputBoneConstraintsDataAssetPath": "/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Data/DA_NTE_hair_tail_kawaii_KawaiiConstraints",
+				"DerivedOutputBoneConstraintsDataAssetPath": false,
+				"Curves": [],
+				"AdditionalRootBones": [
+					{
+						"RootBone": "hair_side_01",
+						"OverrideExcludeBones": [
+							"hair_side_socket"
+						],
+						"UseOverrideExcludeBones": true
+					}
+				],
+				"BoneConstraintGlobalComplianceType": "Leather",
+				"BoneConstraintIterationCountBeforeCollision": 0,
+				"BoneConstraintIterationCountAfterCollision": 0,
+				"AutoAddChildDummyBoneConstraint": true,
+				"Gravity":
+				{
+					"X": 0,
+					"Y": 0,
+					"Z": -980
+				},
+				"EnableWind": false,
+				"WindScale": 1,
+				"HasUseRelativeMove": true,
+				"UseRelativeMove": false,
+				"MovementReferenceDisplacement":
+				{
+					"X": 0,
+					"Y": 0,
+					"Z": 0
+				},
+				"AllowWorldCollision": false,
+				"OverrideCollisionParams": false,
+				"IgnoreSelfComponent": true,
+				"IgnoreBones": [
+					"weapon_root"
+				],
+				"IgnoreBoneNamePrefix": [
+					"Socket_"
+				],
+				"KawaiiPhysicsTag": "NTE.HairTail",
+				"KawaiiPhysicsTagChecked": true,
+				"KawaiiPhysicsTagValid": false,
+				"PackageSeeds": [
+					"/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Anim/ABP_NTE_hair_tail_Kawaii",
+					"/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Data/DA_NTE_hair_tail_kawaii_KawaiiConstraints",
+					"/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Data/DA_NTE_hair_tail_kawaii_KawaiiLimits"
+				],
+				"Errors": [],
+				"Warnings": [
+					"Kawaii preset references bone 'hair_side_01' that is not present on target mesh /Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin.",
+					"Kawaii preset references bone 'hair_side_socket' that is not present on target mesh /Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin.",
+					"Kawaii preset references bone 'hair_tail_01' that is not present on target mesh /Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin.",
+					"Kawaii preset references bone 'hair_tail_socket' that is not present on target mesh /Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin.",
+					"Kawaii preset references bone 'weapon_root' that is not present on target mesh /Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin.",
+					"KawaiiPhysicsTag 'NTE.HairTail' is not registered in GameplayTags. The cooked asset can still be generated, but UE/game logs may warn until the tag exists."
+				]
+			}
+		],
+		"PackageSeeds": [
+			"/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Anim/ABP_NTE_hair_tail_Kawaii",
+			"/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Data/DA_NTE_hair_tail_kawaii_KawaiiConstraints",
+			"/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Data/DA_NTE_hair_tail_kawaii_KawaiiLimits"
+		],
+		"Errors": [],
+		"Warnings": [
+			"Kawaii preset references bone 'hair_side_01' that is not present on target mesh /Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin.",
+			"Kawaii preset references bone 'hair_side_socket' that is not present on target mesh /Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin.",
+			"Kawaii preset references bone 'hair_tail_01' that is not present on target mesh /Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin.",
+			"Kawaii preset references bone 'hair_tail_socket' that is not present on target mesh /Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin.",
+			"Kawaii preset references bone 'weapon_root' that is not present on target mesh /Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin.",
+			"KawaiiPhysicsTag 'NTE.HairTail' is not registered in GameplayTags. The cooked asset can still be generated, but UE/game logs may warn until the tag exists."
+		]
+	},
+	"SyncKawaiiFromAssets": false,
+	"KawaiiPresetPlan":
+	{
+		"PresetCount": 1,
+		"Presets": [
+			{
+				"Id": "hair_tail_kawaii",
+				"Label": "Hair Tail Kawaii",
+				"TargetMeshId": "hair_tail",
+				"SourceKind": "Manual",
+				"SourceNodeName": "AnimGraphNode_KawaiiPhysics",
+				"RootBone": "hair_tail_01",
+				"AdditionalRootBoneCount": 1,
+				"CollisionLimitCount": 1,
+				"CurveCount": 0,
+				"UnsupportedSourceFieldCount": 0,
+				"RuntimeAnimBlueprintPath": "/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Anim/ABP_NTE_hair_tail_Kawaii",
+				"LimitsDataAssetPath": "/Game/Characters/Player/004_lacrimosa/mod/Physics/DA_KawaiiLimits_Test",
+				"OutputLimitsDataAssetPath": "/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Data/DA_NTE_hair_tail_kawaii_KawaiiLimits",
+				"BoneConstraintsDataAssetPath": "/Game/Characters/Player/004_lacrimosa/mod/Physics/DA_KawaiiBoneConstraints_Test",
+				"OutputBoneConstraintsDataAssetPath": "/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Data/DA_NTE_hair_tail_kawaii_KawaiiConstraints",
+				"SchemaStatus": "Unknown",
+				"ImportedData":
+				{
+					"SphericalLimitsDataCount": 1,
+					"CapsuleLimitsDataCount": 0,
+					"BoxLimitsDataCount": 0,
+					"PlanarLimitsDataCount": 0,
+					"BoneConstraintCount": 0,
+					"BoneConstraintsDataCount": 0
+				}
+			}
+		]
+	},
+	"ApplyAppearance": false,
+	"ApplyMaterials": false,
+	"ApplyRuntimeActions": false,
+	"ApplyKawaii": true,
+	"KawaiiWriteResult":
+	{
+		"KawaiiAssetRootPath": "/Game/Characters/Player/004_lacrimosa/mod/Kawaii",
+		"SchemaProbe":
+		{
+			"KawaiiPhysicsModuleAvailable": true,
+			"KawaiiPhysicsEditorModuleAvailable": true,
+			"NteCompatible": true,
+			"PresentTypes": [
+				"/Script/KawaiiPhysics.KawaiiPhysicsLimitsDataAsset",
+				"/Script/KawaiiPhysics.KawaiiPhysicsBoneConstraintsDataAsset",
+				"/Script/KawaiiPhysicsEd.AnimGraphNode_KawaiiPhysics",
+				"/Script/KawaiiPhysics.AnimNode_KawaiiPhysics",
+				"/Script/KawaiiPhysics.KawaiiPhysicsSettings",
+				"/Script/KawaiiPhysics.CapsuleLimit",
+				"/Script/KawaiiPhysics.CollisionLimitBase"
+			],
+			"MissingTypes": [],
+			"PresentFields": [
+				"/Script/KawaiiPhysics.KawaiiPhysicsSettings.ForwardMoveOffset",
+				"/Script/KawaiiPhysics.AnimNode_KawaiiPhysics.bUseRelativeMove",
+				"/Script/KawaiiPhysics.AnimNode_KawaiiPhysics.MovementReferenceDisplacement",
+				"/Script/KawaiiPhysics.CapsuleLimit.SphereRadius",
+				"/Script/KawaiiPhysics.CollisionLimitBase.OffSetLocation"
+			],
+			"MissingFields": [],
+			"PublicOnlyFields": [
+				"/Script/KawaiiPhysics.AnimNode_KawaiiPhysics.SimulationSpace",
+				"/Script/KawaiiPhysics.AnimNode_KawaiiPhysics.SimulationBaseBone",
+				"/Script/KawaiiPhysics.AnimNode_KawaiiPhysics.SkelCompMoveScale",
+				"/Script/KawaiiPhysics.AnimNode_KawaiiPhysics.bUpdatePhysicsSettingsInGame",
+				"/Script/KawaiiPhysics.CollisionLimitBase.OffsetLocation"
+			],
+			"Warnings": [
+				"KawaiiPhysics exposes public-plugin-only fields; this mirror plugin may not match the game schema."
+			],
+			"Errors": []
+		},
+		"Assets": [
+			{
+				"AssetPath": "/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Data/DA_NTE_hair_tail_kawaii_KawaiiLimits",
+				"AssetKind": "KawaiiLimitsDataAsset:hair_tail_kawaii",
+				"Created": false,
+				"Updated": true,
+				"Skipped": false,
+				"Actions": [
+					"loaded existing asset /Game/Characters/Player/004_lacrimosa/mod/Kawaii/Data/DA_NTE_hair_tail_kawaii_KawaiiLimits",
+					"wrote 1 SphericalLimits entries",
+					"wrote 0 CapsuleLimits entries",
+					"wrote 0 BoxLimits entries",
+					"wrote 0 PlanarLimits entries",
+					"saved /Game/Characters/Player/004_lacrimosa/mod/Kawaii/Data/DA_NTE_hair_tail_kawaii_KawaiiLimits"
+				],
+				"Warnings": [],
+				"Errors": []
+			},
+			{
+				"AssetPath": "/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Data/DA_NTE_hair_tail_kawaii_KawaiiConstraints",
+				"AssetKind": "KawaiiBoneConstraintsDataAsset:hair_tail_kawaii",
+				"Created": false,
+				"Updated": true,
+				"Skipped": false,
+				"Actions": [
+					"loaded existing asset /Game/Characters/Player/004_lacrimosa/mod/Kawaii/Data/DA_NTE_hair_tail_kawaii_KawaiiConstraints",
+					"saved /Game/Characters/Player/004_lacrimosa/mod/Kawaii/Data/DA_NTE_hair_tail_kawaii_KawaiiConstraints"
+				],
+				"Warnings": [],
+				"Errors": []
+			},
+			{
+				"AssetPath": "/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Anim/ABP_NTE_hair_tail_Kawaii",
+				"AssetKind": "KawaiiRuntimeAnimBlueprint",
+				"Created": false,
+				"Updated": true,
+				"Skipped": false,
+				"Actions": [
+					"loaded existing AnimBlueprint /Game/Characters/Player/004_lacrimosa/mod/Kawaii/Anim/ABP_NTE_hair_tail_Kawaii",
+					"configured Kawaii node hair_tail_kawaii root=hair_tail_01",
+					"rebuilt attached-mesh Kawaii AnimGraph with 1 Kawaii node(s)",
+					"saved /Game/Characters/Player/004_lacrimosa/mod/Kawaii/Anim/ABP_NTE_hair_tail_Kawaii"
+				],
+				"Warnings": [],
+				"Errors": []
+			}
+		],
+		"AssetCount": 3,
+		"SavedPackages": [
+			"/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Data/DA_NTE_hair_tail_kawaii_KawaiiLimits",
+			"/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Data/DA_NTE_hair_tail_kawaii_KawaiiConstraints",
+			"/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Anim/ABP_NTE_hair_tail_Kawaii"
+		],
+		"Warnings": [],
+		"Errors": []
+	},
+	"PackagePlan":
+	{
+		"CandidateCount": 27,
+		"Candidates": [
+			{
+				"PackageName": "/Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+				"Kind": "Selected",
+				"Reason": "from CharacterModSpec",
+				"DefaultIncluded": true
+			},
+			{
+				"PackageName": "/Game/Characters/Player/004_lacrimosa/mod/Runtime/ABP_NTE_ModToggle_PostProcess",
+				"Kind": "Runtime",
+				"Reason": "hard dependency of /Game/Characters/Player/004_lacrimosa/mod/Generated/MeshAsset_Player004_NTE_AttachedSmoke; from CharacterModSpec; hard dependency of /Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+				"DefaultIncluded": true
+			},
+			{
+				"PackageName": "/Game/Characters/Player/004_lacrimosa/mod/Runtime/BP_NTE_CharacterActionSaveGame",
+				"Kind": "Runtime",
+				"Reason": "from CharacterModSpec",
+				"DefaultIncluded": true
+			},
+			{
+				"PackageName": "/Game/Characters/Player/004_lacrimosa/mod/Runtime/BP_NTE_ModToggleSaveGame",
+				"Kind": "Runtime",
+				"Reason": "hard dependency of /Game/Characters/Player/004_lacrimosa/mod/Runtime/ABP_NTE_ModToggle_PostProcess",
+				"DefaultIncluded": true
+			},
+			{
+				"PackageName": "/Game/Characters/Player/004_lacrimosa/mod/Runtime/WBP_NTE_CharacterActions",
+				"Kind": "Runtime",
+				"Reason": "from CharacterModSpec",
+				"DefaultIncluded": true
+			},
+			{
+				"PackageName": "/Game/Characters/Player/004_lacrimosa/mod/Runtime/WBP_NTE_ModToggleMenu",
+				"Kind": "Runtime",
+				"Reason": "hard dependency of /Game/Characters/Player/004_lacrimosa/mod/Runtime/ABP_NTE_ModToggle_PostProcess",
+				"DefaultIncluded": true
+			},
+			{
+				"PackageName": "/Game/Characters/Player/004_lacrimosa/mod/Generated/MeshAsset_Player004_NTE_AttachedSmoke",
+				"Kind": "Mod",
+				"Reason": "from CharacterModSpec",
+				"DefaultIncluded": true
+			},
+			{
+				"PackageName": "/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Anim/ABP_NTE_hair_tail_Kawaii",
+				"Kind": "Mod",
+				"Reason": "hard dependency of /Game/Characters/Player/004_lacrimosa/mod/Generated/MeshAsset_Player004_NTE_AttachedSmoke; from CharacterModSpec",
+				"DefaultIncluded": true
+			},
+			{
+				"PackageName": "/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Data/DA_NTE_hair_tail_kawaii_KawaiiConstraints",
+				"Kind": "Mod",
+				"Reason": "hard dependency of /Game/Characters/Player/004_lacrimosa/mod/Kawaii/Anim/ABP_NTE_hair_tail_Kawaii; from CharacterModSpec",
+				"DefaultIncluded": true
+			},
+			{
+				"PackageName": "/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Data/DA_NTE_hair_tail_kawaii_KawaiiLimits",
+				"Kind": "Mod",
+				"Reason": "hard dependency of /Game/Characters/Player/004_lacrimosa/mod/Kawaii/Anim/ABP_NTE_hair_tail_Kawaii; from CharacterModSpec",
+				"DefaultIncluded": true
+			},
+			{
+				"PackageName": "/Game/Characters/Player/004_lacrimosa/mod/Materials/MI_mod_body",
+				"Kind": "Mod",
+				"Reason": "hard dependency of /Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+				"DefaultIncluded": true
+			},
+			{
+				"PackageName": "/Game/Characters/Player/004_lacrimosa/mod/Physics/DA_KawaiiBoneConstraints_Test",
+				"Kind": "Mod",
+				"Reason": "from CharacterModSpec",
+				"DefaultIncluded": true
+			},
+			{
+				"PackageName": "/Game/Characters/Player/004_lacrimosa/mod/Physics/DA_KawaiiLimits_Test",
+				"Kind": "Mod",
+				"Reason": "from CharacterModSpec",
+				"DefaultIncluded": true
+			},
+			{
+				"PackageName": "/Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin_Skeleton",
+				"Kind": "Skeleton",
+				"Reason": "hard dependency of /Game/Characters/Player/004_lacrimosa/mod/Kawaii/Anim/ABP_NTE_hair_tail_Kawaii; hard dependency of /Game/Characters/Player/004_lacrimosa/mod/Kawaii/Data/DA_NTE_hair_tail_kawaii_KawaiiConstraints; hard dependency of /Game/Characters/Player/004_lacrimosa/mod/Kawaii/Data/DA_NTE_hair_tail_kawaii_KawaiiLimits; hard dependency of /Game/Characters/Player/004_lacrimosa/mod/Runtime/ABP_NTE_ModToggle_PostProcess; hard dependency of /Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+				"DefaultIncluded": false
+			},
+			{
+				"PackageName": "/Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin_PhysicsAsset",
+				"Kind": "Physics",
+				"Reason": "hard dependency of /Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+				"DefaultIncluded": false
+			},
+			{
+				"PackageName": "/Game/Characters/Player/Common_ter/eye_bantou",
+				"Kind": "Source",
+				"Reason": "hard dependency of /Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+				"DefaultIncluded": false
+			},
+			{
+				"PackageName": "/Game/Characters/Player/Common_ter/eye_touming",
+				"Kind": "Source",
+				"Reason": "hard dependency of /Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+				"DefaultIncluded": false
+			},
+			{
+				"PackageName": "/Game/Characters/Player/004_lacrimosa/ter_new/cloth_ter/MI_player_004_lacrimosa_01",
+				"Kind": "Proxy",
+				"Reason": "hard dependency of /Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+				"DefaultIncluded": false
+			},
+			{
+				"PackageName": "/Game/Characters/Player/004_lacrimosa/ter_new/cloth_ter/MI_player_004_lacrimosa_02",
+				"Kind": "Proxy",
+				"Reason": "hard dependency of /Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+				"DefaultIncluded": false
+			},
+			{
+				"PackageName": "/Game/Characters/Player/004_lacrimosa/ter_new/cloth_ter/MI_player_004_lacrimosa_03",
+				"Kind": "Proxy",
+				"Reason": "hard dependency of /Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+				"DefaultIncluded": false
+			},
+			{
+				"PackageName": "/Game/Characters/Player/004_lacrimosa/ter_new/face_ter/MI_player_004_lacrimosa_eye",
+				"Kind": "Proxy",
+				"Reason": "hard dependency of /Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+				"DefaultIncluded": false
+			},
+			{
+				"PackageName": "/Game/Characters/Player/004_lacrimosa/ter_new/face_ter/MI_player_004_lacrimosa_eyelash",
+				"Kind": "Proxy",
+				"Reason": "hard dependency of /Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+				"DefaultIncluded": false
+			},
+			{
+				"PackageName": "/Game/Characters/Player/004_lacrimosa/ter_new/face_ter/MI_player_004_lacrimosa_face",
+				"Kind": "Proxy",
+				"Reason": "hard dependency of /Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+				"DefaultIncluded": false
+			},
+			{
+				"PackageName": "/Game/Characters/Player/004_lacrimosa/ter_new/face_ter/MI_player_004_lacrimosa_gaoguang",
+				"Kind": "Proxy",
+				"Reason": "hard dependency of /Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+				"DefaultIncluded": false
+			},
+			{
+				"PackageName": "/Game/Characters/Player/004_lacrimosa/ter_new/hair_ter/MI_player_004_lacrimosa_hair_01",
+				"Kind": "Proxy",
+				"Reason": "hard dependency of /Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+				"DefaultIncluded": false
+			},
+			{
+				"PackageName": "/Game/Characters/Player/004_lacrimosa/ter_new/hair_ter/MI_player_004_lacrimosa_hair_02",
+				"Kind": "Proxy",
+				"Reason": "hard dependency of /Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+				"DefaultIncluded": false
+			},
+			{
+				"PackageName": "/Game/Characters/Player/Common_ter/common_face_mask/MI_common_face_mask",
+				"Kind": "Proxy",
+				"Reason": "hard dependency of /Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+				"DefaultIncluded": false
+			}
+		],
+		"IncludedPackages": [
+			"/Game/Characters/Player/004_lacrimosa/mod/Generated/MeshAsset_Player004_NTE_AttachedSmoke",
+			"/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Anim/ABP_NTE_hair_tail_Kawaii",
+			"/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Data/DA_NTE_hair_tail_kawaii_KawaiiConstraints",
+			"/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Data/DA_NTE_hair_tail_kawaii_KawaiiLimits",
+			"/Game/Characters/Player/004_lacrimosa/mod/Materials/MI_mod_body",
+			"/Game/Characters/Player/004_lacrimosa/mod/Physics/DA_KawaiiBoneConstraints_Test",
+			"/Game/Characters/Player/004_lacrimosa/mod/Physics/DA_KawaiiLimits_Test",
+			"/Game/Characters/Player/004_lacrimosa/mod/Runtime/ABP_NTE_ModToggle_PostProcess",
+			"/Game/Characters/Player/004_lacrimosa/mod/Runtime/BP_NTE_CharacterActionSaveGame",
+			"/Game/Characters/Player/004_lacrimosa/mod/Runtime/BP_NTE_ModToggleSaveGame",
+			"/Game/Characters/Player/004_lacrimosa/mod/Runtime/WBP_NTE_CharacterActions",
+			"/Game/Characters/Player/004_lacrimosa/mod/Runtime/WBP_NTE_ModToggleMenu",
+			"/Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin"
+		]
+	},
+	"WritePackageJob": false,
+	"BuildPackage": false,
+	"NormalizedSpec":
+	{
+		"Format": "NTE.CharacterModSpec",
+		"Version": 1,
+		"WorkspaceName": "004_lacrimosa_kawaii_preset_validation",
+		"Appearance":
+		{
+			"AppearanceRowName": "Player004",
+			"PlayerAppearanceAssetPath": "/Game/Characters/Player/004_lacrimosa/mod/Generated/MeshAsset_Player004_NTE_AttachedSmoke"
+		},
+		"MainMeshPath": "/Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+		"MainAnimBlueprintPath": "/Game/Characters/Player/004_lacrimosa/mod/Runtime/ABP_NTE_ModToggle_PostProcess",
+		"AttachedMeshes": [
+			{
+				"Id": "hair_tail",
+				"Label": "Hair Tail",
+				"MeshPath": "/Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+				"AnimBlueprintPath": "/Game/Characters/Player/004_lacrimosa/mod/Runtime/ABP_NTE_ModToggle_PostProcess",
+				"SocketName": "Bip001-Head",
+				"MeshComponentOwnedTags": [
+					"NTE.Attached.hair_tail"
+				],
+				"RelativeLocation":
+				{
+					"X": 0,
+					"Y": 0,
+					"Z": 0
+				},
+				"RelativeRotation":
+				{
+					"Pitch": 0,
+					"Yaw": 0,
+					"Roll": 0
+				},
+				"RelativeScale":
+				{
+					"X": 1,
+					"Y": 1,
+					"Z": 1
+				},
+				"KawaiiPresetId": "hair_tail_kawaii",
+				"SyncToUIShow": false,
+				"EnableRuntimeActions": false
+			}
+		],
+		"MaterialOperations": [],
+		"RuntimeActions": [],
+		"RuntimeUi":
+		{
+			"EnableUi": false,
+			"DefaultVisible": false
+		},
+		"KawaiiPresets": [
+			{
+				"Id": "hair_tail_kawaii",
+				"Label": "Hair Tail Kawaii",
+				"TargetMeshId": "hair_tail",
+				"SourceKind": "Manual",
+				"SourceAnimBlueprintJson": "F:/F-model/Output/Exports/HT/Content/Characters/Player/004_lacrimosa/Anim/ABP_Source.json",
+				"SourceNodeName": "AnimGraphNode_KawaiiPhysics",
+				"SchemaStatus": "Unknown",
+				"RootBone": "hair_tail_01",
+				"ExcludeBones": [
+					"hair_tail_socket"
+				],
+				"AdditionalRootBones": [
+					{
+						"RootBone": "hair_side_01",
+						"OverrideExcludeBones": [
+							"hair_side_socket"
+						],
+						"UseOverrideExcludeBones": true
+					}
+				],
+				"PhysicsSettings":
+				{
+					"Damping": 0.10000000149011612,
+					"Stiffness": 0.05000000074505806,
+					"WorldDampingLocation": 0,
+					"WorldDampingRotation": 0,
+					"Radius": 3,
+					"LimitAngle": 35,
+					"ForwardMoveOffset": 0,
+					"HasForwardMoveOffset": true
+				},
+				"DummyBoneLength": 5,
+				"BoneForwardAxis": "X_Positive",
+				"TargetFramerate": 60,
+				"OverrideTargetFramerate": false,
+				"WarmUpFrames": 0,
+				"UseWarmUpWhenResetDynamics": true,
+				"NeedWarmUp": false,
+				"TeleportDistanceThreshold": 0,
+				"TeleportRotationThreshold": 0,
+				"PlanarConstraint": "None",
+				"ResetBoneTransformWhenBoneNotFound": false,
+				"Curves": [],
+				"RuntimeAnimBlueprintPath": "/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Anim/ABP_NTE_hair_tail_Kawaii",
+				"LimitsDataAssetPath": "/Game/Characters/Player/004_lacrimosa/mod/Physics/DA_KawaiiLimits_Test",
+				"OutputLimitsDataAssetPath": "/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Data/DA_NTE_hair_tail_kawaii_KawaiiLimits",
+				"BoneConstraintsDataAssetPath": "/Game/Characters/Player/004_lacrimosa/mod/Physics/DA_KawaiiBoneConstraints_Test",
+				"OutputBoneConstraintsDataAssetPath": "/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Data/DA_NTE_hair_tail_kawaii_KawaiiConstraints",
+				"SphericalLimitsDataCount": 1,
+				"CapsuleLimitsDataCount": 0,
+				"BoxLimitsDataCount": 0,
+				"PlanarLimitsDataCount": 0,
+				"CollisionLimits": [
+					{
+						"LimitKind": "Spherical",
+						"DrivingBone": "Bip001-Head",
+						"OffsetLocation":
+						{
+							"X": 0,
+							"Y": 0,
+							"Z": 5
+						},
+						"OffsetRotation":
+						{
+							"Pitch": 0,
+							"Yaw": 0,
+							"Roll": 0
+						},
+						"Radius": 8,
+						"Length": 0,
+						"SphereRadius": 0,
+						"Extent":
+						{
+							"X": 0,
+							"Y": 0,
+							"Z": 0
+						},
+						"Plane":
+						{
+							"X": 0,
+							"Y": 0,
+							"Z": 0,
+							"W": 0
+						},
+						"LimitType": "Outer",
+						"SourceType": "DataAsset",
+						"Enable": true
+					}
+				],
+				"BoneConstraintGlobalComplianceType": "Leather",
+				"BoneConstraintIterationCountBeforeCollision": 0,
+				"BoneConstraintIterationCountAfterCollision": 0,
+				"AutoAddChildDummyBoneConstraint": true,
+				"BoneConstraintCount": 0,
+				"BoneConstraintsDataCount": 0,
+				"Gravity":
+				{
+					"X": 0,
+					"Y": 0,
+					"Z": -980
+				},
+				"EnableWind": false,
+				"WindScale": 1,
+				"HasUseRelativeMove": true,
+				"UseRelativeMove": false,
+				"MovementReferenceDisplacement":
+				{
+					"X": 0,
+					"Y": 0,
+					"Z": 0
+				},
+				"AllowWorldCollision": false,
+				"OverrideCollisionParams": false,
+				"IgnoreSelfComponent": true,
+				"IgnoreBones": [
+					"weapon_root"
+				],
+				"IgnoreBoneNamePrefix": [
+					"Socket_"
+				],
+				"KawaiiPhysicsTag": "NTE.HairTail",
+				"UnsupportedSourceFields": []
+			}
+		],
+		"Package":
+		{
+			"ModName": "lacrimosa004_kawaii_preset_validation_P",
+			"ModsDir": "F:/Neverness To Everness/Client/WindowsNoEditor/HT/Content/Paks/Mods",
+			"JobFilename": "F:/NTE/PhyLab/Saved/NTEBuildTool/Packages/lacrimosa004_kawaii_preset_validation_P/lacrimosa004_kawaii_preset_validation_P.job.json",
+			"BuildAfterCreate": false
+		}
+	}
+}

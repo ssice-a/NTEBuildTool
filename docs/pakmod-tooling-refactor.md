@@ -226,10 +226,10 @@ The recipe format should mirror that workflow:
 
 Current implementation checkpoint:
 
-- `Create Material Instance From FModel Material JSON` opens a source-texture usage dialog.
-- The dialog displays each source texture once and lists the material parameters that use it.
-- Users can choose one replacement texture per source texture group, and the material module expands it into parameter overrides.
-- `Create Material Instance From Recipe JSON` and the `NteMaterialConfig` commandlet still consume the same core material module, so manual and automated recipes stay compatible.
+- `Create Material Instance From Game Material Library` scans the configured FModel export root for Player and NPC `MI_*.json` exports, so new FModel exports appear without maintaining a hand-written material list.
+- The library is searchable by character, material path, parent material, or texture parameter; selecting a material uses that game material instance as the recipe parent.
+- The recipe dialog displays each source texture once and lists the material parameters that use it. Users can choose one replacement texture per source texture group, and the material module expands it into parameter overrides.
+- The standalone Recipe JSON menu was removed. `NteMaterialConfig` remains the non-UI automation adapter for CharacterModSpec and commandlet workflows.
 - Raw FModel `MaterialInstanceConstant` export arrays are normalized into the same internal material-parameter object used by recipe JSON. This lets source texture usage work directly on normal FModel exports such as `MI_player_004_lacrimosa_fashion_01.json`.
 - `CharacterModSpec.MaterialOperations` now has a plan/write path through `NteCharacterMaterialPlan` and `NteCharacterMaterialWriter`.
 - `NteCharacterModSpec` always reports `MaterialPlan`; `-ApplyMaterials` creates or updates material instances through the material module.
@@ -238,11 +238,6 @@ Current implementation checkpoint:
 
 Next UX target:
 
-- replace the default material dialog with the Material Slots pane in the Mesh Mod Workspace;
-- let users pick the target slot directly from the selected mesh;
-- let users pick the source slot directly from the same mesh when they want "slot N inherits slot M";
-- keep FModel material JSON selection as an advanced source-material override;
-- use asset pickers and "Use Selected Asset" for replacement textures instead of text-only package paths;
 - preview grouped Source Texture Usage with thumbnails and parameter names;
 - provide one `Apply & Assign` action that creates or updates the material instance, assigns it to the target slot, saves dirty assets, and writes the material report.
 
@@ -862,6 +857,12 @@ The accepted architecture decision is tracked at:
 docs/adr/0001-character-mod-workspace.md
 ```
 
+The cross-asset authoring chain is tracked at:
+
+```text
+docs/character-asset-authoring-chain.md
+```
+
 The next engineering slice is the `/Script/HTGame` schema/stub and appearance assembly writer. It should use source-game field evidence from `MeshAsset_Player004_lacrimosa_fashion4` and related UIShow assets, not guessed class layouts.
 
 ## 2026-07-11 CharacterModSpec package checkpoint
@@ -1010,3 +1011,383 @@ Still open:
 - Generate SaveGame load/save and initial apply state.
 - Generate OwnerComponentByTags lookup for actions where the host mesh and target mesh differ.
 - Generate CopyPose/Kawaii AnimGraph content for attached meshes instead of only testing EventGraph execution.
+
+## 2026-07-12 CharacterModSpec RuntimeUi schema checkpoint
+
+Runtime UI is now an explicit part of the CharacterModSpec schema instead of a hidden template default.
+
+Implemented:
+
+- Added `CharacterModSpec.RuntimeUi` with `EnableUi`, `ToggleUiHotkey`, `Title`, and `DefaultVisible`.
+- `NteCharacterRuntimeActionPlan` now exposes `RuntimeUi` beside the action/host plan.
+- Runtime UI hotkeys use the same validation and duplicate-key namespace as action hotkeys, so a UI show/hide key cannot silently collide with a material or attached-mesh action key.
+- Plan-only commandlet reports include `RuntimeUi` in both `RuntimeActionPlan` and `NormalizedSpec`.
+
+Verified:
+
+- `RunUAT BuildPlugin -StrictIncludes` succeeds for `.scratch/PluginBuild_RuntimeUiSpec_Strict`.
+- `PhyLabEditor Win64 Development` builds after syncing the plugin mirror.
+- `NteCharacterModSpec` on `.scratch/character-mod-workspace/004_lacrimosa_runtime_ui_probe.spec.json` reports `RuntimeUi.EnableUi=true`, `ToggleUiHotkey=F10`, and generated Widget/SaveGame package seeds with 0 errors.
+- Duplicate UI/action hotkey validation on `.scratch/character-mod-workspace/004_lacrimosa_runtime_ui_duplicate_hotkey.spec.json` fails as expected with `Duplicate runtime hotkey: H`.
+
+Still open:
+
+- Generate OwnerComponentByTags lookup for actions where the host mesh and target mesh differ.
+- Generate CopyPose/Kawaii AnimGraph content for attached meshes instead of only testing EventGraph execution.
+- Extend action execution beyond visibility into material swap/parameter changes, morph targets, and future animation state actions.
+
+## 2026-07-12 CharacterModSpec RuntimeUi execution and SaveGame bridge checkpoint
+
+Runtime UI generation now uses the same state source as action hotkeys. The generated Widget no longer toggles an isolated Widget-local boolean; it writes the generated SaveGame object, while host AnimBPs poll SaveGame-vs-local state and apply changes to the owning mesh component only when values differ.
+
+Implemented:
+
+- `NteCharacterRuntimeActionPlan` now includes a deterministic `SaveSlotName` derived from the runtime asset root.
+- Generated SaveGame, Widget, and host AnimBP assets all receive shared plan metadata plus `NTE_Runtime_SaveSlotName`.
+- Generated Widgets receive a typed `NTE_Runtime_SaveObject` reference from the host AnimBP after `CreateWidget`.
+- Widget button click events use `UK2Node_ComponentBoundEvent`, toggle the corresponding action variable on `BP_NTE_CharacterActionSaveGame_C`, and call `UGameplayStatics::SaveGameToSlot`.
+- Host AnimBPs load or create the generated SaveGame object during `BlueprintInitializeAnimation`, then apply initial action state from SaveGame.
+- Action hotkeys write the generated SaveGame and save to the same slot.
+- Runtime UI show/hide hotkey writes `NTE_RuntimeUi_CurrentVisible` through SaveGame, saves it, and updates the generated Widget visibility with `SetVisibility`.
+- Host AnimBPs poll SaveGame action values during `BlueprintUpdateAnimation`, compare them to local cached values with `NotEqual_BoolBool`, then call `ShowMaterialSection` or component `SetVisibility` only after a state change.
+
+Verified:
+
+- `RunUAT BuildPlugin -StrictIncludes` succeeds for `.scratch/PluginBuild_RuntimeSaveBridge_Strict`.
+- `PhyLabEditor Win64 Development` builds after syncing the plugin mirror.
+- `NteCharacterModSpec -ApplyRuntimeActions` on `.scratch/character-mod-workspace/004_lacrimosa_runtime_ui_probe.spec.json` writes the generated SaveGame, Widget, and host AnimBP with 0 writer errors.
+- `NteAssetInspection` confirms:
+  - `WBP_NTE_CharacterActions` has `OnClicked (NTE_ActionButton_toggle_main_slot0)`, external SaveGame reads/writes for `NTE_Action_toggle_main_slot0_Enabled`, and `SaveGameToSlot`;
+  - `ABP_NTE_MainRuntimeUiProbe` has `DoesSaveGameExist`, `LoadGameFromSlot`, `CreateSaveGameObject`, `SaveGameToSlot`, UI `AddToViewport`/`SetVisibility`, SaveGame polling with `NotEqual_BoolBool`, and `ShowMaterialSection`.
+- Full commandlet test using `-ApplyAppearance -ApplyRuntimeActions -BuildPackage` creates/cooks/packages the generated MeshAsset, runtime host AnimBP, SaveGame, and Widget. The package outputs `lacrimosa004_runtime_ui_probe_P.pak/.ucas/.utoc` under `F:/Neverness To Everness/Client/WindowsNoEditor/HT/Content/Paks/Mods`.
+
+Still open after this checkpoint:
+
+- `OwnerComponentByTags` lookup for actions hosted by one mesh but targeting another component.
+- CopyPose/Kawaii AnimGraph generation for attached mesh hosts.
+- Material swap/parameter, morph, and animation-state runtime actions.
+- In-game runtime smoke test in the actual client to verify PlayerController input visibility and UI focus behavior.
+
+## 2026-07-12 CharacterModSpec OwnerComponentByTags execution checkpoint
+
+Runtime action host and target meshes are now separate concepts. The spec defaults runtime actions to `HostMeshId=main`, which keeps hotkey/UI/SaveGame logic concentrated in the main generated host AnimBP while allowing actions to target attached mesh components through tags.
+
+Implemented:
+
+- Added optional `RuntimeActions[].HostMeshId` to `CharacterModSpec`.
+- `NteCharacterRuntimeActionPlan` now records `HostMeshPath` separately from `TargetMeshPath`.
+- Attached mesh `MeshComponentOwnedTags` are merged into action target lookup tags.
+- `OwnerComponentByTags` is generated for first-slice visibility actions with this Blueprint chain:
+  - `GetOwningComponent`
+  - `GetOwner`
+  - `FindComponentByTag`
+  - `DynamicCast`
+  - `SetVisibility` or `ShowMaterialSection`
+- `AttachedMeshVisibility` no longer warns merely because the attached mesh has `EnableRuntimeActions=false`; cross-component control requires tags, not an attached mesh EventGraph host.
+
+Verified:
+
+- `RunUAT BuildPlugin -StrictIncludes` succeeds for `.scratch/PluginBuild_OwnerComponentByTags_Strict`.
+- `PhyLabEditor Win64 Development` succeeds after syncing the mirror plugin copy under `F:/NTE/PhyLab/Plugins/NTEBuildTool`.
+- `NteCharacterModSpec -ApplyAppearance -ApplyRuntimeActions` on `.scratch/character-mod-workspace/004_lacrimosa_runtime_actions_graph_probe.spec.json` reports 0 errors and plans `toggle_smoke_attach` as `HostMeshId=main`, `TargetLookupMode=OwnerComponentByTags`.
+- `NteAssetInspection` confirms `/Game/Characters/Player/004_lacrimosa/mod/RuntimeGraphProbe/ABP_NTE_MainGraphProbe` contains `GetOwner`, `FindComponentByTag`, `NTE.Attached.smoke_attach`, `DynamicCast`, and `SetVisibility`.
+- Full `-ApplyAppearance -ApplyRuntimeActions -BuildPackage` produces:
+  - `F:/Neverness To Everness/Client/WindowsNoEditor/HT/Content/Paks/Mods/lacrimosa004_runtime_actions_graph_probe_P.pak`
+  - `F:/Neverness To Everness/Client/WindowsNoEditor/HT/Content/Paks/Mods/lacrimosa004_runtime_actions_graph_probe_P.ucas`
+  - `F:/Neverness To Everness/Client/WindowsNoEditor/HT/Content/Paks/Mods/lacrimosa004_runtime_actions_graph_probe_P.utoc`
+
+Still open:
+
+- CopyPose/Kawaii AnimGraph generation for attached mesh hosts.
+- Material swap/parameter, morph, and animation-state runtime actions.
+- In-game runtime smoke test in the actual client to verify PlayerController input visibility and UI focus behavior.
+
+## 2026-07-12 CharacterModSpec Kawaii preset import checkpoint
+
+Kawaii import now follows the single-authoring-model rule: FModel JSON import writes ordinary `CharacterModSpec.KawaiiPresets`; it does not create a parallel generation path.
+
+Implemented:
+
+- Added richer Kawaii preset schema fields for source identity, curves, framerate/warmup/teleport settings, imported limits-data counts, bone-constraint counts, output asset paths, and NTE-specific relative-move/collision fields.
+- Added `NteCharacterKawaiiPresetImporter`, which converts `FFModelKawaiiAnimLayerAnalysis` nodes into `FNteCharacterKawaiiPresetSpec` and upserts by stable id.
+- `NteCharacterModSpec` commandlet now supports:
+  - `-ImportKawaiiJson=<FModel AnimBP/AnimLayer JSON>`
+  - `-KawaiiTargetMeshId=<mesh id>`
+  - `-KawaiiPresetPrefix=<stable id prefix>`
+  - `-WriteUpdatedSpec=<json>` or `-SaveSpec`
+  - `-NoReplaceKawaiiPresets`
+- Commandlet reports now include `KawaiiImportResult` and `KawaiiPresetPlan`.
+- Character Workspace now lists `KawaiiPresets` from the active spec and has an `Import Kawaii JSON` button that opens a source JSON picker plus target mesh/prefix dialog, then upserts into the same preset model.
+- Package seeds now consider Kawaii runtime/output asset paths: runtime AnimBP, source/output limits data, physics asset for limits, source/output bone constraints data, and output curve assets.
+
+Verified:
+
+- `RunUAT BuildPlugin -StrictIncludes` succeeds for `.scratch/PluginBuild_KawaiiImport_Strict`.
+- `PhyLabEditor Win64 Development` succeeds after syncing the mirror plugin copy under `F:/NTE/PhyLab/Plugins/NTEBuildTool`.
+- `NteCharacterModSpec -ImportKawaiiJson` using `F:/F-model/Output/Exports/HT/Content/Characters/AnimInterface/Physics/Physics_AnimLayer_female051_BP_UI.json` imports 11 Kawaii presets into `.scratch/kawaii-import-probe.updated.spec.json`.
+- The first imported preset `female051_kawaii_10` preserves:
+  - `RootBone=Bn_r_qunA_001`
+  - 11 additional root bones
+  - `Damping=0.15`, `Stiffness=0.08`, `Radius=2.5`, `LimitAngle=60`
+  - `DummyBoneLength=8`
+  - `UseRelativeMove=true`
+  - 4 capsule collision limits
+
+Still open:
+
+- UE editor UI for selecting imported node candidates, copying from referenced presets/templates, and bone-remapping unresolved chains.
+- Kawaii-compatible AnimBP/DataAsset writer that applies resolved presets to generated runtime AnimBPs.
+- Schema proof/patch for the mirror `KawaiiPhysics` plugin before trusting final cooked Kawaii assets.
+
+## 2026-07-12 CharacterModSpec Kawaii plan checkpoint
+
+Kawaii now has the same plan layer pattern as materials and runtime actions. `CharacterModSpec.KawaiiPresets` is still the source model; `NteCharacterKawaiiPlan` is the commandlet/editor-facing projection used for preview, package seeds, and the future writer.
+
+Implemented:
+
+- Added `NteCharacterKawaiiPlan`.
+- `BuildCharacterKawaiiPlanFromSpec` resolves each preset into:
+  - target mesh kind/path;
+  - Kawaii asset root;
+  - runtime AnimBP path;
+  - output limits DataAsset path;
+  - output bone constraints DataAsset path;
+  - output CurveFloat paths;
+  - schema/application warnings;
+  - package seeds.
+- Missing output paths are derived under the target mesh mod folder, for example:
+  - `/Game/.../mod/Kawaii/Anim/ABP_NTE_main_Kawaii`
+  - `/Game/.../mod/Kawaii/Data/DA_NTE_<preset>_KawaiiLimits`
+  - `/Game/.../mod/Kawaii/Data/DA_NTE_<preset>_KawaiiConstraints`
+  - `/Game/.../mod/Kawaii/Curves/CF_NTE_<preset>_<CurveKind>`
+- Derived paths are reported with `Derived*` booleans instead of warning spam.
+- `NteCharacterModSpec` reports now include `KawaiiPlan`.
+- `BuildPackagePlanFromCharacterModSpec` now merges `KawaiiPlan` package seeds, so derived Kawaii output assets are visible before the writer exists.
+- Raw `CharacterModSpec` validation no longer warns just because a Kawaii preset lacks `RuntimeAnimBlueprintPath`; the plan derives it.
+
+Verified:
+
+- `PhyLabEditor Win64 Development` succeeds after syncing the mirror plugin.
+- `NteCharacterModSpec -ImportKawaiiJson` on `Physics_AnimLayer_female051_BP_UI.json` reports:
+  - 11 imported Kawaii presets;
+  - 0 errors;
+  - 11 warnings, all from `SchemaStatus=NeedsNteSchemaCheck`;
+  - 61 total package seeds in the probe report, including derived Kawaii AnimBP/DataAsset/CurveFloat paths.
+- `RunUAT BuildPlugin -StrictIncludes` succeeds for `.scratch/PluginBuild_KawaiiPlan_Strict`.
+
+## 2026-07-12 CharacterModSpec Kawaii writer gate checkpoint
+
+Kawaii now has a writer boundary, but it intentionally refuses to claim final cooked Kawaii compatibility until the mirror `KawaiiPhysics` plugin matches the game schema.
+
+Implemented:
+
+- Added `NteCharacterKawaiiWriter`.
+- Added `-ApplyKawaii` to `NteCharacterModSpec`.
+- Added Kawaii schema probe reporting for required game/NTE fields:
+  - `KawaiiPhysicsSettings.ForwardMoveOffset`
+  - `AnimNode_KawaiiPhysics.bUseRelativeMove`
+  - `AnimNode_KawaiiPhysics.MovementReferenceDisplacement`
+  - `CapsuleLimit.SphereRadius`
+  - `CollisionLimitBase.OffSetLocation`
+- The writer consumes `KawaiiPlan`, not source JSON, so imported/manual/template-seeded presets share the same path.
+- The writer can create/update `CurveFloat` assets from resolved curve plan items.
+- Final Kawaii `LimitsDataAsset`, `BoneConstraintsDataAsset`, and future AnimBP writing are blocked if the schema probe fails.
+- `-WritePackageJob` / `-BuildPackage` now require successful `-ApplyKawaii` when the spec has Kawaii presets.
+- `CollisionLimits` schema now preserves `Extent` and `Plane` in addition to sphere/capsule fields.
+
+Still open:
+
+- Add real AnimGraph node generation after schema compatibility passes.
+- Import or author actual bone-pair constraints instead of only preserving counts.
+- Capture inline curve key values instead of only inline key counts.
+- UE-side Kawaii editor UI for bone-chain creation/remapping and preset/template copying.
+
+## 2026-07-12 CharacterModSpec Kawaii schema patch and package checkpoint
+
+The mirror `F:/NTE/PhyLab/Plugins/KawaiiPhysics` plugin now has the first NTE-compatible schema patch required by `NteCharacterKawaiiWriter`.
+
+Patched reflected fields:
+
+- `FKawaiiPhysicsSettings.ForwardMoveOffset`
+- `FAnimNode_KawaiiPhysics.TargetFrameRate`
+- `FAnimNode_KawaiiPhysics.bUseRelativeMove`
+- `FAnimNode_KawaiiPhysics.MovementReferenceDisplacement`
+- `FAnimNode_KawaiiPhysics.bPhysicsSettingsInitialized`
+- `FCollisionLimitBase.OffSetLocation`
+- `FCapsuleLimit.SphereRadius`
+
+Minimal behavior bridge:
+
+- `bUseRelativeMove` uses `MovementReferenceDisplacement` as the component movement reference. This follows the source-game Physics AnimLayer JSON evidence where `HTPlayerPhysicsAnimLayer.MovementReferenceDisplacement` is copied into each Kawaii node through property access records.
+- `ForwardMoveOffset` is propagated to per-bone settings and offsets the pose-pull base location.
+- `SphereRadius` is used as a capsule collision bone-sphere override when non-zero.
+
+Writer/gate improvements:
+
+- `NteCharacterKawaiiWriter` now probes reflected fields with `FField::GetAuthoredName()` instead of relying on case-insensitive `FindPropertyByName`.
+- Required game/NTE fields still block final DataAsset/AnimBP writing when absent.
+- Public-Kawaii-only fields are warnings, not blockers, because the DataAsset writer can safely write required game-schema assets while the remaining public-only AnimNode surface is addressed before final AnimGraph generation.
+
+Verified:
+
+- `PhyLabEditor Win64 Development` builds after the Kawaii patch.
+- `NteCharacterModSpec -ApplyKawaii` on `.scratch/character-mod-workspace/004_lacrimosa_kawaii_preset_validation.spec.json` reports `SchemaProbe.NteCompatible=true`, missing required fields `[]`, and writes:
+  - `/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Data/DA_NTE_hair_tail_kawaii_KawaiiLimits`
+  - `/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Data/DA_NTE_hair_tail_kawaii_KawaiiConstraints`
+- `NteCharacterModSpec -ApplyKawaii -WritePackageJob` writes a package job that includes the generated Kawaii DataAssets.
+- `NteCharacterModSpec -ApplyKawaii -WritePackageJob -BuildPackage` produces `lacrimosa004_kawaii_preset_validation_P.pak/.ucas/.utoc` in the configured game Mods directory with `ErrorCount=0`.
+
+Remaining Kawaii work:
+
+- Define and implement the main-mesh Kawaii source-pose strategy before writing main-mesh Kawaii AnimGraphs.
+- Preserve/import real bone constraints instead of count-only placeholders.
+- Capture inline `RuntimeFloatCurve` key data, not only external curve paths and key counts.
+- Build the UE-side Kawaii preset editor for bone-chain creation, source preset seeding, bone remapping, and DataAsset visual editing.
+
+## 2026-07-12 CharacterModSpec attached-mesh Kawaii AnimGraph checkpoint
+
+The first real Kawaii AnimGraph generation slice is now implemented for attached mesh targets. This keeps the mod authoring model unified: imported JSON presets, manually-authored presets, and template-seeded presets all become `CharacterModSpec.KawaiiPresets`, resolve through `KawaiiPlan`, and are written by `NteCharacterKawaiiWriter`.
+
+Implemented:
+
+- `KawaiiPlan` now carries the Kawaii node parameters needed for graph writing, including root/exclude/additional roots, physics settings, dummy bone, frame rate, warmup, teleport, planar, gravity, wind, relative move, world collision, ignore lists, constraint settings, and `KawaiiPhysicsTag`.
+- Runtime AnimBP path derivation for Kawaii no longer reuses the source attached mesh `AnimBlueprintPath`. It uses explicit `RuntimeAnimBlueprintPath` when present, otherwise derives `/Game/.../mod/Kawaii/Anim/ABP_NTE_<meshId>_Kawaii`.
+- `NteCharacterKawaiiWriter` generates attached-mesh AnimGraphs:
+  - `CopyPoseFromMesh(bUseAttachedParent=true)`
+  - `LocalToComponentSpace`
+  - one or more reflected `KawaiiPhysics` nodes
+  - `ComponentToLocalSpace`
+  - output pose
+- Kawaii graph node creation is reflection-based through `/Script/KawaiiPhysicsEd.AnimGraphNode_KawaiiPhysics`, so `NTEBuildTool` does not hard-include KawaiiPhysicsEd headers.
+- `SchemaProbe` now reports `KawaiiPhysicsModuleAvailable`, `KawaiiPhysicsEditorModuleAvailable`, and `NteCompatible`.
+- `AppearanceAssemblyPlan` now assigns the Kawaii-derived attached mesh Runtime AnimBP when an attached mesh references `KawaiiPresetId`, or when a preset targets that attached mesh.
+- `NTEBuildTool.Build.cs` includes `AnimGraph` and `AnimGraphRuntime` for the generated AnimGraph path.
+
+Intended boundary:
+
+- Attached mesh Kawaii is supported because the graph can safely start from `CopyPoseFromMesh` and inherit the parent pose.
+- Main mesh Kawaii graph writing is still blocked on purpose. A main mesh graph needs a source-pose strategy that preserves the game's original locomotion/skill animation instead of replacing it with only generated physics nodes.
+
+Verified:
+
+- `PhyLabEditor Win64 Development` builds after syncing the plugin to `F:/NTE/PhyLab/Plugins/NTEBuildTool`.
+- `NteCharacterModSpec -ApplyKawaii` on `.scratch/character-mod-workspace/004_lacrimosa_kawaii_preset_validation.spec.json` writes/updates:
+  - `/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Anim/ABP_NTE_hair_tail_Kawaii`
+  - `/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Data/DA_NTE_hair_tail_kawaii_KawaiiLimits`
+  - `/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Data/DA_NTE_hair_tail_kawaii_KawaiiConstraints`
+- The write report contains `SchemaProbe.NteCompatible=true`, `ErrorCount=0`, and the AnimBP action `rebuilt attached-mesh Kawaii AnimGraph with 1 Kawaii node(s)`.
+- `NteAssetInspection` now emits `AnimGraphSummary` for AnimBlueprint assets. The generated Kawaii ABP reports `HasExpectedAttachedKawaiiChain=true`, `CopyPoseFromMeshCount=1`, `KawaiiPhysicsCount=1`, `ComponentToLocalSpaceCount=1`, `RootCount=1`, and `CopyPoseNodes[0].UseAttachedParent=true`.
+- Full `-ApplyAppearance -ApplyKawaii -WritePackageJob -BuildPackage` produces `lacrimosa004_kawaii_preset_validation_P.pak/.ucas/.utoc` in the configured game Mods directory with `ErrorCount=0`.
+- `RunUAT BuildPlugin -StrictIncludes` succeeds for `.scratch/PluginBuild_KawaiiAnimGraph_Strict`.
+- A second strict build after adding `AnimGraphSummary` inspection succeeds for `.scratch/PluginBuild_KawaiiInspection_Strict`.
+
+Known sample-data warnings:
+
+- The lacrimosa validation spec uses placeholder bones/assets, so reports may warn about missing `hair_tail_01`, `hair_tail_socket`, `hair_side_01`, `hair_side_socket`, `weapon_root`, missing `/Game/Characters/Player/004_lacrimosa/mod/Physics/PA_KawaiiLimits_Test`, invalid tag `NTE.HairTail`, or empty `UIActorClassPath`.
+- These warnings are validation-spec data issues, not writer failures.
+
+## 2026-07-13 CharacterModSpec Kawaii diagnostics checkpoint
+
+Kawaii planning now surfaces skeleton/tag problems before Apply/Cook while keeping them non-blocking. This answers the authoring UX requirement that users choose and tune bone chains manually, but still get precise feedback about whether the current target mesh actually contains the referenced bones.
+
+Implemented:
+
+- Added `GameplayTags` dependency to `NTEBuildTool`.
+- `KawaiiPlan` now loads the target `USkeletalMesh` for diagnostics and reports:
+  - `TargetMeshLoaded`
+  - `TargetSkeletonPath`
+  - `ReferencedBones`
+  - `MissingBones`
+  - `KawaiiPhysicsTagChecked`
+  - `KawaiiPhysicsTagValid`
+- Referenced bones are collected from `RootBone`, `ExcludeBones`, `AdditionalRootBones`, additional override excludes, collision-limit `DrivingBone`, and `IgnoreBones`.
+- Missing bones and invalid Kawaii tags are mirrored into preset/plan warnings, but they are not errors and do not block apply/package.
+- Character Workspace Kawaii preset rows now consume the same plan diagnostics, showing target kind, skeleton, missing-bone count, tag state, and a tooltip with full referenced/missing-bone details.
+
+Verified:
+
+- `PhyLabEditor Win64 Development` builds after syncing the plugin.
+- `NteCharacterModSpec` on `.scratch/character-mod-workspace/004_lacrimosa_kawaii_preset_validation.spec.json` reports `Errors=0`.
+- The report includes `TargetMeshLoaded=true`, `TargetSkeletonPath=/Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin_Skeleton`, `KawaiiPhysicsTagChecked=true`, and `KawaiiPhysicsTagValid=false`.
+- The placeholder spec reports missing bones `hair_side_01`, `hair_side_socket`, `hair_tail_01`, `hair_tail_socket`, and `weapon_root`, matching the warnings later emitted by the Kawaii AnimBP compiler.
+- `PhyLabEditor Win64 Development` also builds after the Character Workspace UI consumes these diagnostics.
+
+## 2026-07-13 Character Workspace Kawaii Apply/Open checkpoint
+
+Character Workspace now has the first UE-side editing bridge for Kawaii presets. The Kawaii preset rows no longer only report plan diagnostics: attached-mesh rows expose an `Apply/Open` action that writes the resolved Runtime AnimBP group and opens the generated AnimBP in the editor for visual Kawaii tuning.
+
+Implemented:
+
+- Added `NteEditorAssetUtils::OpenAssetEditorByPath`, which loads a `/Game` asset path and opens it through `UAssetEditorSubsystem`.
+- Added per-row `Apply/Open` in the Character Workspace Kawaii preset list.
+- The button resolves the selected preset through `KawaiiPlan`, filters to the presets sharing the same `RuntimeAnimBlueprintPath`, writes that group through `NteCharacterKawaiiWriter`, and opens the generated Runtime AnimBP.
+- The row tooltip now includes the resolved Runtime AnimBP path in addition to target mesh, target skeleton, referenced bones, missing bones, and Kawaii tag status.
+- `Apply/Open` is intentionally enabled only for attached-mesh Kawaii Runtime AnimBPs. Main-mesh Kawaii still needs a source-pose strategy before an AnimGraph can be generated safely.
+
+Verified:
+
+- `RunUAT BuildPlugin -StrictIncludes` succeeds for `.scratch/PluginBuild_KawaiiApplyOpen_Strict`.
+- `PhyLabEditor Win64 Development` builds after syncing the plugin to `F:/NTE/PhyLab/Plugins/NTEBuildTool`.
+- `NteCharacterModSpec -ApplyKawaii` on `.scratch/character-mod-workspace/004_lacrimosa_kawaii_preset_validation.spec.json` writes 3 Kawaii asset results with `ErrorCount=0`; the report is `.scratch/kawaii-apply-open-report.json`.
+- `NteAssetInspection` on `/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Anim/ABP_NTE_hair_tail_Kawaii` reports `AnimGraphSummary.HasExpectedAttachedKawaiiChain=true`, `CopyPoseFromMeshCount=1`, `KawaiiPhysicsCount=1`, `ComponentToLocalSpaceCount=1`, `RootCount=1`, and `CopyPoseNodes[0].UseAttachedParent=true`; the report is `.scratch/kawaii-apply-open-inspection-report.json`.
+- Full `-ApplyAppearance -ApplyKawaii -WritePackageJob -BuildPackage` still produces `lacrimosa004_kawaii_preset_validation_P.pak/.ucas/.utoc` in the configured game Mods directory with `ErrorCount=0`; the report is `.scratch/kawaii-apply-open-package-report.json`.
+
+Known sample-data warnings are unchanged: the lacrimosa validation preset still uses placeholder bones, a placeholder PhysicsAsset, and an unregistered `NTE.HairTail` GameplayTag.
+
+## 2026-07-13 Character Workspace Kawaii native edit/sync checkpoint
+
+Kawaii editing now follows the same shape as the native plugin authoring workflow instead of creating a second NTE-only parameter UI. The tool prepares the correct generated assets, opens them in UE for Kawaii Details/Persona editing, and then synchronizes edited values back into `CharacterModSpec.KawaiiPresets` before package generation.
+
+Native Kawaii evidence:
+
+- The public Kawaii editor customizes `AnimGraphNode_KawaiiPhysics` details through `KawaiiPhysicsEd/Private/AnimGraphNode_KawaiiPhysics.cpp`.
+- That details panel exposes native `Export Limits` and `Export BoneConstraints` actions.
+- `KawaiiPhysicsEditMode` is the visual Persona edit/debug surface for Kawaii collision, limits, and constraints.
+
+Implemented:
+
+- Added `NteCharacterKawaiiAssetSync`, which uses reflection to read generated Kawaii AnimBP nodes and generated DataAssets back into `CharacterModSpec.KawaiiPresets`.
+- Added commandlet sync:
+  - `-SyncKawaiiFromAssets`
+  - optional `-KawaiiPresetId=<id>`
+  - optional `-WriteUpdatedSpec=<json>` or `-SaveSpec`
+- Character Workspace Kawaii rows now expose separate actions:
+  - `Apply`: writes generated AnimBP/DataAssets from the current spec and may overwrite generated assets.
+  - `AnimBP`: opens the generated Runtime AnimBP without overwriting it.
+  - `Limits`: opens the generated Kawaii Limits DataAsset without overwriting it.
+  - `Constraints`: opens the generated Kawaii BoneConstraints DataAsset without overwriting it.
+  - `Sync`: reads current generated AnimBP/DataAsset values back into the spec.
+- Generated Kawaii nodes now carry `NTE Character Kawaii Generated:<PresetId>` comments, so sync can identify the correct node when multiple presets share one Runtime AnimBP.
+- Sync reads the same asset set that packaging uses: Runtime AnimBP, generated Limits DataAsset, and generated BoneConstraints DataAsset. There is no permanent "manual UE-only" path.
+
+Authoring loop:
+
+```text
+CharacterModSpec.KawaiiPresets
+  -> KawaiiPlan
+  -> Apply
+  -> generated Runtime AnimBP + Limits/Constraints DataAssets
+  -> native UE Kawaii Details/Persona/DataAsset editing
+  -> Sync
+  -> CharacterModSpec.KawaiiPresets
+  -> ApplyKawaii / Package
+```
+
+Operational rule:
+
+- `Apply` is destructive for generated Kawaii assets because it replays the spec.
+- `AnimBP`, `Limits`, and `Constraints` are non-destructive open actions.
+- `Sync` is the bridge that makes native editor changes durable in the spec.
+- Package and commandlet generation still read only `CharacterModSpec -> KawaiiPlan -> NteCharacterKawaiiWriter`.
+
+Verified:
+
+- `RunUAT BuildPlugin -StrictIncludes` succeeds for `.scratch/PluginBuild_KawaiiNativeEditSync2_Strict`.
+- `PhyLabEditor Win64 Development` builds after syncing the plugin to `F:/NTE/PhyLab/Plugins/NTEBuildTool`.
+- `NteCharacterModSpec -ApplyKawaii` on `.scratch/character-mod-workspace/004_lacrimosa_kawaii_preset_validation.spec.json` writes the generated Kawaii assets with `Errors=0`.
+- `NteCharacterModSpec -SyncKawaiiFromAssets -KawaiiPresetId=hair_tail_kawaii -WriteUpdatedSpec=.scratch/kawaii-native-edit-sync.synced.spec.json` reports `Errors=0` and updates fields including Runtime AnimBP path, root/exclude/additional root bones, physics settings, node settings, DataAsset references, forces/collision settings, collision limits, and bone constraint counts.
+- Reapplying `.scratch/kawaii-native-edit-sync.synced.spec.json` with `-ApplyKawaii` reports `Errors=0`.
+- Full `.scratch/kawaii-native-edit-sync.synced.spec.json` package run with `-ApplyAppearance -ApplyKawaii -WritePackageJob -BuildPackage` reports `Errors=0` and writes `lacrimosa004_kawaii_preset_validation_P.pak/.ucas/.utoc` under the configured game Mods directory.
+- `NteAssetInspection` on `/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Anim/ABP_NTE_hair_tail_Kawaii` reports `AnimGraphSummary.HasExpectedAttachedKawaiiChain=true`, `CopyPoseFromMeshCount=1`, `KawaiiPhysicsCount=1`, `LocalToComponentSpaceCount=1`, `ComponentToLocalSpaceCount=1`, `RootCount=1`, and `CopyPoseNodes[0].UseAttachedParent=true`; the report is `.scratch/kawaii-native-edit-sync-inspection-report.json`.
+
+Known sample-data warnings remain non-blocking: placeholder missing bones, invalid placeholder tag `NTE.HairTail`, and empty `UIActorClassPath`.

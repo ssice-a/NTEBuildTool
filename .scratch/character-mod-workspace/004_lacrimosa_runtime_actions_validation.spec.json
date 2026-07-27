@@ -87,6 +87,10 @@
       "DefaultEnabled": false
     }
   ],
+  "RuntimeUi": {
+    "EnableUi": false,
+    "DefaultVisible": false
+  },
   "KawaiiPresets": [],
   "Package": {
     "ModName": "lacrimosa004_runtime_actions_validation_P",

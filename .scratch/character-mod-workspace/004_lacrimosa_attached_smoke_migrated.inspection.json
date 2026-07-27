@@ -1,0 +1,59 @@
+﻿{
+	"Format": "NTE.AssetInspection",
+	"Version": 1,
+	"Assets": [
+		{
+			"Path": "/Game/Characters/Player/004_lacrimosa/mod/Generated/MeshAsset_Player004_NTE_AttachedSmoke",
+			"Loads": true,
+			"Class": "HTPlayerAppearance",
+			"ObjectPath": "/Game/Characters/Player/004_lacrimosa/mod/Generated/MeshAsset_Player004_NTE_AttachedSmoke.MeshAsset_Player004_NTE_AttachedSmoke",
+			"FashionMeshData":
+			{
+				"CharacterMesh": "/Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+				"CharacterMeshObjectPath": "/Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin.player_004_lacrimosa_skin",
+				"AnimInstanceClass": "/Game/Characters/Player/004_lacrimosa/mod/RuntimeLegacyToggleMigrationProbe/ABP_NTE_MainLegacyToggleMigrationProbe.ABP_NTE_MainLegacyToggleMigrationProbe_C"
+			},
+			"CapsuleHalfHeight": 76,
+			"CapsuleRadius": 30,
+			"RelativeLocation":
+			{
+				"X": 0,
+				"Y": 0,
+				"Z": -78
+			},
+			"FPSCameraCapsuleTopOffset": 0,
+			"UltraSkillSequenceClass": "",
+			"ArrayFashionAttachedMeshData": [
+				{
+					"CharacterMesh": "/Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+					"CharacterMeshObjectPath": "/Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin.player_004_lacrimosa_skin",
+					"AnimInstanceClass": "/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Anim/ABP_NTE_hair_tail_Kawaii.ABP_NTE_hair_tail_Kawaii_C",
+					"MobileAnimInstanceClass": "/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Anim/ABP_NTE_hair_tail_Kawaii.ABP_NTE_hair_tail_Kawaii_C",
+					"SocketName": "Bip001-Head",
+					"MeshComponentOwnedTags": [
+						"NTE.Attached.hair_tail"
+					],
+					"RelativeLocation":
+					{
+						"X": 0,
+						"Y": 0,
+						"Z": 0
+					},
+					"RelativeRotation":
+					{
+						"Pitch": 0,
+						"Yaw": 0,
+						"Roll": 0
+					},
+					"RelativeScale3D":
+					{
+						"X": 1,
+						"Y": 1,
+						"Z": 1
+					}
+				}
+			],
+			"AttachedMeshCount": 1
+		}
+	]
+}

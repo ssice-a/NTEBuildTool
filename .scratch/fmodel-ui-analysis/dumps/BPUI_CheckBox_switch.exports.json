@@ -1,0 +1,3744 @@
+[
+  {
+    "Type": "BPUI_CheckBox_switch_C",
+    "Name": "Default__BPUI_CheckBox_switch_C",
+    "Flags": "RF_Public | RF_ClassDefaultObject | RF_ArchetypeObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "WidgetBlueprintGeneratedClass'/Game/UI/Blueprints/BPUI_CheckBox_switch.BPUI_CheckBox_switch_C'",
+    "Package": "/Game/UI/Blueprints/BPUI_CheckBox_switch",
+    "Properties": {
+      "UberGraphFrame": {},
+      "CheckedSlate": {
+        "ImageType": "ESlateBrushImageType::FullColor",
+        "ImageSize": {
+          "X": 108.0,
+          "Y": 56.0
+        },
+        "ResourceObject": {
+          "ObjectName": "Texture2D'YH_UI_Photo_toggle01'",
+          "ObjectPath": "/Game/UI/UI/selfie/YH_UI_Photo_toggle01.0"
+        }
+      },
+      "UnCheckedSlate": {
+        "ImageType": "ESlateBrushImageType::FullColor",
+        "ImageSize": {
+          "X": 108.0,
+          "Y": 56.0
+        },
+        "ResourceObject": {
+          "ObjectName": "Texture2D'YH_UI_Photo_toggle'",
+          "ObjectPath": "/Game/UI/UI/selfie/YH_UI_Photo_toggle.0"
+        }
+      },
+      "CheckSound": {
+        "AssetPathName": "/Game/WwiseAudio/Events/UI/UI/Play_Sfx_UI_Set_PullDown_Menu.Play_Sfx_UI_Set_PullDown_Menu",
+        "SubPathString": ""
+      },
+      "UncheckSound": {
+        "AssetPathName": "/Game/WwiseAudio/Events/UI/UI/Play_Sfx_UI_Set_PullDown_Menu_Select.Play_Sfx_UI_Set_PullDown_Menu_Select",
+        "SubPathString": ""
+      },
+      "bHasScriptImplementedTick": false,
+      "bHasScriptImplementedPaint": false
+    }
+  },
+  {
+    "Type": "CanvasPanel",
+    "Name": "CanvasPanel_25",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'CanvasPanel'",
+    "Outer": {
+      "ObjectName": "WidgetTree'BPUI_CheckBox_switch_C:WidgetTree'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.74"
+    },
+    "Properties": {
+      "Slots": [
+        {
+          "ObjectName": "CanvasPanelSlot'BPUI_CheckBox_switch_C:WidgetTree.CanvasPanel_25.CanvasPanelSlot_0'",
+          "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.2"
+        },
+        {
+          "ObjectName": "CanvasPanelSlot'BPUI_CheckBox_switch_C:WidgetTree.CanvasPanel_25.CanvasPanelSlot_2'",
+          "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.4"
+        },
+        {
+          "ObjectName": "CanvasPanelSlot'BPUI_CheckBox_switch_C:WidgetTree.CanvasPanel_25.CanvasPanelSlot_4'",
+          "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.6"
+        },
+        {
+          "ObjectName": "CanvasPanelSlot'BPUI_CheckBox_switch_C:WidgetTree.CanvasPanel_25.CanvasPanelSlot_1'",
+          "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.3"
+        },
+        {
+          "ObjectName": "CanvasPanelSlot'BPUI_CheckBox_switch_C:WidgetTree.CanvasPanel_25.CanvasPanelSlot_6'",
+          "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.7"
+        },
+        {
+          "ObjectName": "CanvasPanelSlot'BPUI_CheckBox_switch_C:WidgetTree.CanvasPanel_25.CanvasPanelSlot_3'",
+          "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.5"
+        }
+      ]
+    }
+  },
+  {
+    "Type": "CanvasPanelSlot",
+    "Name": "CanvasPanelSlot_0",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'CanvasPanelSlot'",
+    "Outer": {
+      "ObjectName": "CanvasPanel'BPUI_CheckBox_switch_C:WidgetTree.CanvasPanel_25'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.1"
+    },
+    "Properties": {
+      "Parent": {
+        "ObjectName": "CanvasPanel'BPUI_CheckBox_switch_C:WidgetTree.CanvasPanel_25'",
+        "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.1"
+      },
+      "Content": {
+        "ObjectName": "GamepadCanvasPanel'BPUI_CheckBox_switch_C:WidgetTree.GamepadCanvasPanel'",
+        "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.13"
+      }
+    }
+  },
+  {
+    "Type": "CanvasPanelSlot",
+    "Name": "CanvasPanelSlot_1",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'CanvasPanelSlot'",
+    "Outer": {
+      "ObjectName": "CanvasPanel'BPUI_CheckBox_switch_C:WidgetTree.CanvasPanel_25'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.1"
+    },
+    "Properties": {
+      "LayoutData": {
+        "Offsets": {
+          "Right": 107.0,
+          "Bottom": 56.0
+        }
+      },
+      "ZOrder": 2,
+      "Parent": {
+        "ObjectName": "CanvasPanel'BPUI_CheckBox_switch_C:WidgetTree.CanvasPanel_25'",
+        "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.1"
+      },
+      "Content": {
+        "ObjectName": "Image'BPUI_CheckBox_switch_C:WidgetTree.Image_Hover'",
+        "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.16"
+      }
+    }
+  },
+  {
+    "Type": "CanvasPanelSlot",
+    "Name": "CanvasPanelSlot_2",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'CanvasPanelSlot'",
+    "Outer": {
+      "ObjectName": "CanvasPanel'BPUI_CheckBox_switch_C:WidgetTree.CanvasPanel_25'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.1"
+    },
+    "Properties": {
+      "LayoutData": {
+        "Offsets": {
+          "Right": 108.0,
+          "Bottom": 56.0
+        }
+      },
+      "Parent": {
+        "ObjectName": "CanvasPanel'BPUI_CheckBox_switch_C:WidgetTree.CanvasPanel_25'",
+        "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.1"
+      },
+      "Content": {
+        "ObjectName": "HTCheckBox'BPUI_CheckBox_switch_C:WidgetTree.CheckBox'",
+        "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.15"
+      }
+    }
+  },
+  {
+    "Type": "CanvasPanelSlot",
+    "Name": "CanvasPanelSlot_3",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'CanvasPanelSlot'",
+    "Outer": {
+      "ObjectName": "CanvasPanel'BPUI_CheckBox_switch_C:WidgetTree.CanvasPanel_25'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.1"
+    },
+    "Properties": {
+      "LayoutData": {
+        "Offsets": {
+          "Right": 0.0,
+          "Bottom": 0.0
+        },
+        "Anchors": {
+          "Maximum": {
+            "X": 1.0,
+            "Y": 1.0
+          }
+        }
+      },
+      "Parent": {
+        "ObjectName": "CanvasPanel'BPUI_CheckBox_switch_C:WidgetTree.CanvasPanel_25'",
+        "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.1"
+      },
+      "Content": {
+        "ObjectName": "NamedSlot'BPUI_CheckBox_switch_C:WidgetTree.NamedSlot_52'",
+        "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.67"
+      }
+    }
+  },
+  {
+    "Type": "CanvasPanelSlot",
+    "Name": "CanvasPanelSlot_4",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'CanvasPanelSlot'",
+    "Outer": {
+      "ObjectName": "CanvasPanel'BPUI_CheckBox_switch_C:WidgetTree.CanvasPanel_25'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.1"
+    },
+    "Properties": {
+      "LayoutData": {
+        "Offsets": {
+          "Right": 108.0,
+          "Bottom": 56.0
+        }
+      },
+      "ZOrder": 2,
+      "Parent": {
+        "ObjectName": "CanvasPanel'BPUI_CheckBox_switch_C:WidgetTree.CanvasPanel_25'",
+        "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.1"
+      },
+      "Content": {
+        "ObjectName": "Image'BPUI_CheckBox_switch_C:WidgetTree.Image_Select'",
+        "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.17"
+      }
+    }
+  },
+  {
+    "Type": "CanvasPanelSlot",
+    "Name": "CanvasPanelSlot_6",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'CanvasPanelSlot'",
+    "Outer": {
+      "ObjectName": "CanvasPanel'BPUI_CheckBox_switch_C:WidgetTree.CanvasPanel_25'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.1"
+    },
+    "Properties": {
+      "LayoutData": {
+        "Offsets": {
+          "Right": 0.0,
+          "Bottom": 0.0
+        },
+        "Anchors": {
+          "Maximum": {
+            "X": 1.0,
+            "Y": 1.0
+          }
+        }
+      },
+      "ZOrder": 3,
+      "Parent": {
+        "ObjectName": "CanvasPanel'BPUI_CheckBox_switch_C:WidgetTree.CanvasPanel_25'",
+        "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.1"
+      },
+      "Content": {
+        "ObjectName": "GamepadCanvasPanel'BPUI_CheckBox_switch_C:WidgetTree.GamepadCanvasPanel_25'",
+        "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.14"
+      }
+    }
+  },
+  {
+    "Type": "CanvasPanelSlot",
+    "Name": "CanvasPanelSlot_0",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'CanvasPanelSlot'",
+    "Outer": {
+      "ObjectName": "GamepadCanvasPanel'BPUI_CheckBox_switch_C:WidgetTree.GamepadCanvasPanel_25'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.14"
+    },
+    "Properties": {
+      "LayoutData": {
+        "Offsets": {
+          "Right": 108.0,
+          "Bottom": 56.0
+        }
+      },
+      "Parent": {
+        "ObjectName": "GamepadCanvasPanel'BPUI_CheckBox_switch_C:WidgetTree.GamepadCanvasPanel_25'",
+        "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.14"
+      },
+      "Content": {
+        "ObjectName": "Image'BPUI_CheckBox_switch_C:WidgetTree.ImgCheck_Naviable'",
+        "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.18"
+      }
+    }
+  },
+  {
+    "Type": "CanvasPanelSlot",
+    "Name": "CanvasPanelSlot_1",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'CanvasPanelSlot'",
+    "Outer": {
+      "ObjectName": "GamepadCanvasPanel'BPUI_CheckBox_switch_C:WidgetTree.GamepadCanvasPanel_25'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.14"
+    },
+    "Properties": {
+      "LayoutData": {
+        "Offsets": {
+          "Left": -63.53527,
+          "Right": 24.0,
+          "Bottom": 24.0
+        },
+        "Anchors": {
+          "Minimum": {
+            "X": 0.5,
+            "Y": 0.5
+          },
+          "Maximum": {
+            "X": 0.5,
+            "Y": 0.5
+          }
+        },
+        "Alignment": {
+          "X": 0.5,
+          "Y": 0.5
+        }
+      },
+      "Parent": {
+        "ObjectName": "GamepadCanvasPanel'BPUI_CheckBox_switch_C:WidgetTree.GamepadCanvasPanel_25'",
+        "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.14"
+      },
+      "Content": {
+        "ObjectName": "Image'BPUI_CheckBox_switch_C:WidgetTree.ImgCheck_Naviable_Arrow'",
+        "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.19"
+      }
+    }
+  },
+  {
+    "Type": "CanvasPanelSlot",
+    "Name": "CanvasPanelSlot_3",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'CanvasPanelSlot'",
+    "Outer": {
+      "ObjectName": "GamepadCanvasPanel'BPUI_CheckBox_switch_C:WidgetTree.GamepadCanvasPanel_25'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.14"
+    },
+    "Properties": {
+      "LayoutData": {
+        "Offsets": {
+          "Right": 108.0,
+          "Bottom": 56.0
+        }
+      },
+      "Parent": {
+        "ObjectName": "GamepadCanvasPanel'BPUI_CheckBox_switch_C:WidgetTree.GamepadCanvasPanel_25'",
+        "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.14"
+      },
+      "Content": {
+        "ObjectName": "Image'BPUI_CheckBox_switch_C:WidgetTree.ImgCheck_Naviable_Fx'",
+        "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.20"
+      }
+    }
+  },
+  {
+    "Type": "Function",
+    "Name": "Construct",
+    "Flags": "RF_Public | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'Function'",
+    "Outer": {
+      "ObjectName": "WidgetBlueprintGeneratedClass'BPUI_CheckBox_switch_C'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.73"
+    },
+    "SuperStruct": {
+      "ObjectName": "Class'UserWidget:Construct'",
+      "ObjectPath": "/Script/UMG"
+    },
+    "ScriptBytecode": [
+      {
+        "Inst": "EX_LocalFinalFunction",
+        "StatementIndex": 0,
+        "Function": {
+          "ObjectName": "Function'BPUI_CheckBox_switch_C:ExecuteUbergraph_BPUI_CheckBox_switch'",
+          "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.12"
+        },
+        "Parameters": [
+          {
+            "Inst": "EX_IntConst",
+            "Value": 10
+          }
+        ],
+        "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.ExecuteUbergraph_BPUI_CheckBox_switch[10]"
+      },
+      {
+        "Inst": "EX_Return",
+        "StatementIndex": 15,
+        "Expression": {
+          "Inst": "EX_Nothing"
+        }
+      },
+      {
+        "Inst": "EX_EndOfScript",
+        "StatementIndex": 17
+      }
+    ],
+    "FunctionFlags": "FUNC_BlueprintCosmetic | FUNC_Event | FUNC_Public | FUNC_BlueprintEvent"
+  },
+  {
+    "Type": "Function",
+    "Name": "ExecuteUbergraph_BPUI_CheckBox_switch",
+    "Flags": "RF_Public | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'Function'",
+    "Outer": {
+      "ObjectName": "WidgetBlueprintGeneratedClass'BPUI_CheckBox_switch_C'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.73"
+    },
+    "ChildProperties": [
+      {
+        "Type": "IntProperty",
+        "Name": "EntryPoint",
+        "Flags": "RF_Public",
+        "ElementSize": 4,
+        "PropertyFlags": "BlueprintVisible | BlueprintReadOnly | Parm"
+      }
+    ],
+    "ScriptBytecode": [
+      {
+        "Inst": "EX_ComputedJump",
+        "StatementIndex": 0,
+        "OffsetExpression": {
+          "Inst": "EX_LocalVariable",
+          "Variable": {
+            "Owner": {
+              "ObjectName": "Function'BPUI_CheckBox_switch_C:ExecuteUbergraph_BPUI_CheckBox_switch'",
+              "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.12"
+            },
+            "Property": {
+              "Type": "IntProperty",
+              "Name": "EntryPoint",
+              "Flags": "RF_Public",
+              "ElementSize": 4,
+              "PropertyFlags": "BlueprintVisible | BlueprintReadOnly | Parm"
+            }
+          }
+        }
+      },
+      {
+        "Inst": "EX_Return",
+        "StatementIndex": 10,
+        "Expression": {
+          "Inst": "EX_Nothing"
+        }
+      },
+      {
+        "Inst": "EX_EndOfScript",
+        "StatementIndex": 12
+      }
+    ],
+    "FunctionFlags": "FUNC_Final | FUNC_UbergraphFunction"
+  },
+  {
+    "Type": "GamepadCanvasPanel",
+    "Name": "GamepadCanvasPanel",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'GamepadCanvasPanel'",
+    "Outer": {
+      "ObjectName": "WidgetTree'BPUI_CheckBox_switch_C:WidgetTree'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.74"
+    },
+    "Properties": {
+      "Slot": {
+        "ObjectName": "CanvasPanelSlot'BPUI_CheckBox_switch_C:WidgetTree.CanvasPanel_25.CanvasPanelSlot_0'",
+        "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.2"
+      }
+    }
+  },
+  {
+    "Type": "GamepadCanvasPanel",
+    "Name": "GamepadCanvasPanel_25",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'GamepadCanvasPanel'",
+    "Outer": {
+      "ObjectName": "WidgetTree'BPUI_CheckBox_switch_C:WidgetTree'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.74"
+    },
+    "Properties": {
+      "Slots": [
+        {
+          "ObjectName": "CanvasPanelSlot'BPUI_CheckBox_switch_C:WidgetTree.GamepadCanvasPanel_25.CanvasPanelSlot_3'",
+          "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.10"
+        },
+        {
+          "ObjectName": "CanvasPanelSlot'BPUI_CheckBox_switch_C:WidgetTree.GamepadCanvasPanel_25.CanvasPanelSlot_0'",
+          "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.8"
+        },
+        {
+          "ObjectName": "CanvasPanelSlot'BPUI_CheckBox_switch_C:WidgetTree.GamepadCanvasPanel_25.CanvasPanelSlot_1'",
+          "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.9"
+        }
+      ],
+      "Slot": {
+        "ObjectName": "CanvasPanelSlot'BPUI_CheckBox_switch_C:WidgetTree.CanvasPanel_25.CanvasPanelSlot_6'",
+        "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.7"
+      }
+    }
+  },
+  {
+    "Type": "HTCheckBox",
+    "Name": "CheckBox",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'HTCheckBox'",
+    "Outer": {
+      "ObjectName": "WidgetTree'BPUI_CheckBox_switch_C:WidgetTree'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.74"
+    },
+    "Properties": {
+      "CheckedSound": {
+        "ObjectName": "AkAudioEvent'Play_Sfx_UI_Set_PullDown_Menu'",
+        "ObjectPath": "/Game/WwiseAudio/Events/UI/UI/Play_Sfx_UI_Set_PullDown_Menu.0"
+      },
+      "UnckeckedSound": {
+        "ObjectName": "AkAudioEvent'Play_Sfx_UI_Set_PullDown_Menu_Select'",
+        "ObjectPath": "/Game/WwiseAudio/Events/UI/UI/Play_Sfx_UI_Set_PullDown_Menu_Select.0"
+      },
+      "CheckedImg": {
+        "AssetPathName": "/Game/UI/UI/selfie/YH_UI_Photo_toggle01.YH_UI_Photo_toggle01",
+        "SubPathString": ""
+      },
+      "CheckedHoveredImg": {
+        "AssetPathName": "/Game/UI/UI/selfie/YH_UI_Photo_toggle01.YH_UI_Photo_toggle01",
+        "SubPathString": ""
+      },
+      "CheckedPressedImg": {
+        "AssetPathName": "/Game/UI/UI/selfie/YH_UI_Photo_toggle01.YH_UI_Photo_toggle01",
+        "SubPathString": ""
+      },
+      "UnCheckedImg": {
+        "AssetPathName": "/Game/UI/UI/selfie/YH_UI_Photo_toggle.YH_UI_Photo_toggle",
+        "SubPathString": ""
+      },
+      "UnCheckedHoveredImg": {
+        "AssetPathName": "/Game/UI/UI/selfie/YH_UI_Photo_toggle.YH_UI_Photo_toggle",
+        "SubPathString": ""
+      },
+      "UnCheckedPressedImg": {
+        "AssetPathName": "/Game/UI/UI/selfie/YH_UI_Photo_toggle.YH_UI_Photo_toggle",
+        "SubPathString": ""
+      },
+      "CheckedState": "ECheckBoxState::Checked",
+      "WidgetStyle": {
+        "UncheckedImage": {
+          "ImageType": "ESlateBrushImageType::NoImage",
+          "ImageSize": {
+            "X": 112.0,
+            "Y": 60.0
+          },
+          "ResourceObject": {
+            "ObjectName": "Texture2D'1'",
+            "ObjectPath": "/Game/UI/UI/selfie/1.0"
+          },
+          "ResourceName": "None"
+        },
+        "UncheckedHoveredImage": {
+          "ImageType": "ESlateBrushImageType::NoImage",
+          "ImageSize": {
+            "X": 112.0,
+            "Y": 60.0
+          },
+          "ResourceObject": {
+            "ObjectName": "Texture2D'1'",
+            "ObjectPath": "/Game/UI/UI/selfie/1.0"
+          },
+          "ResourceName": "None"
+        },
+        "UncheckedPressedImage": {
+          "TintColor": {
+            "SpecifiedColor": {
+              "R": 1.0,
+              "G": 1.0,
+              "B": 1.0,
+              "A": 1.0,
+              "Hex": "FFFFFF"
+            }
+          },
+          "ImageType": "ESlateBrushImageType::NoImage",
+          "ImageSize": {
+            "X": 112.0,
+            "Y": 60.0
+          },
+          "ResourceObject": {
+            "ObjectName": "Texture2D'1'",
+            "ObjectPath": "/Game/UI/UI/selfie/1.0"
+          },
+          "ResourceName": "None"
+        },
+        "CheckedImage": {
+          "ImageType": "ESlateBrushImageType::NoImage",
+          "ImageSize": {
+            "X": 112.0,
+            "Y": 60.0
+          },
+          "ResourceObject": {
+            "ObjectName": "Texture2D'2'",
+            "ObjectPath": "/Game/UI/UI/selfie/2.0"
+          },
+          "ResourceName": "None"
+        },
+        "CheckedHoveredImage": {
+          "TintColor": {
+            "SpecifiedColor": {
+              "R": 1.0,
+              "G": 1.0,
+              "B": 1.0,
+              "A": 1.0,
+              "Hex": "FFFFFF"
+            }
+          },
+          "ImageType": "ESlateBrushImageType::NoImage",
+          "ImageSize": {
+            "X": 112.0,
+            "Y": 60.0
+          },
+          "ResourceObject": {
+            "ObjectName": "Texture2D'2'",
+            "ObjectPath": "/Game/UI/UI/selfie/2.0"
+          },
+          "ResourceName": "None"
+        },
+        "CheckedPressedImage": {
+          "ImageType": "ESlateBrushImageType::NoImage",
+          "ImageSize": {
+            "X": 112.0,
+            "Y": 60.0
+          },
+          "ResourceObject": {
+            "ObjectName": "Texture2D'2'",
+            "ObjectPath": "/Game/UI/UI/selfie/2.0"
+          },
+          "ResourceName": "None"
+        }
+      },
+      "Slot": {
+        "ObjectName": "CanvasPanelSlot'BPUI_CheckBox_switch_C:WidgetTree.CanvasPanel_25.CanvasPanelSlot_2'",
+        "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.4"
+      }
+    }
+  },
+  {
+    "Type": "Image",
+    "Name": "Image_Hover",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'Image'",
+    "Outer": {
+      "ObjectName": "WidgetTree'BPUI_CheckBox_switch_C:WidgetTree'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.74"
+    },
+    "Properties": {
+      "Brush": {
+        "ImageType": "ESlateBrushImageType::FullColor",
+        "ImageSize": {
+          "X": 108.0,
+          "Y": 56.0
+        },
+        "ResourceObject": {
+          "ObjectName": "Texture2D'YH_UI_Photo_toggle_select'",
+          "ObjectPath": "/Game/UI/UI/selfie/YH_UI_Photo_toggle_select.0"
+        }
+      },
+      "Slot": {
+        "ObjectName": "CanvasPanelSlot'BPUI_CheckBox_switch_C:WidgetTree.CanvasPanel_25.CanvasPanelSlot_1'",
+        "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.3"
+      },
+      "RenderTransform": {
+        "Scale": {
+          "X": 1.06,
+          "Y": 1.06
+        }
+      },
+      "Visibility": "ESlateVisibility::SelfHitTestInvisible",
+      "RenderOpacity": 0.0
+    }
+  },
+  {
+    "Type": "Image",
+    "Name": "Image_Select",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'Image'",
+    "Outer": {
+      "ObjectName": "WidgetTree'BPUI_CheckBox_switch_C:WidgetTree'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.74"
+    },
+    "Properties": {
+      "Brush": {
+        "TintColor": {
+          "SpecifiedColor": {
+            "R": 0.982251,
+            "G": 0.06301,
+            "B": 0.266356,
+            "A": 1.0,
+            "Hex": "FD478D"
+          }
+        },
+        "ImageType": "ESlateBrushImageType::FullColor",
+        "ImageSize": {
+          "X": 108.0,
+          "Y": 56.0
+        },
+        "ResourceObject": {
+          "ObjectName": "Texture2D'YH_UI_Photo_toggle_select'",
+          "ObjectPath": "/Game/UI/UI/selfie/YH_UI_Photo_toggle_select.0"
+        }
+      },
+      "Slot": {
+        "ObjectName": "CanvasPanelSlot'BPUI_CheckBox_switch_C:WidgetTree.CanvasPanel_25.CanvasPanelSlot_4'",
+        "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.6"
+      },
+      "RenderTransform": {
+        "Scale": {
+          "X": 1.05,
+          "Y": 1.05
+        }
+      },
+      "Visibility": "ESlateVisibility::SelfHitTestInvisible",
+      "RenderOpacity": 0.0
+    }
+  },
+  {
+    "Type": "Image",
+    "Name": "ImgCheck_Naviable",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'Image'",
+    "Outer": {
+      "ObjectName": "WidgetTree'BPUI_CheckBox_switch_C:WidgetTree'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.74"
+    },
+    "Properties": {
+      "Brush": {
+        "ImageType": "ESlateBrushImageType::FullColor",
+        "ImageSize": {
+          "X": 512.0,
+          "Y": 512.0
+        },
+        "ResourceObject": {
+          "ObjectName": "MaterialInstanceConstant'MI_UI_tishikuang35'",
+          "ObjectPath": "/Game/UI/Gamepad/Navigation/MI_UI_tishikuang35.0"
+        }
+      },
+      "Slot": {
+        "ObjectName": "CanvasPanelSlot'BPUI_CheckBox_switch_C:WidgetTree.GamepadCanvasPanel_25.CanvasPanelSlot_0'",
+        "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.8"
+      },
+      "Visibility": "ESlateVisibility::SelfHitTestInvisible",
+      "RenderOpacity": 0.0
+    }
+  },
+  {
+    "Type": "Image",
+    "Name": "ImgCheck_Naviable_Arrow",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'Image'",
+    "Outer": {
+      "ObjectName": "WidgetTree'BPUI_CheckBox_switch_C:WidgetTree'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.74"
+    },
+    "Properties": {
+      "Brush": {
+        "ResourceObject": {
+          "ObjectName": "MaterialInstanceConstant'UI_Common_Select'",
+          "ObjectPath": "/Game/UI/UI_Effect/UIMaterial/Common/UI_Common_Select.0"
+        }
+      },
+      "Slot": {
+        "ObjectName": "CanvasPanelSlot'BPUI_CheckBox_switch_C:WidgetTree.GamepadCanvasPanel_25.CanvasPanelSlot_1'",
+        "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.9"
+      },
+      "RenderTransform": {
+        "Angle": -90.0
+      },
+      "Visibility": "ESlateVisibility::SelfHitTestInvisible",
+      "RenderOpacity": 0.0
+    }
+  },
+  {
+    "Type": "Image",
+    "Name": "ImgCheck_Naviable_Fx",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'Image'",
+    "Outer": {
+      "ObjectName": "WidgetTree'BPUI_CheckBox_switch_C:WidgetTree'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.74"
+    },
+    "Properties": {
+      "Brush": {
+        "TintColor": {
+          "SpecifiedColor": {
+            "R": 1.0,
+            "G": 0.713443,
+            "B": 0.163742,
+            "A": 1.0,
+            "Hex": "FFDC70"
+          }
+        },
+        "DrawAs": "ESlateBrushDrawType::Box",
+        "ImageType": "ESlateBrushImageType::FullColor",
+        "ImageSize": {
+          "X": 108.0,
+          "Y": 56.0
+        },
+        "Margin": {
+          "Left": 0.5,
+          "Right": 0.5
+        },
+        "ResourceObject": {
+          "ObjectName": "MaterialInstanceConstant'UI_Common_IconButton14'",
+          "ObjectPath": "/Game/UI/UI_Effect/UIMaterial/Common/UI_Common_IconButton14.0"
+        }
+      },
+      "ColorAndOpacity": {
+        "R": 1.0,
+        "G": 1.0,
+        "B": 1.0,
+        "A": 0.25,
+        "Hex": "3FFFFFFF"
+      },
+      "Slot": {
+        "ObjectName": "CanvasPanelSlot'BPUI_CheckBox_switch_C:WidgetTree.GamepadCanvasPanel_25.CanvasPanelSlot_3'",
+        "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.10"
+      },
+      "Visibility": "ESlateVisibility::SelfHitTestInvisible",
+      "RenderOpacity": 0.0
+    }
+  },
+  {
+    "Type": "MovieScene",
+    "Name": "HoveredAnim",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieScene'",
+    "Outer": {
+      "ObjectName": "WidgetAnimation'BPUI_CheckBox_switch_C:HoveredAnim_INST'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.68"
+    },
+    "Properties": {
+      "Possessables": [
+        {
+          "Tags": [],
+          "Guid": "5E9CBB0F-47076F93-8AEF73A0-13173FBD",
+          "Name": "Image_Hover",
+          "ParentGuid": "00000000-00000000-00000000-00000000",
+          "SpawnableObjectBindingID": {
+            "Guid": "00000000-00000000-00000000-00000000",
+            "SequenceId": 0,
+            "ResolveParentIndex": -1
+          }
+        }
+      ],
+      "ObjectBindings": [
+        {
+          "ObjectGuid": "5E9CBB0F-47076F93-8AEF73A0-13173FBD",
+          "BindingName": "Image_Hover",
+          "Tracks": [
+            {
+              "ObjectName": "MovieSceneFloatTrack'BPUI_CheckBox_switch_C:HoveredAnim_INST.HoveredAnim.MovieSceneFloatTrack_0'",
+              "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.59"
+            }
+          ]
+        }
+      ],
+      "PlaybackRange": {
+        "Value": {
+          "LowerBound": {
+            "Type": 1,
+            "Value": {
+              "Value": 0
+            }
+          },
+          "UpperBound": {
+            "Type": 0,
+            "Value": {
+              "Value": 12001
+            }
+          }
+        }
+      },
+      "DisplayRate": {
+        "Numerator": 30
+      },
+      "Signature": "E2A31715-401D4B33-AF37418D-33288B98"
+    }
+  },
+  {
+    "Type": "MovieScene",
+    "Name": "LostNavigationAnim",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieScene'",
+    "Outer": {
+      "ObjectName": "WidgetAnimation'BPUI_CheckBox_switch_C:LostNavigationAnim_INST'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.69"
+    },
+    "Properties": {
+      "Possessables": [
+        {
+          "Tags": [],
+          "Guid": "69B0EBE3-4C3A64D7-0A35F68D-7D19E526",
+          "Name": "ImgCheck_Naviable",
+          "ParentGuid": "00000000-00000000-00000000-00000000",
+          "SpawnableObjectBindingID": {
+            "Guid": "00000000-00000000-00000000-00000000",
+            "SequenceId": 0,
+            "ResolveParentIndex": -1
+          }
+        },
+        {
+          "Tags": [],
+          "Guid": "A736A514-4A6E337D-291E47A0-102547F6",
+          "Name": "ImgCheck_Naviable_Arrow",
+          "ParentGuid": "00000000-00000000-00000000-00000000",
+          "SpawnableObjectBindingID": {
+            "Guid": "00000000-00000000-00000000-00000000",
+            "SequenceId": 0,
+            "ResolveParentIndex": -1
+          }
+        }
+      ],
+      "ObjectBindings": [
+        {
+          "ObjectGuid": "69B0EBE3-4C3A64D7-0A35F68D-7D19E526",
+          "BindingName": "ImgCheck_Naviable",
+          "Tracks": [
+            {
+              "ObjectName": "MovieSceneFloatTrack'BPUI_CheckBox_switch_C:LostNavigationAnim_INST.LostNavigationAnim.MovieSceneFloatTrack_1'",
+              "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.60"
+            }
+          ]
+        },
+        {
+          "ObjectGuid": "A736A514-4A6E337D-291E47A0-102547F6",
+          "BindingName": "ImgCheck_Naviable_Arrow",
+          "Tracks": [
+            {
+              "ObjectName": "MovieSceneFloatTrack'BPUI_CheckBox_switch_C:LostNavigationAnim_INST.LostNavigationAnim.MovieSceneFloatTrack_2'",
+              "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.61"
+            }
+          ]
+        }
+      ],
+      "PlaybackRange": {
+        "Value": {
+          "LowerBound": {
+            "Type": 1,
+            "Value": {
+              "Value": 0
+            }
+          },
+          "UpperBound": {
+            "Type": 0,
+            "Value": {
+              "Value": 12001
+            }
+          }
+        }
+      },
+      "DisplayRate": {
+        "Numerator": 30
+      },
+      "Signature": "BAEF4E03-44697E76-CE8B299A-454C1E5B"
+    }
+  },
+  {
+    "Type": "MovieScene",
+    "Name": "ReceiveNavigationAnim",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieScene'",
+    "Outer": {
+      "ObjectName": "WidgetAnimation'BPUI_CheckBox_switch_C:ReceiveNavigationAnim_INST'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.70"
+    },
+    "Properties": {
+      "Possessables": [
+        {
+          "Tags": [],
+          "Guid": "8B5C7A3C-489B7330-62BF7497-00ADFEBA",
+          "Name": "ImgCheck_Naviable_Fx",
+          "ParentGuid": "00000000-00000000-00000000-00000000",
+          "SpawnableObjectBindingID": {
+            "Guid": "00000000-00000000-00000000-00000000",
+            "SequenceId": 0,
+            "ResolveParentIndex": -1
+          }
+        },
+        {
+          "Tags": [],
+          "Guid": "AD0A7E8A-4C2A3715-A8B1F5BD-5AF66CE4",
+          "Name": "ImgCheck_Naviable",
+          "ParentGuid": "00000000-00000000-00000000-00000000",
+          "SpawnableObjectBindingID": {
+            "Guid": "00000000-00000000-00000000-00000000",
+            "SequenceId": 0,
+            "ResolveParentIndex": -1
+          }
+        },
+        {
+          "Tags": [],
+          "Guid": "C51F9343-436BFDB7-7684EFA7-A96F5D96",
+          "Name": "ImgCheck_Naviable_Arrow",
+          "ParentGuid": "00000000-00000000-00000000-00000000",
+          "SpawnableObjectBindingID": {
+            "Guid": "00000000-00000000-00000000-00000000",
+            "SequenceId": 0,
+            "ResolveParentIndex": -1
+          }
+        }
+      ],
+      "ObjectBindings": [
+        {
+          "ObjectGuid": "8B5C7A3C-489B7330-62BF7497-00ADFEBA",
+          "BindingName": "ImgCheck_Naviable_Fx",
+          "Tracks": [
+            {
+              "ObjectName": "MovieSceneFloatTrack'BPUI_CheckBox_switch_C:ReceiveNavigationAnim_INST.ReceiveNavigationAnim.MovieSceneFloatTrack_3'",
+              "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.62"
+            }
+          ]
+        },
+        {
+          "ObjectGuid": "AD0A7E8A-4C2A3715-A8B1F5BD-5AF66CE4",
+          "BindingName": "ImgCheck_Naviable",
+          "Tracks": [
+            {
+              "ObjectName": "MovieSceneFloatTrack'BPUI_CheckBox_switch_C:ReceiveNavigationAnim_INST.ReceiveNavigationAnim.MovieSceneFloatTrack_4'",
+              "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.63"
+            }
+          ]
+        },
+        {
+          "ObjectGuid": "C51F9343-436BFDB7-7684EFA7-A96F5D96",
+          "BindingName": "ImgCheck_Naviable_Arrow",
+          "Tracks": [
+            {
+              "ObjectName": "MovieScene2DTransformTrack'BPUI_CheckBox_switch_C:ReceiveNavigationAnim_INST.ReceiveNavigationAnim.MovieScene2DTransformTrack_1'",
+              "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.27"
+            },
+            {
+              "ObjectName": "MovieSceneFloatTrack'BPUI_CheckBox_switch_C:ReceiveNavigationAnim_INST.ReceiveNavigationAnim.MovieSceneFloatTrack_5'",
+              "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.64"
+            }
+          ]
+        }
+      ],
+      "PlaybackRange": {
+        "Value": {
+          "LowerBound": {
+            "Type": 1,
+            "Value": {
+              "Value": 0
+            }
+          },
+          "UpperBound": {
+            "Type": 0,
+            "Value": {
+              "Value": 20001
+            }
+          }
+        }
+      },
+      "DisplayRate": {
+        "Numerator": 30
+      },
+      "Signature": "9179AC90-4433FF60-D6E48CBE-BA417175"
+    }
+  },
+  {
+    "Type": "MovieScene",
+    "Name": "SelectAnim",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieScene'",
+    "Outer": {
+      "ObjectName": "WidgetAnimation'BPUI_CheckBox_switch_C:SelectAnim_INST'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.71"
+    },
+    "Properties": {
+      "Possessables": [
+        {
+          "Tags": [],
+          "Guid": "8A667D15-40C761F0-FBD3048D-E76F756B",
+          "Name": "Image_Select",
+          "ParentGuid": "00000000-00000000-00000000-00000000",
+          "SpawnableObjectBindingID": {
+            "Guid": "00000000-00000000-00000000-00000000",
+            "SequenceId": 0,
+            "ResolveParentIndex": -1
+          }
+        }
+      ],
+      "ObjectBindings": [
+        {
+          "ObjectGuid": "8A667D15-40C761F0-FBD3048D-E76F756B",
+          "BindingName": "Image_Select",
+          "Tracks": [
+            {
+              "ObjectName": "MovieSceneFloatTrack'BPUI_CheckBox_switch_C:SelectAnim_INST.SelectAnim.MovieSceneFloatTrack_0'",
+              "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.65"
+            }
+          ]
+        }
+      ],
+      "PlaybackRange": {
+        "Value": {
+          "LowerBound": {
+            "Type": 1,
+            "Value": {
+              "Value": 0
+            }
+          },
+          "UpperBound": {
+            "Type": 0,
+            "Value": {
+              "Value": 12001
+            }
+          }
+        }
+      },
+      "DisplayRate": {
+        "Numerator": 30
+      },
+      "Signature": "E6733DB4-4538E0E0-797EC7AE-349D1504"
+    }
+  },
+  {
+    "Type": "MovieScene",
+    "Name": "UnselectAnim",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieScene'",
+    "Outer": {
+      "ObjectName": "WidgetAnimation'BPUI_CheckBox_switch_C:UnselectAnim_INST'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.72"
+    },
+    "Properties": {
+      "Possessables": [
+        {
+          "Tags": [],
+          "Guid": "8415E9A6-4211DD7A-B06541B3-2E451BFA",
+          "Name": "Image_Select",
+          "ParentGuid": "00000000-00000000-00000000-00000000",
+          "SpawnableObjectBindingID": {
+            "Guid": "00000000-00000000-00000000-00000000",
+            "SequenceId": 0,
+            "ResolveParentIndex": -1
+          }
+        }
+      ],
+      "ObjectBindings": [
+        {
+          "ObjectGuid": "8415E9A6-4211DD7A-B06541B3-2E451BFA",
+          "BindingName": "Image_Select",
+          "Tracks": [
+            {
+              "ObjectName": "MovieSceneFloatTrack'BPUI_CheckBox_switch_C:UnselectAnim_INST.UnselectAnim.MovieSceneFloatTrack_0'",
+              "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.66"
+            }
+          ]
+        }
+      ],
+      "PlaybackRange": {
+        "Value": {
+          "LowerBound": {
+            "Type": 1,
+            "Value": {
+              "Value": 0
+            }
+          },
+          "UpperBound": {
+            "Type": 0,
+            "Value": {
+              "Value": 12001
+            }
+          }
+        }
+      },
+      "DisplayRate": {
+        "Numerator": 30
+      },
+      "Signature": "F69B2A40-4E82ECCC-5EEDB399-8E850DC9"
+    }
+  },
+  {
+    "Type": "MovieScene2DTransformSection",
+    "Name": "MovieScene2DTransformSection_0",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieScene2DTransformSection'",
+    "Outer": {
+      "ObjectName": "MovieScene2DTransformTrack'BPUI_CheckBox_switch_C:ReceiveNavigationAnim_INST.ReceiveNavigationAnim.MovieScene2DTransformTrack_1'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.27"
+    },
+    "Properties": {
+      "TransformMask": {
+        "Mask": 3
+      },
+      "Translation": {
+        "PreInfinityExtrap": "RCCE_Constant",
+        "PostInfinityExtrap": "RCCE_Constant",
+        "Times": [
+          {
+            "Value": 0
+          },
+          {
+            "Value": 10000
+          },
+          {
+            "Value": 19999
+          }
+        ],
+        "Values": [
+          {
+            "Value": -20.0,
+            "Tangent": {
+              "ArriveTangent": 0.623161,
+              "LeaveTangent": 0.623161,
+              "ArriveTangentWeight": 18.708294,
+              "LeaveTangentWeight": 18.708294,
+              "TangentWeightMode": 3
+            },
+            "InterpMode": 2,
+            "TangentMode": 1
+          },
+          {
+            "Value": 1.5,
+            "Tangent": {
+              "ArriveTangent": 0.0,
+              "LeaveTangent": 0.0,
+              "ArriveTangentWeight": 0.0,
+              "LeaveTangentWeight": 0.0,
+              "TangentWeightMode": 0
+            },
+            "InterpMode": 2,
+            "TangentMode": 0
+          },
+          {
+            "Value": 0.0,
+            "Tangent": {
+              "ArriveTangent": 0.0,
+              "LeaveTangent": 0.0,
+              "ArriveTangentWeight": 0.18399,
+              "LeaveTangentWeight": 0.18399,
+              "TangentWeightMode": 3
+            },
+            "InterpMode": 2,
+            "TangentMode": 1
+          }
+        ],
+        "DefaultValue": 0.0,
+        "bHasDefaultValue": false,
+        "TickResolution": {
+          "Numerator": 60000,
+          "Denominator": 1
+        },
+        "bShowCurve": false,
+        "StructFallback": null
+      },
+      "Rotation": {
+        "PreInfinityExtrap": "RCCE_Constant",
+        "PostInfinityExtrap": "RCCE_Constant",
+        "Times": [
+          {
+            "Value": 19999
+          }
+        ],
+        "Values": [
+          {
+            "Value": -90.0,
+            "Tangent": {
+              "ArriveTangent": 0.0,
+              "LeaveTangent": 0.0,
+              "ArriveTangentWeight": 0.0,
+              "LeaveTangentWeight": 0.0,
+              "TangentWeightMode": 0
+            },
+            "InterpMode": 2,
+            "TangentMode": 0
+          }
+        ],
+        "DefaultValue": 0.0,
+        "bHasDefaultValue": false,
+        "TickResolution": {
+          "Numerator": 60000,
+          "Denominator": 1
+        },
+        "bShowCurve": false,
+        "StructFallback": null
+      },
+      "Scale": {
+        "PreInfinityExtrap": "RCCE_Constant",
+        "PostInfinityExtrap": "RCCE_Constant",
+        "Times": [
+          {
+            "Value": 19999
+          }
+        ],
+        "Values": [
+          {
+            "Value": 1.0,
+            "Tangent": {
+              "ArriveTangent": 0.0,
+              "LeaveTangent": 0.0,
+              "ArriveTangentWeight": 0.0,
+              "LeaveTangentWeight": 0.0,
+              "TangentWeightMode": 0
+            },
+            "InterpMode": 2,
+            "TangentMode": 0
+          }
+        ],
+        "DefaultValue": 0.0,
+        "bHasDefaultValue": false,
+        "TickResolution": {
+          "Numerator": 60000,
+          "Denominator": 1
+        },
+        "bShowCurve": false,
+        "StructFallback": null
+      },
+      "Scale[1]": {
+        "PreInfinityExtrap": "RCCE_Constant",
+        "PostInfinityExtrap": "RCCE_Constant",
+        "Times": [
+          {
+            "Value": 19999
+          }
+        ],
+        "Values": [
+          {
+            "Value": 1.0,
+            "Tangent": {
+              "ArriveTangent": 0.0,
+              "LeaveTangent": 0.0,
+              "ArriveTangentWeight": 0.0,
+              "LeaveTangentWeight": 0.0,
+              "TangentWeightMode": 0
+            },
+            "InterpMode": 2,
+            "TangentMode": 0
+          }
+        ],
+        "DefaultValue": 0.0,
+        "bHasDefaultValue": false,
+        "TickResolution": {
+          "Numerator": 60000,
+          "Denominator": 1
+        },
+        "bShowCurve": false,
+        "StructFallback": null
+      },
+      "Shear": {
+        "PreInfinityExtrap": "RCCE_Constant",
+        "PostInfinityExtrap": "RCCE_Constant",
+        "Times": [
+          {
+            "Value": 19999
+          }
+        ],
+        "Values": [
+          {
+            "Value": 0.0,
+            "Tangent": {
+              "ArriveTangent": 0.0,
+              "LeaveTangent": 0.0,
+              "ArriveTangentWeight": 0.0,
+              "LeaveTangentWeight": 0.0,
+              "TangentWeightMode": 0
+            },
+            "InterpMode": 2,
+            "TangentMode": 0
+          }
+        ],
+        "DefaultValue": 0.0,
+        "bHasDefaultValue": false,
+        "TickResolution": {
+          "Numerator": 60000,
+          "Denominator": 1
+        },
+        "bShowCurve": false,
+        "StructFallback": null
+      },
+      "Shear[1]": {
+        "PreInfinityExtrap": "RCCE_Constant",
+        "PostInfinityExtrap": "RCCE_Constant",
+        "Times": [
+          {
+            "Value": 19999
+          }
+        ],
+        "Values": [
+          {
+            "Value": 0.0,
+            "Tangent": {
+              "ArriveTangent": 0.0,
+              "LeaveTangent": 0.0,
+              "ArriveTangentWeight": 0.0,
+              "LeaveTangentWeight": 0.0,
+              "TangentWeightMode": 0
+            },
+            "InterpMode": 2,
+            "TangentMode": 0
+          }
+        ],
+        "DefaultValue": 0.0,
+        "bHasDefaultValue": false,
+        "TickResolution": {
+          "Numerator": 60000,
+          "Denominator": 1
+        },
+        "bShowCurve": false,
+        "StructFallback": null
+      },
+      "Easing": {
+        "EaseIn": {
+          "ObjectName": "MovieSceneBuiltInEasingFunction'BPUI_CheckBox_switch_C:ReceiveNavigationAnim_INST.ReceiveNavigationAnim.MovieScene2DTransformTrack_1.MovieScene2DTransformSection_0.EaseInFunction'",
+          "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.34"
+        },
+        "EaseOut": {
+          "ObjectName": "MovieSceneBuiltInEasingFunction'BPUI_CheckBox_switch_C:ReceiveNavigationAnim_INST.ReceiveNavigationAnim.MovieScene2DTransformTrack_1.MovieScene2DTransformSection_0.EaseOutFunction'",
+          "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.35"
+        }
+      },
+      "SectionRange": {
+        "Value": {
+          "LowerBound": {
+            "Type": 2,
+            "Value": {
+              "Value": 0
+            }
+          },
+          "UpperBound": {
+            "Type": 2,
+            "Value": {
+              "Value": 0
+            }
+          }
+        }
+      },
+      "Signature": "2196F8B9-4FFF7009-2B942AB2-74215E8C"
+    }
+  },
+  {
+    "Type": "MovieScene2DTransformTrack",
+    "Name": "MovieScene2DTransformTrack_1",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieScene2DTransformTrack'",
+    "Outer": {
+      "ObjectName": "MovieScene'BPUI_CheckBox_switch_C:ReceiveNavigationAnim_INST.ReceiveNavigationAnim'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.23"
+    },
+    "Properties": {
+      "PropertyBinding": {
+        "PropertyName": "RenderTransform",
+        "PropertyPath": "RenderTransform",
+        "bCanUseClassLookup": true
+      },
+      "Sections": [
+        {
+          "ObjectName": "MovieScene2DTransformSection'BPUI_CheckBox_switch_C:ReceiveNavigationAnim_INST.ReceiveNavigationAnim.MovieScene2DTransformTrack_1.MovieScene2DTransformSection_0'",
+          "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.26"
+        }
+      ],
+      "EvaluationFieldGuid": "6787B98E-4300A998-E379C7B5-F1AB52E9",
+      "EvaluationField": {
+        "Entries": [
+          {
+            "Section": {
+              "ObjectName": "MovieScene2DTransformSection'BPUI_CheckBox_switch_C:ReceiveNavigationAnim_INST.ReceiveNavigationAnim.MovieScene2DTransformTrack_1.MovieScene2DTransformSection_0'",
+              "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.26"
+            },
+            "Range": {
+              "LowerBound": {
+                "Type": "ERangeBoundTypes::Open",
+                "Value": {
+                  "Value": 0
+                }
+              },
+              "UpperBound": {
+                "Type": "ERangeBoundTypes::Open",
+                "Value": {
+                  "Value": 0
+                }
+              }
+            },
+            "ForcedTime": {
+              "Value": -2147483648
+            },
+            "Flags": "ESectionEvaluationFlags::None",
+            "LegacySortOrder": 0
+          }
+        ]
+      },
+      "Signature": "6787B98E-4300A998-E379C7B5-F1AB52E9"
+    }
+  },
+  {
+    "Type": "MovieSceneBuiltInEasingFunction",
+    "Name": "EaseInFunction",
+    "Flags": "RF_Public | RF_Transactional | RF_DefaultSubObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneBuiltInEasingFunction'",
+    "Outer": {
+      "ObjectName": "MovieSceneFloatSection'BPUI_CheckBox_switch_C:HoveredAnim_INST.HoveredAnim.MovieSceneFloatTrack_0.MovieSceneFloatSection_0'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.51"
+    }
+  },
+  {
+    "Type": "MovieSceneBuiltInEasingFunction",
+    "Name": "EaseOutFunction",
+    "Flags": "RF_Public | RF_Transactional | RF_DefaultSubObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneBuiltInEasingFunction'",
+    "Outer": {
+      "ObjectName": "MovieSceneFloatSection'BPUI_CheckBox_switch_C:HoveredAnim_INST.HoveredAnim.MovieSceneFloatTrack_0.MovieSceneFloatSection_0'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.51"
+    }
+  },
+  {
+    "Type": "MovieSceneBuiltInEasingFunction",
+    "Name": "EaseInFunction",
+    "Flags": "RF_Public | RF_Transactional | RF_DefaultSubObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneBuiltInEasingFunction'",
+    "Outer": {
+      "ObjectName": "MovieSceneFloatSection'BPUI_CheckBox_switch_C:LostNavigationAnim_INST.LostNavigationAnim.MovieSceneFloatTrack_1.MovieSceneFloatSection_0'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.52"
+    }
+  },
+  {
+    "Type": "MovieSceneBuiltInEasingFunction",
+    "Name": "EaseOutFunction",
+    "Flags": "RF_Public | RF_Transactional | RF_DefaultSubObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneBuiltInEasingFunction'",
+    "Outer": {
+      "ObjectName": "MovieSceneFloatSection'BPUI_CheckBox_switch_C:LostNavigationAnim_INST.LostNavigationAnim.MovieSceneFloatTrack_1.MovieSceneFloatSection_0'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.52"
+    }
+  },
+  {
+    "Type": "MovieSceneBuiltInEasingFunction",
+    "Name": "EaseInFunction",
+    "Flags": "RF_Public | RF_Transactional | RF_DefaultSubObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneBuiltInEasingFunction'",
+    "Outer": {
+      "ObjectName": "MovieSceneFloatSection'BPUI_CheckBox_switch_C:LostNavigationAnim_INST.LostNavigationAnim.MovieSceneFloatTrack_2.MovieSceneFloatSection_0'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.53"
+    }
+  },
+  {
+    "Type": "MovieSceneBuiltInEasingFunction",
+    "Name": "EaseOutFunction",
+    "Flags": "RF_Public | RF_Transactional | RF_DefaultSubObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneBuiltInEasingFunction'",
+    "Outer": {
+      "ObjectName": "MovieSceneFloatSection'BPUI_CheckBox_switch_C:LostNavigationAnim_INST.LostNavigationAnim.MovieSceneFloatTrack_2.MovieSceneFloatSection_0'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.53"
+    }
+  },
+  {
+    "Type": "MovieSceneBuiltInEasingFunction",
+    "Name": "EaseInFunction",
+    "Flags": "RF_Public | RF_Transactional | RF_DefaultSubObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneBuiltInEasingFunction'",
+    "Outer": {
+      "ObjectName": "MovieScene2DTransformSection'BPUI_CheckBox_switch_C:ReceiveNavigationAnim_INST.ReceiveNavigationAnim.MovieScene2DTransformTrack_1.MovieScene2DTransformSection_0'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.26"
+    }
+  },
+  {
+    "Type": "MovieSceneBuiltInEasingFunction",
+    "Name": "EaseOutFunction",
+    "Flags": "RF_Public | RF_Transactional | RF_DefaultSubObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneBuiltInEasingFunction'",
+    "Outer": {
+      "ObjectName": "MovieScene2DTransformSection'BPUI_CheckBox_switch_C:ReceiveNavigationAnim_INST.ReceiveNavigationAnim.MovieScene2DTransformTrack_1.MovieScene2DTransformSection_0'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.26"
+    }
+  },
+  {
+    "Type": "MovieSceneBuiltInEasingFunction",
+    "Name": "EaseInFunction",
+    "Flags": "RF_Public | RF_Transactional | RF_DefaultSubObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneBuiltInEasingFunction'",
+    "Outer": {
+      "ObjectName": "MovieSceneFloatSection'BPUI_CheckBox_switch_C:ReceiveNavigationAnim_INST.ReceiveNavigationAnim.MovieSceneFloatTrack_3.MovieSceneFloatSection_0'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.54"
+    }
+  },
+  {
+    "Type": "MovieSceneBuiltInEasingFunction",
+    "Name": "EaseOutFunction",
+    "Flags": "RF_Public | RF_Transactional | RF_DefaultSubObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneBuiltInEasingFunction'",
+    "Outer": {
+      "ObjectName": "MovieSceneFloatSection'BPUI_CheckBox_switch_C:ReceiveNavigationAnim_INST.ReceiveNavigationAnim.MovieSceneFloatTrack_3.MovieSceneFloatSection_0'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.54"
+    }
+  },
+  {
+    "Type": "MovieSceneBuiltInEasingFunction",
+    "Name": "EaseInFunction",
+    "Flags": "RF_Public | RF_Transactional | RF_DefaultSubObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneBuiltInEasingFunction'",
+    "Outer": {
+      "ObjectName": "MovieSceneFloatSection'BPUI_CheckBox_switch_C:ReceiveNavigationAnim_INST.ReceiveNavigationAnim.MovieSceneFloatTrack_4.MovieSceneFloatSection_0'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.55"
+    }
+  },
+  {
+    "Type": "MovieSceneBuiltInEasingFunction",
+    "Name": "EaseOutFunction",
+    "Flags": "RF_Public | RF_Transactional | RF_DefaultSubObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneBuiltInEasingFunction'",
+    "Outer": {
+      "ObjectName": "MovieSceneFloatSection'BPUI_CheckBox_switch_C:ReceiveNavigationAnim_INST.ReceiveNavigationAnim.MovieSceneFloatTrack_4.MovieSceneFloatSection_0'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.55"
+    }
+  },
+  {
+    "Type": "MovieSceneBuiltInEasingFunction",
+    "Name": "EaseInFunction",
+    "Flags": "RF_Public | RF_Transactional | RF_DefaultSubObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneBuiltInEasingFunction'",
+    "Outer": {
+      "ObjectName": "MovieSceneFloatSection'BPUI_CheckBox_switch_C:ReceiveNavigationAnim_INST.ReceiveNavigationAnim.MovieSceneFloatTrack_5.MovieSceneFloatSection_0'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.56"
+    }
+  },
+  {
+    "Type": "MovieSceneBuiltInEasingFunction",
+    "Name": "EaseOutFunction",
+    "Flags": "RF_Public | RF_Transactional | RF_DefaultSubObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneBuiltInEasingFunction'",
+    "Outer": {
+      "ObjectName": "MovieSceneFloatSection'BPUI_CheckBox_switch_C:ReceiveNavigationAnim_INST.ReceiveNavigationAnim.MovieSceneFloatTrack_5.MovieSceneFloatSection_0'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.56"
+    }
+  },
+  {
+    "Type": "MovieSceneBuiltInEasingFunction",
+    "Name": "EaseInFunction",
+    "Flags": "RF_Public | RF_Transactional | RF_DefaultSubObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneBuiltInEasingFunction'",
+    "Outer": {
+      "ObjectName": "MovieSceneFloatSection'BPUI_CheckBox_switch_C:SelectAnim_INST.SelectAnim.MovieSceneFloatTrack_0.MovieSceneFloatSection_0'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.57"
+    }
+  },
+  {
+    "Type": "MovieSceneBuiltInEasingFunction",
+    "Name": "EaseOutFunction",
+    "Flags": "RF_Public | RF_Transactional | RF_DefaultSubObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneBuiltInEasingFunction'",
+    "Outer": {
+      "ObjectName": "MovieSceneFloatSection'BPUI_CheckBox_switch_C:SelectAnim_INST.SelectAnim.MovieSceneFloatTrack_0.MovieSceneFloatSection_0'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.57"
+    }
+  },
+  {
+    "Type": "MovieSceneBuiltInEasingFunction",
+    "Name": "EaseInFunction",
+    "Flags": "RF_Public | RF_Transactional | RF_DefaultSubObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneBuiltInEasingFunction'",
+    "Outer": {
+      "ObjectName": "MovieSceneFloatSection'BPUI_CheckBox_switch_C:UnselectAnim_INST.UnselectAnim.MovieSceneFloatTrack_0.MovieSceneFloatSection_0'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.58"
+    }
+  },
+  {
+    "Type": "MovieSceneBuiltInEasingFunction",
+    "Name": "EaseOutFunction",
+    "Flags": "RF_Public | RF_Transactional | RF_DefaultSubObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneBuiltInEasingFunction'",
+    "Outer": {
+      "ObjectName": "MovieSceneFloatSection'BPUI_CheckBox_switch_C:UnselectAnim_INST.UnselectAnim.MovieSceneFloatTrack_0.MovieSceneFloatSection_0'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.58"
+    }
+  },
+  {
+    "Type": "MovieSceneCompiledData",
+    "Name": "CompiledData",
+    "Flags": "RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneCompiledData'",
+    "Outer": {
+      "ObjectName": "WidgetAnimation'BPUI_CheckBox_switch_C:HoveredAnim_INST'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.68"
+    },
+    "Properties": {
+      "EntityComponentField": {
+        "PersistentEntityTree": {
+          "SerializedData": {
+            "Data": {
+              "Entries": [
+                {
+                  "StartIndex": 0,
+                  "Size": 1,
+                  "Capacity": 1
+                }
+              ],
+              "Items": [
+                {
+                  "EntityIndex": 0,
+                  "MetaDataIndex": -1
+                }
+              ]
+            },
+            "RootNode": {
+              "Range": {
+                "LowerBound": {
+                  "Type": 2,
+                  "Value": {
+                    "Value": 0
+                  }
+                },
+                "UpperBound": {
+                  "Type": 2,
+                  "Value": {
+                    "Value": 0
+                  }
+                }
+              },
+              "Parent": {
+                "ChildrenHandle": {
+                  "EntryIndex": -1
+                },
+                "Index": -1
+              },
+              "ChildrenID": {
+                "EntryIndex": -1
+              },
+              "DataID": {
+                "EntryIndex": 0
+              }
+            },
+            "ChildNodes": {
+              "Entries": [],
+              "Items": []
+            }
+          }
+        },
+        "Entities": [
+          {
+            "Key": {
+              "EntityOwner": {
+                "ObjectName": "MovieSceneFloatSection'BPUI_CheckBox_switch_C:HoveredAnim_INST.HoveredAnim.MovieSceneFloatTrack_0.MovieSceneFloatSection_0'",
+                "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.51"
+              },
+              "EntityID": 0
+            },
+            "SharedMetaDataIndex": 0
+          }
+        ],
+        "SharedMetaData": [
+          {
+            "ObjectBindingID": "5E9CBB0F-47076F93-8AEF73A0-13173FBD"
+          }
+        ]
+      },
+      "CompiledSignature": "825680F0-4D5F4802-CC4ACA9D-DCE2D7F8",
+      "CompilerVersion": "7D4B9809-2FAC4A6B-964ECF72-D8279EF8",
+      "AccumulatedMask": "EMovieSceneSequenceCompilerMask::EntityComponentField",
+      "AllocatedMask": "EMovieSceneSequenceCompilerMask::EntityComponentField"
+    }
+  },
+  {
+    "Type": "MovieSceneCompiledData",
+    "Name": "CompiledData",
+    "Flags": "RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneCompiledData'",
+    "Outer": {
+      "ObjectName": "WidgetAnimation'BPUI_CheckBox_switch_C:LostNavigationAnim_INST'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.69"
+    },
+    "Properties": {
+      "EntityComponentField": {
+        "PersistentEntityTree": {
+          "SerializedData": {
+            "Data": {
+              "Entries": [
+                {
+                  "StartIndex": 0,
+                  "Size": 2,
+                  "Capacity": 2
+                }
+              ],
+              "Items": [
+                {
+                  "EntityIndex": 0,
+                  "MetaDataIndex": -1
+                },
+                {
+                  "EntityIndex": 1,
+                  "MetaDataIndex": -1
+                }
+              ]
+            },
+            "RootNode": {
+              "Range": {
+                "LowerBound": {
+                  "Type": 2,
+                  "Value": {
+                    "Value": 0
+                  }
+                },
+                "UpperBound": {
+                  "Type": 2,
+                  "Value": {
+                    "Value": 0
+                  }
+                }
+              },
+              "Parent": {
+                "ChildrenHandle": {
+                  "EntryIndex": -1
+                },
+                "Index": -1
+              },
+              "ChildrenID": {
+                "EntryIndex": -1
+              },
+              "DataID": {
+                "EntryIndex": 0
+              }
+            },
+            "ChildNodes": {
+              "Entries": [],
+              "Items": []
+            }
+          }
+        },
+        "Entities": [
+          {
+            "Key": {
+              "EntityOwner": {
+                "ObjectName": "MovieSceneFloatSection'BPUI_CheckBox_switch_C:LostNavigationAnim_INST.LostNavigationAnim.MovieSceneFloatTrack_1.MovieSceneFloatSection_0'",
+                "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.52"
+              },
+              "EntityID": 0
+            },
+            "SharedMetaDataIndex": 0
+          },
+          {
+            "Key": {
+              "EntityOwner": {
+                "ObjectName": "MovieSceneFloatSection'BPUI_CheckBox_switch_C:LostNavigationAnim_INST.LostNavigationAnim.MovieSceneFloatTrack_2.MovieSceneFloatSection_0'",
+                "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.53"
+              },
+              "EntityID": 0
+            },
+            "SharedMetaDataIndex": 1
+          }
+        ],
+        "SharedMetaData": [
+          {
+            "ObjectBindingID": "69B0EBE3-4C3A64D7-0A35F68D-7D19E526"
+          },
+          {
+            "ObjectBindingID": "A736A514-4A6E337D-291E47A0-102547F6"
+          }
+        ]
+      },
+      "CompiledSignature": "0340A62F-46546193-B198F3B8-53C0802D",
+      "CompilerVersion": "7D4B9809-2FAC4A6B-964ECF72-D8279EF8",
+      "AccumulatedMask": "EMovieSceneSequenceCompilerMask::EntityComponentField",
+      "AllocatedMask": "EMovieSceneSequenceCompilerMask::EntityComponentField"
+    }
+  },
+  {
+    "Type": "MovieSceneCompiledData",
+    "Name": "CompiledData",
+    "Flags": "RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneCompiledData'",
+    "Outer": {
+      "ObjectName": "WidgetAnimation'BPUI_CheckBox_switch_C:ReceiveNavigationAnim_INST'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.70"
+    },
+    "Properties": {
+      "EntityComponentField": {
+        "PersistentEntityTree": {
+          "SerializedData": {
+            "Data": {
+              "Entries": [
+                {
+                  "StartIndex": 0,
+                  "Size": 4,
+                  "Capacity": 4
+                }
+              ],
+              "Items": [
+                {
+                  "EntityIndex": 0,
+                  "MetaDataIndex": -1
+                },
+                {
+                  "EntityIndex": 1,
+                  "MetaDataIndex": -1
+                },
+                {
+                  "EntityIndex": 2,
+                  "MetaDataIndex": -1
+                },
+                {
+                  "EntityIndex": 3,
+                  "MetaDataIndex": -1
+                }
+              ]
+            },
+            "RootNode": {
+              "Range": {
+                "LowerBound": {
+                  "Type": 2,
+                  "Value": {
+                    "Value": 0
+                  }
+                },
+                "UpperBound": {
+                  "Type": 2,
+                  "Value": {
+                    "Value": 0
+                  }
+                }
+              },
+              "Parent": {
+                "ChildrenHandle": {
+                  "EntryIndex": -1
+                },
+                "Index": -1
+              },
+              "ChildrenID": {
+                "EntryIndex": -1
+              },
+              "DataID": {
+                "EntryIndex": 0
+              }
+            },
+            "ChildNodes": {
+              "Entries": [],
+              "Items": []
+            }
+          }
+        },
+        "Entities": [
+          {
+            "Key": {
+              "EntityOwner": {
+                "ObjectName": "MovieSceneFloatSection'BPUI_CheckBox_switch_C:ReceiveNavigationAnim_INST.ReceiveNavigationAnim.MovieSceneFloatTrack_3.MovieSceneFloatSection_0'",
+                "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.54"
+              },
+              "EntityID": 0
+            },
+            "SharedMetaDataIndex": 0
+          },
+          {
+            "Key": {
+              "EntityOwner": {
+                "ObjectName": "MovieSceneFloatSection'BPUI_CheckBox_switch_C:ReceiveNavigationAnim_INST.ReceiveNavigationAnim.MovieSceneFloatTrack_4.MovieSceneFloatSection_0'",
+                "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.55"
+              },
+              "EntityID": 0
+            },
+            "SharedMetaDataIndex": 1
+          },
+          {
+            "Key": {
+              "EntityOwner": {
+                "ObjectName": "MovieScene2DTransformSection'BPUI_CheckBox_switch_C:ReceiveNavigationAnim_INST.ReceiveNavigationAnim.MovieScene2DTransformTrack_1.MovieScene2DTransformSection_0'",
+                "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.26"
+              },
+              "EntityID": 0
+            },
+            "SharedMetaDataIndex": 2
+          },
+          {
+            "Key": {
+              "EntityOwner": {
+                "ObjectName": "MovieSceneFloatSection'BPUI_CheckBox_switch_C:ReceiveNavigationAnim_INST.ReceiveNavigationAnim.MovieSceneFloatTrack_5.MovieSceneFloatSection_0'",
+                "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.56"
+              },
+              "EntityID": 0
+            },
+            "SharedMetaDataIndex": 3
+          }
+        ],
+        "SharedMetaData": [
+          {
+            "ObjectBindingID": "8B5C7A3C-489B7330-62BF7497-00ADFEBA"
+          },
+          {
+            "ObjectBindingID": "AD0A7E8A-4C2A3715-A8B1F5BD-5AF66CE4"
+          },
+          {
+            "ObjectBindingID": "C51F9343-436BFDB7-7684EFA7-A96F5D96"
+          },
+          {
+            "ObjectBindingID": "C51F9343-436BFDB7-7684EFA7-A96F5D96"
+          }
+        ]
+      },
+      "CompiledSignature": "626A7E5C-48A50DB2-5B3D31A9-D8C757FE",
+      "CompilerVersion": "7D4B9809-2FAC4A6B-964ECF72-D8279EF8",
+      "AccumulatedMask": "EMovieSceneSequenceCompilerMask::EntityComponentField",
+      "AllocatedMask": "EMovieSceneSequenceCompilerMask::EntityComponentField"
+    }
+  },
+  {
+    "Type": "MovieSceneCompiledData",
+    "Name": "CompiledData",
+    "Flags": "RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneCompiledData'",
+    "Outer": {
+      "ObjectName": "WidgetAnimation'BPUI_CheckBox_switch_C:SelectAnim_INST'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.71"
+    },
+    "Properties": {
+      "EntityComponentField": {
+        "PersistentEntityTree": {
+          "SerializedData": {
+            "Data": {
+              "Entries": [
+                {
+                  "StartIndex": 0,
+                  "Size": 1,
+                  "Capacity": 1
+                }
+              ],
+              "Items": [
+                {
+                  "EntityIndex": 0,
+                  "MetaDataIndex": -1
+                }
+              ]
+            },
+            "RootNode": {
+              "Range": {
+                "LowerBound": {
+                  "Type": 2,
+                  "Value": {
+                    "Value": 0
+                  }
+                },
+                "UpperBound": {
+                  "Type": 2,
+                  "Value": {
+                    "Value": 0
+                  }
+                }
+              },
+              "Parent": {
+                "ChildrenHandle": {
+                  "EntryIndex": -1
+                },
+                "Index": -1
+              },
+              "ChildrenID": {
+                "EntryIndex": -1
+              },
+              "DataID": {
+                "EntryIndex": 0
+              }
+            },
+            "ChildNodes": {
+              "Entries": [],
+              "Items": []
+            }
+          }
+        },
+        "Entities": [
+          {
+            "Key": {
+              "EntityOwner": {
+                "ObjectName": "MovieSceneFloatSection'BPUI_CheckBox_switch_C:SelectAnim_INST.SelectAnim.MovieSceneFloatTrack_0.MovieSceneFloatSection_0'",
+                "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.57"
+              },
+              "EntityID": 0
+            },
+            "SharedMetaDataIndex": 0
+          }
+        ],
+        "SharedMetaData": [
+          {
+            "ObjectBindingID": "8A667D15-40C761F0-FBD3048D-E76F756B"
+          }
+        ]
+      },
+      "CompiledSignature": "0A3DDEA5-4B07F0B6-90C74FA2-ABE1EF63",
+      "CompilerVersion": "7D4B9809-2FAC4A6B-964ECF72-D8279EF8",
+      "AccumulatedMask": "EMovieSceneSequenceCompilerMask::EntityComponentField",
+      "AllocatedMask": "EMovieSceneSequenceCompilerMask::EntityComponentField"
+    }
+  },
+  {
+    "Type": "MovieSceneCompiledData",
+    "Name": "CompiledData",
+    "Flags": "RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneCompiledData'",
+    "Outer": {
+      "ObjectName": "WidgetAnimation'BPUI_CheckBox_switch_C:UnselectAnim_INST'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.72"
+    },
+    "Properties": {
+      "EntityComponentField": {
+        "PersistentEntityTree": {
+          "SerializedData": {
+            "Data": {
+              "Entries": [
+                {
+                  "StartIndex": 0,
+                  "Size": 1,
+                  "Capacity": 1
+                }
+              ],
+              "Items": [
+                {
+                  "EntityIndex": 0,
+                  "MetaDataIndex": -1
+                }
+              ]
+            },
+            "RootNode": {
+              "Range": {
+                "LowerBound": {
+                  "Type": 2,
+                  "Value": {
+                    "Value": 0
+                  }
+                },
+                "UpperBound": {
+                  "Type": 2,
+                  "Value": {
+                    "Value": 0
+                  }
+                }
+              },
+              "Parent": {
+                "ChildrenHandle": {
+                  "EntryIndex": -1
+                },
+                "Index": -1
+              },
+              "ChildrenID": {
+                "EntryIndex": -1
+              },
+              "DataID": {
+                "EntryIndex": 0
+              }
+            },
+            "ChildNodes": {
+              "Entries": [],
+              "Items": []
+            }
+          }
+        },
+        "Entities": [
+          {
+            "Key": {
+              "EntityOwner": {
+                "ObjectName": "MovieSceneFloatSection'BPUI_CheckBox_switch_C:UnselectAnim_INST.UnselectAnim.MovieSceneFloatTrack_0.MovieSceneFloatSection_0'",
+                "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.58"
+              },
+              "EntityID": 0
+            },
+            "SharedMetaDataIndex": 0
+          }
+        ],
+        "SharedMetaData": [
+          {
+            "ObjectBindingID": "8415E9A6-4211DD7A-B06541B3-2E451BFA"
+          }
+        ]
+      },
+      "CompiledSignature": "946E5D4B-4F2C6AF0-763839BF-A831210F",
+      "CompilerVersion": "7D4B9809-2FAC4A6B-964ECF72-D8279EF8",
+      "AccumulatedMask": "EMovieSceneSequenceCompilerMask::EntityComponentField",
+      "AllocatedMask": "EMovieSceneSequenceCompilerMask::EntityComponentField"
+    }
+  },
+  {
+    "Type": "MovieSceneFloatSection",
+    "Name": "MovieSceneFloatSection_0",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneFloatSection'",
+    "Outer": {
+      "ObjectName": "MovieSceneFloatTrack'BPUI_CheckBox_switch_C:HoveredAnim_INST.HoveredAnim.MovieSceneFloatTrack_0'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.59"
+    },
+    "Properties": {
+      "FloatCurve": {
+        "PreInfinityExtrap": "RCCE_Constant",
+        "PostInfinityExtrap": "RCCE_Constant",
+        "Times": [
+          {
+            "Value": 0
+          },
+          {
+            "Value": 12000
+          }
+        ],
+        "Values": [
+          {
+            "Value": 0.0,
+            "Tangent": {
+              "ArriveTangent": 0.0,
+              "LeaveTangent": 0.0,
+              "ArriveTangentWeight": 0.0,
+              "LeaveTangentWeight": 0.0,
+              "TangentWeightMode": 0
+            },
+            "InterpMode": 0,
+            "TangentMode": 0
+          },
+          {
+            "Value": 1.0,
+            "Tangent": {
+              "ArriveTangent": 0.0,
+              "LeaveTangent": 0.0,
+              "ArriveTangentWeight": 0.0,
+              "LeaveTangentWeight": 0.0,
+              "TangentWeightMode": 0
+            },
+            "InterpMode": 0,
+            "TangentMode": 0
+          }
+        ],
+        "DefaultValue": 0.0,
+        "bHasDefaultValue": false,
+        "TickResolution": {
+          "Numerator": 60000,
+          "Denominator": 1
+        },
+        "bShowCurve": false,
+        "StructFallback": null
+      },
+      "Easing": {
+        "EaseIn": {
+          "ObjectName": "MovieSceneBuiltInEasingFunction'BPUI_CheckBox_switch_C:HoveredAnim_INST.HoveredAnim.MovieSceneFloatTrack_0.MovieSceneFloatSection_0.EaseInFunction'",
+          "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.28"
+        },
+        "EaseOut": {
+          "ObjectName": "MovieSceneBuiltInEasingFunction'BPUI_CheckBox_switch_C:HoveredAnim_INST.HoveredAnim.MovieSceneFloatTrack_0.MovieSceneFloatSection_0.EaseOutFunction'",
+          "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.29"
+        }
+      },
+      "SectionRange": {
+        "Value": {
+          "LowerBound": {
+            "Type": 2,
+            "Value": {
+              "Value": 0
+            }
+          },
+          "UpperBound": {
+            "Type": 2,
+            "Value": {
+              "Value": 0
+            }
+          }
+        }
+      },
+      "Signature": "1F120252-427DD293-E6959BA3-52C62DA1"
+    }
+  },
+  {
+    "Type": "MovieSceneFloatSection",
+    "Name": "MovieSceneFloatSection_0",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneFloatSection'",
+    "Outer": {
+      "ObjectName": "MovieSceneFloatTrack'BPUI_CheckBox_switch_C:LostNavigationAnim_INST.LostNavigationAnim.MovieSceneFloatTrack_1'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.60"
+    },
+    "Properties": {
+      "FloatCurve": {
+        "PreInfinityExtrap": "RCCE_Constant",
+        "PostInfinityExtrap": "RCCE_Constant",
+        "Times": [
+          {
+            "Value": 0
+          },
+          {
+            "Value": 12000
+          }
+        ],
+        "Values": [
+          {
+            "Value": 1.0,
+            "Tangent": {
+              "ArriveTangent": 0.0,
+              "LeaveTangent": 0.0,
+              "ArriveTangentWeight": 0.0,
+              "LeaveTangentWeight": 0.0,
+              "TangentWeightMode": 0
+            },
+            "InterpMode": 0,
+            "TangentMode": 0
+          },
+          {
+            "Value": 0.0,
+            "Tangent": {
+              "ArriveTangent": 0.0,
+              "LeaveTangent": 0.0,
+              "ArriveTangentWeight": 0.0,
+              "LeaveTangentWeight": 0.0,
+              "TangentWeightMode": 0
+            },
+            "InterpMode": 0,
+            "TangentMode": 0
+          }
+        ],
+        "DefaultValue": 0.0,
+        "bHasDefaultValue": false,
+        "TickResolution": {
+          "Numerator": 60000,
+          "Denominator": 1
+        },
+        "bShowCurve": false,
+        "StructFallback": null
+      },
+      "Easing": {
+        "EaseIn": {
+          "ObjectName": "MovieSceneBuiltInEasingFunction'BPUI_CheckBox_switch_C:LostNavigationAnim_INST.LostNavigationAnim.MovieSceneFloatTrack_1.MovieSceneFloatSection_0.EaseInFunction'",
+          "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.30"
+        },
+        "EaseOut": {
+          "ObjectName": "MovieSceneBuiltInEasingFunction'BPUI_CheckBox_switch_C:LostNavigationAnim_INST.LostNavigationAnim.MovieSceneFloatTrack_1.MovieSceneFloatSection_0.EaseOutFunction'",
+          "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.31"
+        }
+      },
+      "SectionRange": {
+        "Value": {
+          "LowerBound": {
+            "Type": 2,
+            "Value": {
+              "Value": 0
+            }
+          },
+          "UpperBound": {
+            "Type": 2,
+            "Value": {
+              "Value": 0
+            }
+          }
+        }
+      },
+      "Signature": "B2530769-4528C189-424615A1-D5D83175"
+    }
+  },
+  {
+    "Type": "MovieSceneFloatSection",
+    "Name": "MovieSceneFloatSection_0",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneFloatSection'",
+    "Outer": {
+      "ObjectName": "MovieSceneFloatTrack'BPUI_CheckBox_switch_C:LostNavigationAnim_INST.LostNavigationAnim.MovieSceneFloatTrack_2'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.61"
+    },
+    "Properties": {
+      "FloatCurve": {
+        "PreInfinityExtrap": "RCCE_Constant",
+        "PostInfinityExtrap": "RCCE_Constant",
+        "Times": [
+          {
+            "Value": 0
+          },
+          {
+            "Value": 12000
+          }
+        ],
+        "Values": [
+          {
+            "Value": 1.0,
+            "Tangent": {
+              "ArriveTangent": 0.0,
+              "LeaveTangent": 0.0,
+              "ArriveTangentWeight": 0.0,
+              "LeaveTangentWeight": 0.0,
+              "TangentWeightMode": 0
+            },
+            "InterpMode": 0,
+            "TangentMode": 0
+          },
+          {
+            "Value": 0.0,
+            "Tangent": {
+              "ArriveTangent": 0.0,
+              "LeaveTangent": 0.0,
+              "ArriveTangentWeight": 0.0,
+              "LeaveTangentWeight": 0.0,
+              "TangentWeightMode": 0
+            },
+            "InterpMode": 0,
+            "TangentMode": 0
+          }
+        ],
+        "DefaultValue": 0.0,
+        "bHasDefaultValue": false,
+        "TickResolution": {
+          "Numerator": 60000,
+          "Denominator": 1
+        },
+        "bShowCurve": false,
+        "StructFallback": null
+      },
+      "Easing": {
+        "EaseIn": {
+          "ObjectName": "MovieSceneBuiltInEasingFunction'BPUI_CheckBox_switch_C:LostNavigationAnim_INST.LostNavigationAnim.MovieSceneFloatTrack_2.MovieSceneFloatSection_0.EaseInFunction'",
+          "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.32"
+        },
+        "EaseOut": {
+          "ObjectName": "MovieSceneBuiltInEasingFunction'BPUI_CheckBox_switch_C:LostNavigationAnim_INST.LostNavigationAnim.MovieSceneFloatTrack_2.MovieSceneFloatSection_0.EaseOutFunction'",
+          "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.33"
+        }
+      },
+      "SectionRange": {
+        "Value": {
+          "LowerBound": {
+            "Type": 2,
+            "Value": {
+              "Value": 0
+            }
+          },
+          "UpperBound": {
+            "Type": 2,
+            "Value": {
+              "Value": 0
+            }
+          }
+        }
+      },
+      "Signature": "A7F6828F-48BAA344-74527DB0-B32713D9"
+    }
+  },
+  {
+    "Type": "MovieSceneFloatSection",
+    "Name": "MovieSceneFloatSection_0",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneFloatSection'",
+    "Outer": {
+      "ObjectName": "MovieSceneFloatTrack'BPUI_CheckBox_switch_C:ReceiveNavigationAnim_INST.ReceiveNavigationAnim.MovieSceneFloatTrack_3'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.62"
+    },
+    "Properties": {
+      "FloatCurve": {
+        "PreInfinityExtrap": "RCCE_Constant",
+        "PostInfinityExtrap": "RCCE_Constant",
+        "Times": [
+          {
+            "Value": 0
+          },
+          {
+            "Value": 4000
+          },
+          {
+            "Value": 14000
+          },
+          {
+            "Value": 20000
+          }
+        ],
+        "Values": [
+          {
+            "Value": 0.0,
+            "Tangent": {
+              "ArriveTangent": 0.0,
+              "LeaveTangent": 0.0,
+              "ArriveTangentWeight": 0.043138,
+              "LeaveTangentWeight": 0.043138,
+              "TangentWeightMode": 3
+            },
+            "InterpMode": 0,
+            "TangentMode": 0
+          },
+          {
+            "Value": 1.0,
+            "Tangent": {
+              "ArriveTangent": 0.0,
+              "LeaveTangent": 0.0,
+              "ArriveTangentWeight": 0.0,
+              "LeaveTangentWeight": 0.0,
+              "TangentWeightMode": 0
+            },
+            "InterpMode": 0,
+            "TangentMode": 0
+          },
+          {
+            "Value": 0.0,
+            "Tangent": {
+              "ArriveTangent": 0.0,
+              "LeaveTangent": 0.0,
+              "ArriveTangentWeight": 0.0,
+              "LeaveTangentWeight": 0.0,
+              "TangentWeightMode": 0
+            },
+            "InterpMode": 0,
+            "TangentMode": 0
+          },
+          {
+            "Value": 0.0,
+            "Tangent": {
+              "ArriveTangent": 0.0,
+              "LeaveTangent": 0.0,
+              "ArriveTangentWeight": 0.0,
+              "LeaveTangentWeight": 0.0,
+              "TangentWeightMode": 0
+            },
+            "InterpMode": 0,
+            "TangentMode": 0
+          }
+        ],
+        "DefaultValue": 0.0,
+        "bHasDefaultValue": false,
+        "TickResolution": {
+          "Numerator": 60000,
+          "Denominator": 1
+        },
+        "bShowCurve": false,
+        "StructFallback": null
+      },
+      "Easing": {
+        "EaseIn": {
+          "ObjectName": "MovieSceneBuiltInEasingFunction'BPUI_CheckBox_switch_C:ReceiveNavigationAnim_INST.ReceiveNavigationAnim.MovieSceneFloatTrack_3.MovieSceneFloatSection_0.EaseInFunction'",
+          "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.36"
+        },
+        "EaseOut": {
+          "ObjectName": "MovieSceneBuiltInEasingFunction'BPUI_CheckBox_switch_C:ReceiveNavigationAnim_INST.ReceiveNavigationAnim.MovieSceneFloatTrack_3.MovieSceneFloatSection_0.EaseOutFunction'",
+          "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.37"
+        }
+      },
+      "SectionRange": {
+        "Value": {
+          "LowerBound": {
+            "Type": 2,
+            "Value": {
+              "Value": 0
+            }
+          },
+          "UpperBound": {
+            "Type": 2,
+            "Value": {
+              "Value": 0
+            }
+          }
+        }
+      },
+      "Signature": "597A878F-4F786855-0DCC69B8-F2F5B8AF"
+    }
+  },
+  {
+    "Type": "MovieSceneFloatSection",
+    "Name": "MovieSceneFloatSection_0",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneFloatSection'",
+    "Outer": {
+      "ObjectName": "MovieSceneFloatTrack'BPUI_CheckBox_switch_C:ReceiveNavigationAnim_INST.ReceiveNavigationAnim.MovieSceneFloatTrack_4'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.63"
+    },
+    "Properties": {
+      "FloatCurve": {
+        "PreInfinityExtrap": "RCCE_Constant",
+        "PostInfinityExtrap": "RCCE_Constant",
+        "Times": [
+          {
+            "Value": 0
+          },
+          {
+            "Value": 10000
+          },
+          {
+            "Value": 20000
+          }
+        ],
+        "Values": [
+          {
+            "Value": 0.0,
+            "Tangent": {
+              "ArriveTangent": 0.0,
+              "LeaveTangent": 0.0,
+              "ArriveTangentWeight": 0.0,
+              "LeaveTangentWeight": 0.0,
+              "TangentWeightMode": 0
+            },
+            "InterpMode": 0,
+            "TangentMode": 0
+          },
+          {
+            "Value": 1.0,
+            "Tangent": {
+              "ArriveTangent": 0.0,
+              "LeaveTangent": 0.0,
+              "ArriveTangentWeight": 0.0,
+              "LeaveTangentWeight": 0.0,
+              "TangentWeightMode": 0
+            },
+            "InterpMode": 0,
+            "TangentMode": 0
+          },
+          {
+            "Value": 1.0,
+            "Tangent": {
+              "ArriveTangent": 0.0,
+              "LeaveTangent": 0.0,
+              "ArriveTangentWeight": 0.0,
+              "LeaveTangentWeight": 0.0,
+              "TangentWeightMode": 0
+            },
+            "InterpMode": 0,
+            "TangentMode": 0
+          }
+        ],
+        "DefaultValue": 0.0,
+        "bHasDefaultValue": false,
+        "TickResolution": {
+          "Numerator": 60000,
+          "Denominator": 1
+        },
+        "bShowCurve": false,
+        "StructFallback": null
+      },
+      "Easing": {
+        "EaseIn": {
+          "ObjectName": "MovieSceneBuiltInEasingFunction'BPUI_CheckBox_switch_C:ReceiveNavigationAnim_INST.ReceiveNavigationAnim.MovieSceneFloatTrack_4.MovieSceneFloatSection_0.EaseInFunction'",
+          "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.38"
+        },
+        "EaseOut": {
+          "ObjectName": "MovieSceneBuiltInEasingFunction'BPUI_CheckBox_switch_C:ReceiveNavigationAnim_INST.ReceiveNavigationAnim.MovieSceneFloatTrack_4.MovieSceneFloatSection_0.EaseOutFunction'",
+          "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.39"
+        }
+      },
+      "SectionRange": {
+        "Value": {
+          "LowerBound": {
+            "Type": 2,
+            "Value": {
+              "Value": 0
+            }
+          },
+          "UpperBound": {
+            "Type": 2,
+            "Value": {
+              "Value": 0
+            }
+          }
+        }
+      },
+      "Signature": "F8F5E6A1-4105C479-E1C2458E-996AD8DE"
+    }
+  },
+  {
+    "Type": "MovieSceneFloatSection",
+    "Name": "MovieSceneFloatSection_0",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneFloatSection'",
+    "Outer": {
+      "ObjectName": "MovieSceneFloatTrack'BPUI_CheckBox_switch_C:ReceiveNavigationAnim_INST.ReceiveNavigationAnim.MovieSceneFloatTrack_5'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.64"
+    },
+    "Properties": {
+      "FloatCurve": {
+        "PreInfinityExtrap": "RCCE_Constant",
+        "PostInfinityExtrap": "RCCE_Constant",
+        "Times": [
+          {
+            "Value": 0
+          },
+          {
+            "Value": 10000
+          },
+          {
+            "Value": 20000
+          }
+        ],
+        "Values": [
+          {
+            "Value": 0.0,
+            "Tangent": {
+              "ArriveTangent": 0.0,
+              "LeaveTangent": 0.0,
+              "ArriveTangentWeight": 0.0,
+              "LeaveTangentWeight": 0.0,
+              "TangentWeightMode": 0
+            },
+            "InterpMode": 0,
+            "TangentMode": 0
+          },
+          {
+            "Value": 1.0,
+            "Tangent": {
+              "ArriveTangent": 0.0,
+              "LeaveTangent": 0.0,
+              "ArriveTangentWeight": 0.0,
+              "LeaveTangentWeight": 0.0,
+              "TangentWeightMode": 0
+            },
+            "InterpMode": 0,
+            "TangentMode": 0
+          },
+          {
+            "Value": 1.0,
+            "Tangent": {
+              "ArriveTangent": 0.0,
+              "LeaveTangent": 0.0,
+              "ArriveTangentWeight": 0.0,
+              "LeaveTangentWeight": 0.0,
+              "TangentWeightMode": 0
+            },
+            "InterpMode": 0,
+            "TangentMode": 0
+          }
+        ],
+        "DefaultValue": 0.0,
+        "bHasDefaultValue": false,
+        "TickResolution": {
+          "Numerator": 60000,
+          "Denominator": 1
+        },
+        "bShowCurve": false,
+        "StructFallback": null
+      },
+      "Easing": {
+        "EaseIn": {
+          "ObjectName": "MovieSceneBuiltInEasingFunction'BPUI_CheckBox_switch_C:ReceiveNavigationAnim_INST.ReceiveNavigationAnim.MovieSceneFloatTrack_5.MovieSceneFloatSection_0.EaseInFunction'",
+          "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.40"
+        },
+        "EaseOut": {
+          "ObjectName": "MovieSceneBuiltInEasingFunction'BPUI_CheckBox_switch_C:ReceiveNavigationAnim_INST.ReceiveNavigationAnim.MovieSceneFloatTrack_5.MovieSceneFloatSection_0.EaseOutFunction'",
+          "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.41"
+        }
+      },
+      "SectionRange": {
+        "Value": {
+          "LowerBound": {
+            "Type": 2,
+            "Value": {
+              "Value": 0
+            }
+          },
+          "UpperBound": {
+            "Type": 2,
+            "Value": {
+              "Value": 0
+            }
+          }
+        }
+      },
+      "Signature": "4E0414EA-442D958D-47B545BC-0A91ECE8"
+    }
+  },
+  {
+    "Type": "MovieSceneFloatSection",
+    "Name": "MovieSceneFloatSection_0",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneFloatSection'",
+    "Outer": {
+      "ObjectName": "MovieSceneFloatTrack'BPUI_CheckBox_switch_C:SelectAnim_INST.SelectAnim.MovieSceneFloatTrack_0'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.65"
+    },
+    "Properties": {
+      "FloatCurve": {
+        "PreInfinityExtrap": "RCCE_Constant",
+        "PostInfinityExtrap": "RCCE_Constant",
+        "Times": [
+          {
+            "Value": 0
+          },
+          {
+            "Value": 12000
+          }
+        ],
+        "Values": [
+          {
+            "Value": 0.0,
+            "Tangent": {
+              "ArriveTangent": 0.0,
+              "LeaveTangent": 0.0,
+              "ArriveTangentWeight": 0.0,
+              "LeaveTangentWeight": 0.0,
+              "TangentWeightMode": 0
+            },
+            "InterpMode": 0,
+            "TangentMode": 0
+          },
+          {
+            "Value": 0.0,
+            "Tangent": {
+              "ArriveTangent": 0.0,
+              "LeaveTangent": 0.0,
+              "ArriveTangentWeight": 0.0,
+              "LeaveTangentWeight": 0.0,
+              "TangentWeightMode": 0
+            },
+            "InterpMode": 0,
+            "TangentMode": 0
+          }
+        ],
+        "DefaultValue": 0.0,
+        "bHasDefaultValue": false,
+        "TickResolution": {
+          "Numerator": 60000,
+          "Denominator": 1
+        },
+        "bShowCurve": false,
+        "StructFallback": null
+      },
+      "Easing": {
+        "EaseIn": {
+          "ObjectName": "MovieSceneBuiltInEasingFunction'BPUI_CheckBox_switch_C:SelectAnim_INST.SelectAnim.MovieSceneFloatTrack_0.MovieSceneFloatSection_0.EaseInFunction'",
+          "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.42"
+        },
+        "EaseOut": {
+          "ObjectName": "MovieSceneBuiltInEasingFunction'BPUI_CheckBox_switch_C:SelectAnim_INST.SelectAnim.MovieSceneFloatTrack_0.MovieSceneFloatSection_0.EaseOutFunction'",
+          "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.43"
+        }
+      },
+      "SectionRange": {
+        "Value": {
+          "LowerBound": {
+            "Type": 2,
+            "Value": {
+              "Value": 0
+            }
+          },
+          "UpperBound": {
+            "Type": 2,
+            "Value": {
+              "Value": 0
+            }
+          }
+        }
+      },
+      "Signature": "3865715E-4254BB81-F8CD3880-B0178F63"
+    }
+  },
+  {
+    "Type": "MovieSceneFloatSection",
+    "Name": "MovieSceneFloatSection_0",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneFloatSection'",
+    "Outer": {
+      "ObjectName": "MovieSceneFloatTrack'BPUI_CheckBox_switch_C:UnselectAnim_INST.UnselectAnim.MovieSceneFloatTrack_0'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.66"
+    },
+    "Properties": {
+      "FloatCurve": {
+        "PreInfinityExtrap": "RCCE_Constant",
+        "PostInfinityExtrap": "RCCE_Constant",
+        "Times": [
+          {
+            "Value": 0
+          },
+          {
+            "Value": 12000
+          }
+        ],
+        "Values": [
+          {
+            "Value": 0.0,
+            "Tangent": {
+              "ArriveTangent": 0.0,
+              "LeaveTangent": 0.0,
+              "ArriveTangentWeight": 0.0,
+              "LeaveTangentWeight": 0.0,
+              "TangentWeightMode": 0
+            },
+            "InterpMode": 0,
+            "TangentMode": 0
+          },
+          {
+            "Value": 0.0,
+            "Tangent": {
+              "ArriveTangent": 0.0,
+              "LeaveTangent": 0.0,
+              "ArriveTangentWeight": 0.0,
+              "LeaveTangentWeight": 0.0,
+              "TangentWeightMode": 0
+            },
+            "InterpMode": 0,
+            "TangentMode": 0
+          }
+        ],
+        "DefaultValue": 0.0,
+        "bHasDefaultValue": false,
+        "TickResolution": {
+          "Numerator": 60000,
+          "Denominator": 1
+        },
+        "bShowCurve": false,
+        "StructFallback": null
+      },
+      "Easing": {
+        "EaseIn": {
+          "ObjectName": "MovieSceneBuiltInEasingFunction'BPUI_CheckBox_switch_C:UnselectAnim_INST.UnselectAnim.MovieSceneFloatTrack_0.MovieSceneFloatSection_0.EaseInFunction'",
+          "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.44"
+        },
+        "EaseOut": {
+          "ObjectName": "MovieSceneBuiltInEasingFunction'BPUI_CheckBox_switch_C:UnselectAnim_INST.UnselectAnim.MovieSceneFloatTrack_0.MovieSceneFloatSection_0.EaseOutFunction'",
+          "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.45"
+        }
+      },
+      "SectionRange": {
+        "Value": {
+          "LowerBound": {
+            "Type": 2,
+            "Value": {
+              "Value": 0
+            }
+          },
+          "UpperBound": {
+            "Type": 2,
+            "Value": {
+              "Value": 0
+            }
+          }
+        }
+      },
+      "Signature": "0AA76E81-45C16A52-EC9C22AB-2279F0C3"
+    }
+  },
+  {
+    "Type": "MovieSceneFloatTrack",
+    "Name": "MovieSceneFloatTrack_0",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneFloatTrack'",
+    "Outer": {
+      "ObjectName": "MovieScene'BPUI_CheckBox_switch_C:HoveredAnim_INST.HoveredAnim'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.21"
+    },
+    "Properties": {
+      "PropertyBinding": {
+        "PropertyName": "RenderOpacity",
+        "PropertyPath": "RenderOpacity",
+        "bCanUseClassLookup": true
+      },
+      "Sections": [
+        {
+          "ObjectName": "MovieSceneFloatSection'BPUI_CheckBox_switch_C:HoveredAnim_INST.HoveredAnim.MovieSceneFloatTrack_0.MovieSceneFloatSection_0'",
+          "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.51"
+        }
+      ],
+      "EvaluationFieldGuid": "E5A0D1AE-4D8A9EC6-AE97D6AE-E25B9870",
+      "EvaluationField": {
+        "Entries": [
+          {
+            "Section": {
+              "ObjectName": "MovieSceneFloatSection'BPUI_CheckBox_switch_C:HoveredAnim_INST.HoveredAnim.MovieSceneFloatTrack_0.MovieSceneFloatSection_0'",
+              "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.51"
+            },
+            "Range": {
+              "LowerBound": {
+                "Type": "ERangeBoundTypes::Open",
+                "Value": {
+                  "Value": 0
+                }
+              },
+              "UpperBound": {
+                "Type": "ERangeBoundTypes::Open",
+                "Value": {
+                  "Value": 0
+                }
+              }
+            },
+            "ForcedTime": {
+              "Value": -2147483648
+            },
+            "Flags": "ESectionEvaluationFlags::None",
+            "LegacySortOrder": 0
+          }
+        ]
+      },
+      "Signature": "E5A0D1AE-4D8A9EC6-AE97D6AE-E25B9870"
+    }
+  },
+  {
+    "Type": "MovieSceneFloatTrack",
+    "Name": "MovieSceneFloatTrack_1",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneFloatTrack'",
+    "Outer": {
+      "ObjectName": "MovieScene'BPUI_CheckBox_switch_C:LostNavigationAnim_INST.LostNavigationAnim'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.22"
+    },
+    "Properties": {
+      "PropertyBinding": {
+        "PropertyName": "RenderOpacity",
+        "PropertyPath": "RenderOpacity",
+        "bCanUseClassLookup": true
+      },
+      "Sections": [
+        {
+          "ObjectName": "MovieSceneFloatSection'BPUI_CheckBox_switch_C:LostNavigationAnim_INST.LostNavigationAnim.MovieSceneFloatTrack_1.MovieSceneFloatSection_0'",
+          "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.52"
+        }
+      ],
+      "EvaluationFieldGuid": "BFBF5E6B-487AB581-02589492-D5E58ABD",
+      "EvaluationField": {
+        "Entries": [
+          {
+            "Section": {
+              "ObjectName": "MovieSceneFloatSection'BPUI_CheckBox_switch_C:LostNavigationAnim_INST.LostNavigationAnim.MovieSceneFloatTrack_1.MovieSceneFloatSection_0'",
+              "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.52"
+            },
+            "Range": {
+              "LowerBound": {
+                "Type": "ERangeBoundTypes::Open",
+                "Value": {
+                  "Value": 0
+                }
+              },
+              "UpperBound": {
+                "Type": "ERangeBoundTypes::Open",
+                "Value": {
+                  "Value": 0
+                }
+              }
+            },
+            "ForcedTime": {
+              "Value": -2147483648
+            },
+            "Flags": "ESectionEvaluationFlags::None",
+            "LegacySortOrder": 0
+          }
+        ]
+      },
+      "Signature": "BFBF5E6B-487AB581-02589492-D5E58ABD"
+    }
+  },
+  {
+    "Type": "MovieSceneFloatTrack",
+    "Name": "MovieSceneFloatTrack_2",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneFloatTrack'",
+    "Outer": {
+      "ObjectName": "MovieScene'BPUI_CheckBox_switch_C:LostNavigationAnim_INST.LostNavigationAnim'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.22"
+    },
+    "Properties": {
+      "PropertyBinding": {
+        "PropertyName": "RenderOpacity",
+        "PropertyPath": "RenderOpacity",
+        "bCanUseClassLookup": true
+      },
+      "Sections": [
+        {
+          "ObjectName": "MovieSceneFloatSection'BPUI_CheckBox_switch_C:LostNavigationAnim_INST.LostNavigationAnim.MovieSceneFloatTrack_2.MovieSceneFloatSection_0'",
+          "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.53"
+        }
+      ],
+      "EvaluationFieldGuid": "C1611348-48D56022-5F03E498-DC2120FE",
+      "EvaluationField": {
+        "Entries": [
+          {
+            "Section": {
+              "ObjectName": "MovieSceneFloatSection'BPUI_CheckBox_switch_C:LostNavigationAnim_INST.LostNavigationAnim.MovieSceneFloatTrack_2.MovieSceneFloatSection_0'",
+              "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.53"
+            },
+            "Range": {
+              "LowerBound": {
+                "Type": "ERangeBoundTypes::Open",
+                "Value": {
+                  "Value": 0
+                }
+              },
+              "UpperBound": {
+                "Type": "ERangeBoundTypes::Open",
+                "Value": {
+                  "Value": 0
+                }
+              }
+            },
+            "ForcedTime": {
+              "Value": -2147483648
+            },
+            "Flags": "ESectionEvaluationFlags::None",
+            "LegacySortOrder": 0
+          }
+        ]
+      },
+      "Signature": "C1611348-48D56022-5F03E498-DC2120FE"
+    }
+  },
+  {
+    "Type": "MovieSceneFloatTrack",
+    "Name": "MovieSceneFloatTrack_3",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneFloatTrack'",
+    "Outer": {
+      "ObjectName": "MovieScene'BPUI_CheckBox_switch_C:ReceiveNavigationAnim_INST.ReceiveNavigationAnim'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.23"
+    },
+    "Properties": {
+      "PropertyBinding": {
+        "PropertyName": "RenderOpacity",
+        "PropertyPath": "RenderOpacity",
+        "bCanUseClassLookup": true
+      },
+      "Sections": [
+        {
+          "ObjectName": "MovieSceneFloatSection'BPUI_CheckBox_switch_C:ReceiveNavigationAnim_INST.ReceiveNavigationAnim.MovieSceneFloatTrack_3.MovieSceneFloatSection_0'",
+          "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.54"
+        }
+      ],
+      "EvaluationFieldGuid": "F73DC33F-43C7A3D5-26E6B497-EFEE540B",
+      "EvaluationField": {
+        "Entries": [
+          {
+            "Section": {
+              "ObjectName": "MovieSceneFloatSection'BPUI_CheckBox_switch_C:ReceiveNavigationAnim_INST.ReceiveNavigationAnim.MovieSceneFloatTrack_3.MovieSceneFloatSection_0'",
+              "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.54"
+            },
+            "Range": {
+              "LowerBound": {
+                "Type": "ERangeBoundTypes::Open",
+                "Value": {
+                  "Value": 0
+                }
+              },
+              "UpperBound": {
+                "Type": "ERangeBoundTypes::Open",
+                "Value": {
+                  "Value": 0
+                }
+              }
+            },
+            "ForcedTime": {
+              "Value": -2147483648
+            },
+            "Flags": "ESectionEvaluationFlags::None",
+            "LegacySortOrder": 0
+          }
+        ]
+      },
+      "Signature": "F73DC33F-43C7A3D5-26E6B497-EFEE540B"
+    }
+  },
+  {
+    "Type": "MovieSceneFloatTrack",
+    "Name": "MovieSceneFloatTrack_4",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneFloatTrack'",
+    "Outer": {
+      "ObjectName": "MovieScene'BPUI_CheckBox_switch_C:ReceiveNavigationAnim_INST.ReceiveNavigationAnim'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.23"
+    },
+    "Properties": {
+      "PropertyBinding": {
+        "PropertyName": "RenderOpacity",
+        "PropertyPath": "RenderOpacity",
+        "bCanUseClassLookup": true
+      },
+      "Sections": [
+        {
+          "ObjectName": "MovieSceneFloatSection'BPUI_CheckBox_switch_C:ReceiveNavigationAnim_INST.ReceiveNavigationAnim.MovieSceneFloatTrack_4.MovieSceneFloatSection_0'",
+          "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.55"
+        }
+      ],
+      "EvaluationFieldGuid": "9F76BE06-4BE9383B-17D9ACB7-456C247D",
+      "EvaluationField": {
+        "Entries": [
+          {
+            "Section": {
+              "ObjectName": "MovieSceneFloatSection'BPUI_CheckBox_switch_C:ReceiveNavigationAnim_INST.ReceiveNavigationAnim.MovieSceneFloatTrack_4.MovieSceneFloatSection_0'",
+              "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.55"
+            },
+            "Range": {
+              "LowerBound": {
+                "Type": "ERangeBoundTypes::Open",
+                "Value": {
+                  "Value": 0
+                }
+              },
+              "UpperBound": {
+                "Type": "ERangeBoundTypes::Open",
+                "Value": {
+                  "Value": 0
+                }
+              }
+            },
+            "ForcedTime": {
+              "Value": -2147483648
+            },
+            "Flags": "ESectionEvaluationFlags::None",
+            "LegacySortOrder": 0
+          }
+        ]
+      },
+      "Signature": "9F76BE06-4BE9383B-17D9ACB7-456C247D"
+    }
+  },
+  {
+    "Type": "MovieSceneFloatTrack",
+    "Name": "MovieSceneFloatTrack_5",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneFloatTrack'",
+    "Outer": {
+      "ObjectName": "MovieScene'BPUI_CheckBox_switch_C:ReceiveNavigationAnim_INST.ReceiveNavigationAnim'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.23"
+    },
+    "Properties": {
+      "PropertyBinding": {
+        "PropertyName": "RenderOpacity",
+        "PropertyPath": "RenderOpacity",
+        "bCanUseClassLookup": true
+      },
+      "Sections": [
+        {
+          "ObjectName": "MovieSceneFloatSection'BPUI_CheckBox_switch_C:ReceiveNavigationAnim_INST.ReceiveNavigationAnim.MovieSceneFloatTrack_5.MovieSceneFloatSection_0'",
+          "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.56"
+        }
+      ],
+      "EvaluationFieldGuid": "E4A584E6-47A8BB76-1A0EC485-BBF4D9E3",
+      "EvaluationField": {
+        "Entries": [
+          {
+            "Section": {
+              "ObjectName": "MovieSceneFloatSection'BPUI_CheckBox_switch_C:ReceiveNavigationAnim_INST.ReceiveNavigationAnim.MovieSceneFloatTrack_5.MovieSceneFloatSection_0'",
+              "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.56"
+            },
+            "Range": {
+              "LowerBound": {
+                "Type": "ERangeBoundTypes::Open",
+                "Value": {
+                  "Value": 0
+                }
+              },
+              "UpperBound": {
+                "Type": "ERangeBoundTypes::Open",
+                "Value": {
+                  "Value": 0
+                }
+              }
+            },
+            "ForcedTime": {
+              "Value": -2147483648
+            },
+            "Flags": "ESectionEvaluationFlags::None",
+            "LegacySortOrder": 0
+          }
+        ]
+      },
+      "Signature": "E4A584E6-47A8BB76-1A0EC485-BBF4D9E3"
+    }
+  },
+  {
+    "Type": "MovieSceneFloatTrack",
+    "Name": "MovieSceneFloatTrack_0",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneFloatTrack'",
+    "Outer": {
+      "ObjectName": "MovieScene'BPUI_CheckBox_switch_C:SelectAnim_INST.SelectAnim'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.24"
+    },
+    "Properties": {
+      "PropertyBinding": {
+        "PropertyName": "RenderOpacity",
+        "PropertyPath": "RenderOpacity",
+        "bCanUseClassLookup": true
+      },
+      "Sections": [
+        {
+          "ObjectName": "MovieSceneFloatSection'BPUI_CheckBox_switch_C:SelectAnim_INST.SelectAnim.MovieSceneFloatTrack_0.MovieSceneFloatSection_0'",
+          "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.57"
+        }
+      ],
+      "EvaluationFieldGuid": "AF56080F-4C53C174-327A39B3-0B629495",
+      "EvaluationField": {
+        "Entries": [
+          {
+            "Section": {
+              "ObjectName": "MovieSceneFloatSection'BPUI_CheckBox_switch_C:SelectAnim_INST.SelectAnim.MovieSceneFloatTrack_0.MovieSceneFloatSection_0'",
+              "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.57"
+            },
+            "Range": {
+              "LowerBound": {
+                "Type": "ERangeBoundTypes::Open",
+                "Value": {
+                  "Value": 0
+                }
+              },
+              "UpperBound": {
+                "Type": "ERangeBoundTypes::Open",
+                "Value": {
+                  "Value": 0
+                }
+              }
+            },
+            "ForcedTime": {
+              "Value": -2147483648
+            },
+            "Flags": "ESectionEvaluationFlags::None",
+            "LegacySortOrder": 0
+          }
+        ]
+      },
+      "Signature": "AF56080F-4C53C174-327A39B3-0B629495"
+    }
+  },
+  {
+    "Type": "MovieSceneFloatTrack",
+    "Name": "MovieSceneFloatTrack_0",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneFloatTrack'",
+    "Outer": {
+      "ObjectName": "MovieScene'BPUI_CheckBox_switch_C:UnselectAnim_INST.UnselectAnim'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.25"
+    },
+    "Properties": {
+      "PropertyBinding": {
+        "PropertyName": "RenderOpacity",
+        "PropertyPath": "RenderOpacity",
+        "bCanUseClassLookup": true
+      },
+      "Sections": [
+        {
+          "ObjectName": "MovieSceneFloatSection'BPUI_CheckBox_switch_C:UnselectAnim_INST.UnselectAnim.MovieSceneFloatTrack_0.MovieSceneFloatSection_0'",
+          "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.58"
+        }
+      ],
+      "EvaluationFieldGuid": "F900435A-4C7AC075-C146F694-32E9A571",
+      "EvaluationField": {
+        "Entries": [
+          {
+            "Section": {
+              "ObjectName": "MovieSceneFloatSection'BPUI_CheckBox_switch_C:UnselectAnim_INST.UnselectAnim.MovieSceneFloatTrack_0.MovieSceneFloatSection_0'",
+              "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.58"
+            },
+            "Range": {
+              "LowerBound": {
+                "Type": "ERangeBoundTypes::Open",
+                "Value": {
+                  "Value": 0
+                }
+              },
+              "UpperBound": {
+                "Type": "ERangeBoundTypes::Open",
+                "Value": {
+                  "Value": 0
+                }
+              }
+            },
+            "ForcedTime": {
+              "Value": -2147483648
+            },
+            "Flags": "ESectionEvaluationFlags::None",
+            "LegacySortOrder": 0
+          }
+        ]
+      },
+      "Signature": "F900435A-4C7AC075-C146F694-32E9A571"
+    }
+  },
+  {
+    "Type": "NamedSlot",
+    "Name": "NamedSlot_52",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'NamedSlot'",
+    "Outer": {
+      "ObjectName": "WidgetTree'BPUI_CheckBox_switch_C:WidgetTree'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.74"
+    },
+    "Properties": {
+      "Slot": {
+        "ObjectName": "CanvasPanelSlot'BPUI_CheckBox_switch_C:WidgetTree.CanvasPanel_25.CanvasPanelSlot_3'",
+        "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.5"
+      }
+    }
+  },
+  {
+    "Type": "WidgetAnimation",
+    "Name": "HoveredAnim_INST",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'WidgetAnimation'",
+    "Outer": {
+      "ObjectName": "WidgetBlueprintGeneratedClass'BPUI_CheckBox_switch_C'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.73"
+    },
+    "Properties": {
+      "MovieScene": {
+        "ObjectName": "MovieScene'BPUI_CheckBox_switch_C:HoveredAnim_INST.HoveredAnim'",
+        "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.21"
+      },
+      "AnimationBindings": [
+        {
+          "WidgetName": "Image_Hover",
+          "SlotWidgetName": "None",
+          "AnimationGuid": "5E9CBB0F-47076F93-8AEF73A0-13173FBD",
+          "bIsRootWidget": false,
+          "DynamicBinding": {
+            "Function": null,
+            "ResolveParamsProperty": {
+              "Path": [],
+              "ResolvedOwner": null
+            }
+          }
+        }
+      ],
+      "DisplayLabel": "HoveredAnim",
+      "CompiledData": {
+        "ObjectName": "MovieSceneCompiledData'BPUI_CheckBox_switch_C:HoveredAnim_INST.CompiledData'",
+        "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.46"
+      },
+      "Signature": "825680F0-4D5F4802-CC4ACA9D-DCE2D7F8"
+    }
+  },
+  {
+    "Type": "WidgetAnimation",
+    "Name": "LostNavigationAnim_INST",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'WidgetAnimation'",
+    "Outer": {
+      "ObjectName": "WidgetBlueprintGeneratedClass'BPUI_CheckBox_switch_C'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.73"
+    },
+    "Properties": {
+      "MovieScene": {
+        "ObjectName": "MovieScene'BPUI_CheckBox_switch_C:LostNavigationAnim_INST.LostNavigationAnim'",
+        "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.22"
+      },
+      "AnimationBindings": [
+        {
+          "WidgetName": "ImgCheck_Naviable",
+          "SlotWidgetName": "None",
+          "AnimationGuid": "69B0EBE3-4C3A64D7-0A35F68D-7D19E526",
+          "bIsRootWidget": false,
+          "DynamicBinding": {
+            "Function": null,
+            "ResolveParamsProperty": {
+              "Path": [],
+              "ResolvedOwner": null
+            }
+          }
+        },
+        {
+          "WidgetName": "ImgCheck_Naviable_Arrow",
+          "SlotWidgetName": "None",
+          "AnimationGuid": "A736A514-4A6E337D-291E47A0-102547F6",
+          "bIsRootWidget": false,
+          "DynamicBinding": {
+            "Function": null,
+            "ResolveParamsProperty": {
+              "Path": [],
+              "ResolvedOwner": null
+            }
+          }
+        }
+      ],
+      "DisplayLabel": "LostNavigationAnim",
+      "CompiledData": {
+        "ObjectName": "MovieSceneCompiledData'BPUI_CheckBox_switch_C:LostNavigationAnim_INST.CompiledData'",
+        "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.47"
+      },
+      "Signature": "0340A62F-46546193-B198F3B8-53C0802D"
+    }
+  },
+  {
+    "Type": "WidgetAnimation",
+    "Name": "ReceiveNavigationAnim_INST",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'WidgetAnimation'",
+    "Outer": {
+      "ObjectName": "WidgetBlueprintGeneratedClass'BPUI_CheckBox_switch_C'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.73"
+    },
+    "Properties": {
+      "MovieScene": {
+        "ObjectName": "MovieScene'BPUI_CheckBox_switch_C:ReceiveNavigationAnim_INST.ReceiveNavigationAnim'",
+        "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.23"
+      },
+      "AnimationBindings": [
+        {
+          "WidgetName": "ImgCheck_Naviable_Arrow",
+          "SlotWidgetName": "None",
+          "AnimationGuid": "C51F9343-436BFDB7-7684EFA7-A96F5D96",
+          "bIsRootWidget": false,
+          "DynamicBinding": {
+            "Function": null,
+            "ResolveParamsProperty": {
+              "Path": [],
+              "ResolvedOwner": null
+            }
+          }
+        },
+        {
+          "WidgetName": "ImgCheck_Naviable_Fx",
+          "SlotWidgetName": "None",
+          "AnimationGuid": "8B5C7A3C-489B7330-62BF7497-00ADFEBA",
+          "bIsRootWidget": false,
+          "DynamicBinding": {
+            "Function": null,
+            "ResolveParamsProperty": {
+              "Path": [],
+              "ResolvedOwner": null
+            }
+          }
+        },
+        {
+          "WidgetName": "ImgCheck_Naviable",
+          "SlotWidgetName": "None",
+          "AnimationGuid": "AD0A7E8A-4C2A3715-A8B1F5BD-5AF66CE4",
+          "bIsRootWidget": false,
+          "DynamicBinding": {
+            "Function": null,
+            "ResolveParamsProperty": {
+              "Path": [],
+              "ResolvedOwner": null
+            }
+          }
+        }
+      ],
+      "DisplayLabel": "ReceiveNavigationAnim",
+      "CompiledData": {
+        "ObjectName": "MovieSceneCompiledData'BPUI_CheckBox_switch_C:ReceiveNavigationAnim_INST.CompiledData'",
+        "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.48"
+      },
+      "Signature": "626A7E5C-48A50DB2-5B3D31A9-D8C757FE"
+    }
+  },
+  {
+    "Type": "WidgetAnimation",
+    "Name": "SelectAnim_INST",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'WidgetAnimation'",
+    "Outer": {
+      "ObjectName": "WidgetBlueprintGeneratedClass'BPUI_CheckBox_switch_C'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.73"
+    },
+    "Properties": {
+      "MovieScene": {
+        "ObjectName": "MovieScene'BPUI_CheckBox_switch_C:SelectAnim_INST.SelectAnim'",
+        "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.24"
+      },
+      "AnimationBindings": [
+        {
+          "WidgetName": "Image_Select",
+          "SlotWidgetName": "None",
+          "AnimationGuid": "8A667D15-40C761F0-FBD3048D-E76F756B",
+          "bIsRootWidget": false,
+          "DynamicBinding": {
+            "Function": null,
+            "ResolveParamsProperty": {
+              "Path": [],
+              "ResolvedOwner": null
+            }
+          }
+        }
+      ],
+      "DisplayLabel": "SelectAnim",
+      "CompiledData": {
+        "ObjectName": "MovieSceneCompiledData'BPUI_CheckBox_switch_C:SelectAnim_INST.CompiledData'",
+        "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.49"
+      },
+      "Signature": "0A3DDEA5-4B07F0B6-90C74FA2-ABE1EF63"
+    }
+  },
+  {
+    "Type": "WidgetAnimation",
+    "Name": "UnselectAnim_INST",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'WidgetAnimation'",
+    "Outer": {
+      "ObjectName": "WidgetBlueprintGeneratedClass'BPUI_CheckBox_switch_C'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.73"
+    },
+    "Properties": {
+      "MovieScene": {
+        "ObjectName": "MovieScene'BPUI_CheckBox_switch_C:UnselectAnim_INST.UnselectAnim'",
+        "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.25"
+      },
+      "AnimationBindings": [
+        {
+          "WidgetName": "Image_Select",
+          "SlotWidgetName": "None",
+          "AnimationGuid": "8415E9A6-4211DD7A-B06541B3-2E451BFA",
+          "bIsRootWidget": false,
+          "DynamicBinding": {
+            "Function": null,
+            "ResolveParamsProperty": {
+              "Path": [],
+              "ResolvedOwner": null
+            }
+          }
+        }
+      ],
+      "DisplayLabel": "UnselectAnim",
+      "CompiledData": {
+        "ObjectName": "MovieSceneCompiledData'BPUI_CheckBox_switch_C:UnselectAnim_INST.CompiledData'",
+        "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.50"
+      },
+      "Signature": "946E5D4B-4F2C6AF0-763839BF-A831210F"
+    }
+  },
+  {
+    "Type": "WidgetBlueprintGeneratedClass",
+    "Name": "BPUI_CheckBox_switch_C",
+    "Flags": "RF_Public | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'WidgetBlueprintGeneratedClass'",
+    "Package": "/Game/UI/Blueprints/BPUI_CheckBox_switch",
+    "Properties": {
+      "WidgetTree": {
+        "ObjectName": "WidgetTree'BPUI_CheckBox_switch_C:WidgetTree'",
+        "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.74"
+      },
+      "bClassRequiresNativeTick": true,
+      "Animations": [
+        {
+          "ObjectName": "WidgetAnimation'BPUI_CheckBox_switch_C:HoveredAnim_INST'",
+          "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.68"
+        },
+        {
+          "ObjectName": "WidgetAnimation'BPUI_CheckBox_switch_C:SelectAnim_INST'",
+          "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.71"
+        },
+        {
+          "ObjectName": "WidgetAnimation'BPUI_CheckBox_switch_C:UnselectAnim_INST'",
+          "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.72"
+        },
+        {
+          "ObjectName": "WidgetAnimation'BPUI_CheckBox_switch_C:ReceiveNavigationAnim_INST'",
+          "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.70"
+        },
+        {
+          "ObjectName": "WidgetAnimation'BPUI_CheckBox_switch_C:LostNavigationAnim_INST'",
+          "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.69"
+        }
+      ],
+      "NamedSlots": [
+        "NamedSlot_52"
+      ],
+      "AvailableNamedSlots": [
+        "NamedSlot_52"
+      ],
+      "InstanceNamedSlots": [
+        "NamedSlot_52"
+      ],
+      "UberGraphFunction": {
+        "ObjectName": "Function'BPUI_CheckBox_switch_C:ExecuteUbergraph_BPUI_CheckBox_switch'",
+        "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.12"
+      }
+    },
+    "SuperStruct": {
+      "ObjectName": "Class'HTUI_CheckBox'",
+      "ObjectPath": "/Script/HTGame"
+    },
+    "Children": [
+      {
+        "ObjectName": "Function'BPUI_CheckBox_switch_C:Construct'",
+        "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.11"
+      },
+      {
+        "ObjectName": "Function'BPUI_CheckBox_switch_C:ExecuteUbergraph_BPUI_CheckBox_switch'",
+        "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.12"
+      }
+    ],
+    "ChildProperties": [
+      {
+        "Type": "StructProperty",
+        "Name": "UberGraphFrame",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 16,
+        "PropertyFlags": "Transient | DuplicateTransient",
+        "Struct": {
+          "ObjectName": "Class'PointerToUberGraphFrame'",
+          "ObjectPath": "/Script/Engine"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "NamedSlot_52",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 8,
+        "PropertyFlags": "BlueprintVisible | ExportObject | BlueprintReadOnly | DisableEditOnInstance | InstancedReference | RepSkip | PersistentInstance",
+        "PropertyClass": {
+          "ObjectName": "Class'NamedSlot'",
+          "ObjectPath": "/Script/UMG"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "ImgCheck_Naviable_Fx",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 8,
+        "PropertyFlags": "BlueprintVisible | ExportObject | BlueprintReadOnly | DisableEditOnInstance | InstancedReference | RepSkip | PersistentInstance",
+        "PropertyClass": {
+          "ObjectName": "Class'Image'",
+          "ObjectPath": "/Script/UMG"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "ImgCheck_Naviable_Arrow",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 8,
+        "PropertyFlags": "BlueprintVisible | ExportObject | BlueprintReadOnly | DisableEditOnInstance | InstancedReference | RepSkip | PersistentInstance",
+        "PropertyClass": {
+          "ObjectName": "Class'Image'",
+          "ObjectPath": "/Script/UMG"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "ImgCheck_Naviable",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 8,
+        "PropertyFlags": "BlueprintVisible | ExportObject | BlueprintReadOnly | DisableEditOnInstance | InstancedReference | RepSkip | PersistentInstance",
+        "PropertyClass": {
+          "ObjectName": "Class'Image'",
+          "ObjectPath": "/Script/UMG"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "Image_Select",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 8,
+        "PropertyFlags": "BlueprintVisible | ExportObject | BlueprintReadOnly | DisableEditOnInstance | InstancedReference | RepSkip | PersistentInstance",
+        "PropertyClass": {
+          "ObjectName": "Class'Image'",
+          "ObjectPath": "/Script/UMG"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "Image_Hover",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 8,
+        "PropertyFlags": "BlueprintVisible | ExportObject | BlueprintReadOnly | DisableEditOnInstance | InstancedReference | RepSkip | PersistentInstance",
+        "PropertyClass": {
+          "ObjectName": "Class'Image'",
+          "ObjectPath": "/Script/UMG"
+        }
+      }
+    ],
+    "FuncMap": {
+      "ExecuteUbergraph_BPUI_CheckBox_switch": {
+        "ObjectName": "Function'BPUI_CheckBox_switch_C:ExecuteUbergraph_BPUI_CheckBox_switch'",
+        "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.12"
+      },
+      "Construct": {
+        "ObjectName": "Function'BPUI_CheckBox_switch_C:Construct'",
+        "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.11"
+      }
+    },
+    "ClassFlags": "CLASS_EditInlineNew | CLASS_CompiledFromBlueprint | CLASS_DefaultToInstanced | CLASS_HasInstancedReference",
+    "ClassWithin": {
+      "ObjectName": "Class'Object'",
+      "ObjectPath": "/Script/CoreUObject"
+    },
+    "ClassConfigName": "Engine",
+    "bCooked": true,
+    "ClassDefaultObject": {
+      "ObjectName": "BPUI_CheckBox_switch_C'Default__BPUI_CheckBox_switch_C'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.0"
+    },
+    "EditorTags": {
+      "BlueprintType": "BPTYPE_Normal"
+    }
+  },
+  {
+    "Type": "WidgetTree",
+    "Name": "WidgetTree",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'WidgetTree'",
+    "Outer": {
+      "ObjectName": "WidgetBlueprintGeneratedClass'BPUI_CheckBox_switch_C'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.73"
+    },
+    "Properties": {
+      "RootWidget": {
+        "ObjectName": "CanvasPanel'BPUI_CheckBox_switch_C:WidgetTree.CanvasPanel_25'",
+        "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_switch.1"
+      }
+    }
+  }
+]

@@ -1,0 +1,396 @@
+﻿{
+	"Format": "NTE.CharacterModSpecReport",
+	"Version": 1,
+	"SpecFile": "F:/NTE/NTEBuildTool/.scratch/character-mod-workspace/004_lacrimosa_runtime_game_ui_font_probe.spec.json",
+	"Summary":
+	{
+		"WorkspaceName": "004_lacrimosa_runtime_game_ui_font_probe",
+		"MainMeshPath": "/Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+		"PlayerAppearanceAssetPath": "/Game/Characters/Player/004_lacrimosa/mod/Generated/MeshAsset_Player004_NTE_AttachedSmoke",
+		"UIActorClassPath": "",
+		"AttachedMeshCount": 0,
+		"MaterialOperationCount": 0,
+		"RuntimeActionCount": 1,
+		"KawaiiPresetCount": 0,
+		"ModName": "lacrimosa004_runtime_game_ui_font_probe_P",
+		"ModsDir": "F:/Neverness To Everness/Client/WindowsNoEditor/HT/Content/Paks/Mods"
+	},
+	"ErrorCount": 0,
+	"WarningCount": 1,
+	"Errors": [],
+	"Warnings": [
+		"UIActorClassPath is empty; UI preview sync cannot update PlayerUIShow yet."
+	],
+	"PackageSeeds": [
+		"/Game/Characters/Player/004_lacrimosa/mod/Generated/MeshAsset_Player004_NTE_AttachedSmoke",
+		"/Game/Characters/Player/004_lacrimosa/mod/RuntimeGameUiProbe/ABP_NTE_MainGameUiProbe",
+		"/Game/Characters/Player/004_lacrimosa/mod/RuntimeGameUiProbe/BP_NTE_CharacterActionSaveGame",
+		"/Game/Characters/Player/004_lacrimosa/mod/RuntimeGameUiProbe/WBP_NTE_CharacterActions",
+		"/Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin"
+	],
+	"AppearanceAssemblyPlan":
+	{
+		"PlayerAppearanceAssetPath": "/Game/Characters/Player/004_lacrimosa/mod/Generated/MeshAsset_Player004_NTE_AttachedSmoke",
+		"MainMesh":
+		{
+			"Id": "main",
+			"Label": "Main",
+			"CharacterMeshPath": "/Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+			"AnimInstancePath": "/Game/Characters/Player/004_lacrimosa/mod/RuntimeGameUiProbe/ABP_NTE_MainGameUiProbe",
+			"MeshComponentOwnedTags": [],
+			"RelativeLocation":
+			{
+				"X": 0,
+				"Y": 0,
+				"Z": 0
+			},
+			"RelativeRotation":
+			{
+				"Pitch": 0,
+				"Yaw": 0,
+				"Roll": 0
+			},
+			"RelativeScale3D":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			},
+			"SyncToUIShow": false,
+			"RuntimeActionsEnabled": false
+		},
+		"AttachedMeshes": [],
+		"Errors": [],
+		"Warnings": [
+			"UIActorClassPath is empty; runtime MeshAsset can be planned, but PlayerUIShow preview sync cannot be planned."
+		]
+	},
+	"MaterialPlan":
+	{
+		"Operations": [],
+		"OperationCount": 0,
+		"Errors": [],
+		"Warnings": []
+	},
+	"RuntimeActionPlan":
+	{
+		"RuntimeAssetRootPath": "/Game/Characters/Player/004_lacrimosa/mod/RuntimeGameUiProbe",
+		"WidgetBlueprintPath": "/Game/Characters/Player/004_lacrimosa/mod/RuntimeGameUiProbe/WBP_NTE_CharacterActions",
+		"SaveGameBlueprintPath": "/Game/Characters/Player/004_lacrimosa/mod/RuntimeGameUiProbe/BP_NTE_CharacterActionSaveGame",
+		"SaveSlotName": "NTE_CharacterActionState_Characters_Player_004_lacrimosa_mod_RuntimeGameUiProbe",
+		"RuntimeUi":
+		{
+			"EnableUi": true,
+			"ToggleUiHotkey": "F9",
+			"Title": "NTE Game UI Font Probe",
+			"DefaultVisible": false,
+			"FontPath": "/Game/Resources/UI/Fonts/Font_All",
+			"BodyFontTypeface": "Light",
+			"TitleFontTypeface": "Heavy",
+			"BodyFontSize": 20,
+			"TitleFontSize": 24,
+			"Errors": [],
+			"Warnings": []
+		},
+		"Hosts": [
+			{
+				"MeshId": "main",
+				"HostKind": "MainAnimBlueprint",
+				"MeshPath": "/Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+				"AnimBlueprintPath": "/Game/Characters/Player/004_lacrimosa/mod/RuntimeGameUiProbe/ABP_NTE_MainGameUiProbe",
+				"ActionIds": [
+					"toggle_main_slot0"
+				],
+				"Errors": [],
+				"Warnings": []
+			}
+		],
+		"HostCount": 1,
+		"Actions": [
+			{
+				"Id": "toggle_main_slot0",
+				"Label": "Main Slot 0",
+				"ActionType": "MaterialSlotVisibility",
+				"Hotkey": "Ctrl+M",
+				"TargetMeshId": "main",
+				"TargetKind": "MainMesh",
+				"TargetMeshPath": "/Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+				"HostMeshId": "main",
+				"HostKind": "MainAnimBlueprint",
+				"HostMeshPath": "/Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+				"HostAnimBlueprintPath": "/Game/Characters/Player/004_lacrimosa/mod/RuntimeGameUiProbe/ABP_NTE_MainGameUiProbe",
+				"TargetLookupMode": "OwningComponent",
+				"TargetComponentTags": [],
+				"MaterialSlots": [ 0 ],
+				"ScalarValue": 0,
+				"VectorValue":
+				{
+					"R": 1,
+					"G": 1,
+					"B": 1,
+					"A": 1
+				},
+				"MorphValue": 0,
+				"DefaultEnabled": true,
+				"FirstSliceBlueprintSupported": true,
+				"Errors": [],
+				"Warnings": []
+			}
+		],
+		"ActionCount": 1,
+		"Errors": [],
+		"Warnings": []
+	},
+	"KawaiiPlan":
+	{
+		"KawaiiAssetRootPath": "/Game/Characters/Player/004_lacrimosa/mod/Kawaii",
+		"PresetCount": 0,
+		"Presets": [],
+		"PackageSeeds": [],
+		"Errors": [],
+		"Warnings": []
+	},
+	"SyncKawaiiFromAssets": false,
+	"KawaiiPresetPlan":
+	{
+		"PresetCount": 0,
+		"Presets": []
+	},
+	"ApplyAppearance": false,
+	"ApplyMaterials": false,
+	"ApplyRuntimeActions": false,
+	"ApplyKawaii": false,
+	"PackagePlan":
+	{
+		"CandidateCount": 23,
+		"Candidates": [
+			{
+				"PackageName": "/Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+				"Kind": "Selected",
+				"Reason": "from CharacterModSpec",
+				"DefaultIncluded": true
+			},
+			{
+				"PackageName": "/Game/Characters/Player/004_lacrimosa/mod/Runtime/ABP_NTE_ModToggle_PostProcess",
+				"Kind": "Runtime",
+				"Reason": "hard dependency of /Game/Characters/Player/004_lacrimosa/mod/Generated/MeshAsset_Player004_NTE_AttachedSmoke; hard dependency of /Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+				"DefaultIncluded": true
+			},
+			{
+				"PackageName": "/Game/Characters/Player/004_lacrimosa/mod/Generated/MeshAsset_Player004_NTE_AttachedSmoke",
+				"Kind": "Mod",
+				"Reason": "from CharacterModSpec",
+				"DefaultIncluded": true
+			},
+			{
+				"PackageName": "/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Anim/ABP_NTE_hair_tail_Kawaii",
+				"Kind": "Mod",
+				"Reason": "hard dependency of /Game/Characters/Player/004_lacrimosa/mod/Generated/MeshAsset_Player004_NTE_AttachedSmoke",
+				"DefaultIncluded": true
+			},
+			{
+				"PackageName": "/Game/Characters/Player/004_lacrimosa/mod/Materials/MI_mod_body",
+				"Kind": "Mod",
+				"Reason": "hard dependency of /Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+				"DefaultIncluded": true
+			},
+			{
+				"PackageName": "/Game/Characters/Player/004_lacrimosa/mod/RuntimeGameUiProbe/ABP_NTE_MainGameUiProbe",
+				"Kind": "Mod",
+				"Reason": "from CharacterModSpec",
+				"DefaultIncluded": true
+			},
+			{
+				"PackageName": "/Game/Characters/Player/004_lacrimosa/mod/RuntimeGameUiProbe/BP_NTE_CharacterActionSaveGame",
+				"Kind": "Mod",
+				"Reason": "hard dependency of /Game/Characters/Player/004_lacrimosa/mod/RuntimeGameUiProbe/ABP_NTE_MainGameUiProbe; from CharacterModSpec; hard dependency of /Game/Characters/Player/004_lacrimosa/mod/RuntimeGameUiProbe/WBP_NTE_CharacterActions",
+				"DefaultIncluded": true
+			},
+			{
+				"PackageName": "/Game/Characters/Player/004_lacrimosa/mod/RuntimeGameUiProbe/WBP_NTE_CharacterActions",
+				"Kind": "Mod",
+				"Reason": "hard dependency of /Game/Characters/Player/004_lacrimosa/mod/RuntimeGameUiProbe/ABP_NTE_MainGameUiProbe; from CharacterModSpec",
+				"DefaultIncluded": true
+			},
+			{
+				"PackageName": "/Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin_Skeleton",
+				"Kind": "Skeleton",
+				"Reason": "hard dependency of /Game/Characters/Player/004_lacrimosa/mod/RuntimeGameUiProbe/ABP_NTE_MainGameUiProbe; hard dependency of /Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+				"DefaultIncluded": false
+			},
+			{
+				"PackageName": "/Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin_PhysicsAsset",
+				"Kind": "Physics",
+				"Reason": "hard dependency of /Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+				"DefaultIncluded": false
+			},
+			{
+				"PackageName": "/Game/Characters/Player/Common_ter/eye_bantou",
+				"Kind": "Source",
+				"Reason": "hard dependency of /Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+				"DefaultIncluded": false
+			},
+			{
+				"PackageName": "/Game/Characters/Player/Common_ter/eye_touming",
+				"Kind": "Source",
+				"Reason": "hard dependency of /Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+				"DefaultIncluded": false
+			},
+			{
+				"PackageName": "/Game/Characters/Player/004_lacrimosa/ter_new/cloth_ter/MI_player_004_lacrimosa_01",
+				"Kind": "Proxy",
+				"Reason": "hard dependency of /Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+				"DefaultIncluded": false
+			},
+			{
+				"PackageName": "/Game/Characters/Player/004_lacrimosa/ter_new/cloth_ter/MI_player_004_lacrimosa_02",
+				"Kind": "Proxy",
+				"Reason": "hard dependency of /Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+				"DefaultIncluded": false
+			},
+			{
+				"PackageName": "/Game/Characters/Player/004_lacrimosa/ter_new/cloth_ter/MI_player_004_lacrimosa_03",
+				"Kind": "Proxy",
+				"Reason": "hard dependency of /Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+				"DefaultIncluded": false
+			},
+			{
+				"PackageName": "/Game/Characters/Player/004_lacrimosa/ter_new/face_ter/MI_player_004_lacrimosa_eye",
+				"Kind": "Proxy",
+				"Reason": "hard dependency of /Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+				"DefaultIncluded": false
+			},
+			{
+				"PackageName": "/Game/Characters/Player/004_lacrimosa/ter_new/face_ter/MI_player_004_lacrimosa_eyelash",
+				"Kind": "Proxy",
+				"Reason": "hard dependency of /Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+				"DefaultIncluded": false
+			},
+			{
+				"PackageName": "/Game/Characters/Player/004_lacrimosa/ter_new/face_ter/MI_player_004_lacrimosa_face",
+				"Kind": "Proxy",
+				"Reason": "hard dependency of /Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+				"DefaultIncluded": false
+			},
+			{
+				"PackageName": "/Game/Characters/Player/004_lacrimosa/ter_new/face_ter/MI_player_004_lacrimosa_gaoguang",
+				"Kind": "Proxy",
+				"Reason": "hard dependency of /Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+				"DefaultIncluded": false
+			},
+			{
+				"PackageName": "/Game/Characters/Player/004_lacrimosa/ter_new/hair_ter/MI_player_004_lacrimosa_hair_01",
+				"Kind": "Proxy",
+				"Reason": "hard dependency of /Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+				"DefaultIncluded": false
+			},
+			{
+				"PackageName": "/Game/Characters/Player/004_lacrimosa/ter_new/hair_ter/MI_player_004_lacrimosa_hair_02",
+				"Kind": "Proxy",
+				"Reason": "hard dependency of /Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+				"DefaultIncluded": false
+			},
+			{
+				"PackageName": "/Game/Characters/Player/Common_ter/common_face_mask/MI_common_face_mask",
+				"Kind": "Proxy",
+				"Reason": "hard dependency of /Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+				"DefaultIncluded": false
+			},
+			{
+				"PackageName": "/Game/Resources/UI/Fonts/Font_All",
+				"Kind": "Proxy",
+				"Reason": "hard dependency of /Game/Characters/Player/004_lacrimosa/mod/RuntimeGameUiProbe/WBP_NTE_CharacterActions",
+				"DefaultIncluded": false
+			}
+		],
+		"IncludedPackages": [
+			"/Game/Characters/Player/004_lacrimosa/mod/Generated/MeshAsset_Player004_NTE_AttachedSmoke",
+			"/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Anim/ABP_NTE_hair_tail_Kawaii",
+			"/Game/Characters/Player/004_lacrimosa/mod/Materials/MI_mod_body",
+			"/Game/Characters/Player/004_lacrimosa/mod/Runtime/ABP_NTE_ModToggle_PostProcess",
+			"/Game/Characters/Player/004_lacrimosa/mod/RuntimeGameUiProbe/ABP_NTE_MainGameUiProbe",
+			"/Game/Characters/Player/004_lacrimosa/mod/RuntimeGameUiProbe/BP_NTE_CharacterActionSaveGame",
+			"/Game/Characters/Player/004_lacrimosa/mod/RuntimeGameUiProbe/WBP_NTE_CharacterActions",
+			"/Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin"
+		]
+	},
+	"WritePackageJob": true,
+	"PackageJob":
+	{
+		"JobFile": "F:/NTE/PhyLab/Saved/NTEBuildTool/Packages/lacrimosa004_runtime_game_ui_font_probe_P/lacrimosa004_runtime_game_ui_font_probe_P.job.json",
+		"ModName": "lacrimosa004_runtime_game_ui_font_probe_P",
+		"PackageCount": 8,
+		"Packages": [
+			"/Game/Characters/Player/004_lacrimosa/mod/Generated/MeshAsset_Player004_NTE_AttachedSmoke",
+			"/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Anim/ABP_NTE_hair_tail_Kawaii",
+			"/Game/Characters/Player/004_lacrimosa/mod/Materials/MI_mod_body",
+			"/Game/Characters/Player/004_lacrimosa/mod/Runtime/ABP_NTE_ModToggle_PostProcess",
+			"/Game/Characters/Player/004_lacrimosa/mod/RuntimeGameUiProbe/ABP_NTE_MainGameUiProbe",
+			"/Game/Characters/Player/004_lacrimosa/mod/RuntimeGameUiProbe/BP_NTE_CharacterActionSaveGame",
+			"/Game/Characters/Player/004_lacrimosa/mod/RuntimeGameUiProbe/WBP_NTE_CharacterActions",
+			"/Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin"
+		],
+		"ModsDir": "F:/Neverness To Everness/Client/WindowsNoEditor/HT/Content/Paks/Mods",
+		"GameMountName": "HT",
+		"Unversioned": false,
+		"SkipCook": false,
+		"RequiresHTGameStub": true
+	},
+	"BuildPackage": false,
+	"NormalizedSpec":
+	{
+		"Format": "NTE.CharacterModSpec",
+		"Version": 1,
+		"WorkspaceName": "004_lacrimosa_runtime_game_ui_font_probe",
+		"Appearance":
+		{
+			"AppearanceRowName": "Player004",
+			"PlayerAppearanceAssetPath": "/Game/Characters/Player/004_lacrimosa/mod/Generated/MeshAsset_Player004_NTE_AttachedSmoke"
+		},
+		"MainMeshPath": "/Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+		"MainAnimBlueprintPath": "/Game/Characters/Player/004_lacrimosa/mod/RuntimeGameUiProbe/ABP_NTE_MainGameUiProbe",
+		"AttachedMeshes": [],
+		"MaterialOperations": [],
+		"RuntimeActions": [
+			{
+				"Id": "toggle_main_slot0",
+				"Label": "Main Slot 0",
+				"Hotkey": "Ctrl+M",
+				"TargetMeshId": "main",
+				"ActionType": "MaterialSlotVisibility",
+				"TargetComponentTags": [],
+				"MaterialSlots": [ 0 ],
+				"ScalarValue": 0,
+				"VectorValue":
+				{
+					"R": 1,
+					"G": 1,
+					"B": 1,
+					"A": 1
+				},
+				"MorphValue": 0,
+				"DefaultEnabled": true
+			}
+		],
+		"RuntimeUi":
+		{
+			"EnableUi": true,
+			"ToggleUiHotkey": "F9",
+			"Title": "NTE Game UI Font Probe",
+			"DefaultVisible": false,
+			"FontPath": "/Game/Resources/UI/Fonts/Font_All",
+			"BodyFontTypeface": "Light",
+			"TitleFontTypeface": "Heavy",
+			"BodyFontSize": 20,
+			"TitleFontSize": 24
+		},
+		"KawaiiPresets": [],
+		"Package":
+		{
+			"ModName": "lacrimosa004_runtime_game_ui_font_probe_P",
+			"ModsDir": "F:/Neverness To Everness/Client/WindowsNoEditor/HT/Content/Paks/Mods",
+			"JobFilename": "F:/NTE/PhyLab/Saved/NTEBuildTool/Packages/lacrimosa004_runtime_game_ui_font_probe_P/lacrimosa004_runtime_game_ui_font_probe_P.job.json",
+			"BuildAfterCreate": false
+		}
+	}
+}

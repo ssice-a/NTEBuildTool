@@ -1,0 +1,4640 @@
+[
+  {
+    "Type": "BackgroundBlur",
+    "Name": "BackgroundBlur_104",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'BackgroundBlur'",
+    "Outer": {
+      "ObjectName": "WidgetTree'BPUI_MessageBox_C:WidgetTree'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.96"
+    },
+    "Properties": {
+      "BlurStrength": 6.0,
+      "Slot": {
+        "ObjectName": "CanvasPanelSlot'BPUI_MessageBox_C:WidgetTree.CanvasPanel_0.CanvasPanelSlot_3'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.13"
+      },
+      "Visibility": "ESlateVisibility::Visible"
+    }
+  },
+  {
+    "Type": "BPUI_CheckBox_12_C",
+    "Name": "MessageCheckBox",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "WidgetBlueprintGeneratedClass'/Game/UI/Blueprints/BPUI_CheckBox_12.BPUI_CheckBox_12_C'",
+    "Outer": {
+      "ObjectName": "WidgetTree'BPUI_MessageBox_C:WidgetTree'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.96"
+    },
+    "Template": {
+      "ObjectName": "BPUI_CheckBox_12_C'Default__BPUI_CheckBox_12_C'",
+      "ObjectPath": "/Game/UI/Blueprints/BPUI_CheckBox_12.0"
+    },
+    "Properties": {
+      "NamedSlotBindings": [
+        {
+          "Name": "NamedSlot_44",
+          "Content": {
+            "ObjectName": "CanvasPanel'BPUI_MessageBox_C:WidgetTree.CanvasPanel_9'",
+            "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.6"
+          }
+        }
+      ],
+      "Slot": {
+        "ObjectName": "HorizontalBoxSlot'BPUI_MessageBox_C:WidgetTree.HorizontalBox_75.HorizontalBoxSlot_0'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.34"
+      }
+    }
+  },
+  {
+    "Type": "BPUI_MessageBox_C",
+    "Name": "Default__BPUI_MessageBox_C",
+    "Flags": "RF_Public | RF_Transactional | RF_ClassDefaultObject | RF_ArchetypeObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "WidgetBlueprintGeneratedClass'/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.BPUI_MessageBox_C'",
+    "Package": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox",
+    "Properties": {
+      "OpenSound": {
+        "AssetPathName": "/Game/WwiseAudio/Events/UI/UI/Play_Sfx_UI_Cmn_Tip.Play_Sfx_UI_Cmn_Tip",
+        "SubPathString": ""
+      },
+      "CloseSound": {
+        "AssetPathName": "/Game/WwiseAudio/Events/UI/UI/Play_Sfx_UI_Click_Back.Play_Sfx_UI_Click_Back",
+        "SubPathString": ""
+      },
+      "LayerName": {
+        "TagName": "Layer.MessageBox"
+      },
+      "bForceShowMouseDuringSequence": true,
+      "InputConfig": "EHTWidgetInputMode::Menu",
+      "bIsBackHandler": true,
+      "bIsBackActionDisplayedInActionBar": true,
+      "bAutoActivate": true,
+      "bSetVisibilityOnActivated": true,
+      "bSetVisibilityOnDeactivated": true,
+      "bHasScriptImplementedTick": false,
+      "bHasScriptImplementedPaint": false
+    }
+  },
+  {
+    "Type": "CanvasPanel",
+    "Name": "CanvasPanel_0",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'CanvasPanel'",
+    "Outer": {
+      "ObjectName": "WidgetTree'BPUI_MessageBox_C:WidgetTree'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.96"
+    },
+    "Properties": {
+      "Slots": [
+        {
+          "ObjectName": "CanvasPanelSlot'BPUI_MessageBox_C:WidgetTree.CanvasPanel_0.CanvasPanelSlot_5'",
+          "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.15"
+        },
+        {
+          "ObjectName": "CanvasPanelSlot'BPUI_MessageBox_C:WidgetTree.CanvasPanel_0.CanvasPanelSlot_3'",
+          "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.13"
+        },
+        {
+          "ObjectName": "CanvasPanelSlot'BPUI_MessageBox_C:WidgetTree.CanvasPanel_0.CanvasPanelSlot_2'",
+          "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.12"
+        },
+        {
+          "ObjectName": "CanvasPanelSlot'BPUI_MessageBox_C:WidgetTree.CanvasPanel_0.CanvasPanelSlot_8'",
+          "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.16"
+        },
+        {
+          "ObjectName": "CanvasPanelSlot'BPUI_MessageBox_C:WidgetTree.CanvasPanel_0.CanvasPanelSlot_9'",
+          "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.17"
+        },
+        {
+          "ObjectName": "CanvasPanelSlot'BPUI_MessageBox_C:WidgetTree.CanvasPanel_0.CanvasPanelSlot_4'",
+          "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.14"
+        }
+      ],
+      "Slot": {
+        "ObjectName": "OverlaySlot'BPUI_MessageBox_C:WidgetTree.Overlay_0.OverlaySlot_2'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.85"
+      }
+    }
+  },
+  {
+    "Type": "CanvasPanel",
+    "Name": "CanvasPanel_2",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'CanvasPanel'",
+    "Outer": {
+      "ObjectName": "WidgetTree'BPUI_MessageBox_C:WidgetTree'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.96"
+    },
+    "Properties": {
+      "Slots": [
+        {
+          "ObjectName": "CanvasPanelSlot'BPUI_MessageBox_C:WidgetTree.CanvasPanel_2.CanvasPanelSlot_0'",
+          "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.18"
+        },
+        {
+          "ObjectName": "CanvasPanelSlot'BPUI_MessageBox_C:WidgetTree.CanvasPanel_2.CanvasPanelSlot_6'",
+          "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.20"
+        },
+        {
+          "ObjectName": "CanvasPanelSlot'BPUI_MessageBox_C:WidgetTree.CanvasPanel_2.CanvasPanelSlot_1'",
+          "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.19"
+        }
+      ],
+      "Slot": {
+        "ObjectName": "CanvasPanelSlot'BPUI_MessageBox_C:WidgetTree.CanvasPanel_0.CanvasPanelSlot_8'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.16"
+      },
+      "RenderOpacity": 0.0
+    }
+  },
+  {
+    "Type": "CanvasPanel",
+    "Name": "CanvasPanel_4",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'CanvasPanel'",
+    "Outer": {
+      "ObjectName": "WidgetTree'BPUI_MessageBox_C:WidgetTree'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.96"
+    },
+    "Properties": {
+      "Slots": [
+        {
+          "ObjectName": "CanvasPanelSlot'BPUI_MessageBox_C:WidgetTree.CanvasPanel_4.CanvasPanelSlot_1'",
+          "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.22"
+        },
+        {
+          "ObjectName": "CanvasPanelSlot'BPUI_MessageBox_C:WidgetTree.CanvasPanel_4.CanvasPanelSlot_0'",
+          "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.21"
+        },
+        {
+          "ObjectName": "CanvasPanelSlot'BPUI_MessageBox_C:WidgetTree.CanvasPanel_4.CanvasPanelSlot_2'",
+          "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.23"
+        }
+      ],
+      "Slot": {
+        "ObjectName": "CanvasPanelSlot'BPUI_MessageBox_C:WidgetTree.CanvasPanel_2.CanvasPanelSlot_6'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.20"
+      }
+    }
+  },
+  {
+    "Type": "CanvasPanel",
+    "Name": "CanvasPanel_9",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'CanvasPanel'",
+    "Outer": {
+      "ObjectName": "WidgetTree'BPUI_MessageBox_C:WidgetTree'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.96"
+    },
+    "Properties": {
+      "Slots": [
+        {
+          "ObjectName": "CanvasPanelSlot'BPUI_MessageBox_C:WidgetTree.CanvasPanel_9.CanvasPanelSlot_0'",
+          "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.24"
+        }
+      ]
+    }
+  },
+  {
+    "Type": "CanvasPanel",
+    "Name": "CanvasPanel_97",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'CanvasPanel'",
+    "Outer": {
+      "ObjectName": "WidgetTree'BPUI_MessageBox_C:WidgetTree'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.96"
+    },
+    "Properties": {
+      "Slots": [
+        {
+          "ObjectName": "CanvasPanelSlot'BPUI_MessageBox_C:WidgetTree.CanvasPanel_97.CanvasPanelSlot_2'",
+          "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.26"
+        },
+        {
+          "ObjectName": "CanvasPanelSlot'BPUI_MessageBox_C:WidgetTree.CanvasPanel_97.CanvasPanelSlot_0'",
+          "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.25"
+        }
+      ],
+      "Slot": {
+        "ObjectName": "CanvasPanelSlot'BPUI_MessageBox_C:WidgetTree.CheckBoxPanel.CanvasPanelSlot_1'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.27"
+      }
+    }
+  },
+  {
+    "Type": "CanvasPanel",
+    "Name": "CheckBoxPanel",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'CanvasPanel'",
+    "Outer": {
+      "ObjectName": "WidgetTree'BPUI_MessageBox_C:WidgetTree'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.96"
+    },
+    "Properties": {
+      "Slots": [
+        {
+          "ObjectName": "CanvasPanelSlot'BPUI_MessageBox_C:WidgetTree.CheckBoxPanel.CanvasPanelSlot_1'",
+          "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.27"
+        }
+      ],
+      "Slot": {
+        "ObjectName": "CanvasPanelSlot'BPUI_MessageBox_C:WidgetTree.CanvasPanel_2.CanvasPanelSlot_1'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.19"
+      }
+    }
+  },
+  {
+    "Type": "CanvasPanel",
+    "Name": "CloseBtnPanel",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'CanvasPanel'",
+    "Outer": {
+      "ObjectName": "WidgetTree'BPUI_MessageBox_C:WidgetTree'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.96"
+    },
+    "Properties": {
+      "Slots": [
+        {
+          "ObjectName": "CanvasPanelSlot'BPUI_MessageBox_C:WidgetTree.CloseBtnPanel.CanvasPanelSlot_1'",
+          "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.28"
+        }
+      ],
+      "Slot": {
+        "ObjectName": "CanvasPanelSlot'BPUI_MessageBox_C:WidgetTree.CanvasPanel_0.CanvasPanelSlot_2'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.12"
+      },
+      "Visibility": "ESlateVisibility::Collapsed"
+    }
+  },
+  {
+    "Type": "CanvasPanel",
+    "Name": "CP_Btn",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'CanvasPanel'",
+    "Outer": {
+      "ObjectName": "WidgetTree'BPUI_MessageBox_C:WidgetTree'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.96"
+    },
+    "Properties": {
+      "Slots": [
+        {
+          "ObjectName": "CanvasPanelSlot'BPUI_MessageBox_C:WidgetTree.CP_Btn.CanvasPanelSlot_11'",
+          "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.29"
+        },
+        {
+          "ObjectName": "CanvasPanelSlot'BPUI_MessageBox_C:WidgetTree.CP_Btn.CanvasPanelSlot_9'",
+          "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.30"
+        }
+      ],
+      "Slot": {
+        "ObjectName": "CanvasPanelSlot'BPUI_MessageBox_C:WidgetTree.CanvasPanel_4.CanvasPanelSlot_2'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.23"
+      }
+    }
+  },
+  {
+    "Type": "CanvasPanel",
+    "Name": "CP_info",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'CanvasPanel'",
+    "Outer": {
+      "ObjectName": "WidgetTree'BPUI_MessageBox_C:WidgetTree'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.96"
+    },
+    "Properties": {
+      "Slots": [
+        {
+          "ObjectName": "CanvasPanelSlot'BPUI_MessageBox_C:WidgetTree.CP_info.CanvasPanelSlot_1'",
+          "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.31"
+        }
+      ],
+      "Slot": {
+        "ObjectName": "CanvasPanelSlot'BPUI_MessageBox_C:WidgetTree.CanvasPanel_4.CanvasPanelSlot_0'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.21"
+      }
+    }
+  },
+  {
+    "Type": "CanvasPanelSlot",
+    "Name": "CanvasPanelSlot_2",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'CanvasPanelSlot'",
+    "Outer": {
+      "ObjectName": "CanvasPanel'BPUI_MessageBox_C:WidgetTree.CanvasPanel_0'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.3"
+    },
+    "Properties": {
+      "LayoutData": {
+        "Offsets": {
+          "Right": 0.0,
+          "Bottom": 0.0
+        },
+        "Anchors": {
+          "Maximum": {
+            "X": 1.0,
+            "Y": 1.0
+          }
+        }
+      },
+      "Parent": {
+        "ObjectName": "CanvasPanel'BPUI_MessageBox_C:WidgetTree.CanvasPanel_0'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.3"
+      },
+      "Content": {
+        "ObjectName": "CanvasPanel'BPUI_MessageBox_C:WidgetTree.CloseBtnPanel'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.9"
+      }
+    }
+  },
+  {
+    "Type": "CanvasPanelSlot",
+    "Name": "CanvasPanelSlot_3",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'CanvasPanelSlot'",
+    "Outer": {
+      "ObjectName": "CanvasPanel'BPUI_MessageBox_C:WidgetTree.CanvasPanel_0'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.3"
+    },
+    "Properties": {
+      "LayoutData": {
+        "Offsets": {
+          "Right": 0.0,
+          "Bottom": 0.0
+        },
+        "Anchors": {
+          "Maximum": {
+            "X": 1.0,
+            "Y": 1.0
+          }
+        }
+      },
+      "Parent": {
+        "ObjectName": "CanvasPanel'BPUI_MessageBox_C:WidgetTree.CanvasPanel_0'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.3"
+      },
+      "Content": {
+        "ObjectName": "BackgroundBlur'BPUI_MessageBox_C:WidgetTree.BackgroundBlur_104'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.0"
+      }
+    }
+  },
+  {
+    "Type": "CanvasPanelSlot",
+    "Name": "CanvasPanelSlot_4",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'CanvasPanelSlot'",
+    "Outer": {
+      "ObjectName": "CanvasPanel'BPUI_MessageBox_C:WidgetTree.CanvasPanel_0'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.3"
+    },
+    "Properties": {
+      "LayoutData": {
+        "Offsets": {
+          "Right": 110.0,
+          "Bottom": 110.0
+        },
+        "Anchors": {
+          "Minimum": {
+            "X": 1.0,
+            "Y": 0.0
+          },
+          "Maximum": {
+            "X": 1.0,
+            "Y": 0.0
+          }
+        }
+      },
+      "ZOrder": 3,
+      "Parent": {
+        "ObjectName": "CanvasPanel'BPUI_MessageBox_C:WidgetTree.CanvasPanel_0'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.3"
+      },
+      "Content": {
+        "ObjectName": "CommonBoundActionBar'BPUI_MessageBox_C:WidgetTree.CBActionBar_Close'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.32"
+      }
+    }
+  },
+  {
+    "Type": "CanvasPanelSlot",
+    "Name": "CanvasPanelSlot_5",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'CanvasPanelSlot'",
+    "Outer": {
+      "ObjectName": "CanvasPanel'BPUI_MessageBox_C:WidgetTree.CanvasPanel_0'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.3"
+    },
+    "Properties": {
+      "LayoutData": {
+        "Offsets": {
+          "Right": 0.0,
+          "Bottom": 0.0
+        },
+        "Anchors": {
+          "Maximum": {
+            "X": 1.0,
+            "Y": 1.0
+          }
+        }
+      },
+      "Parent": {
+        "ObjectName": "CanvasPanel'BPUI_MessageBox_C:WidgetTree.CanvasPanel_0'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.3"
+      },
+      "Content": {
+        "ObjectName": "Image'BPUI_MessageBox_C:WidgetTree.Image_128'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.38"
+      }
+    }
+  },
+  {
+    "Type": "CanvasPanelSlot",
+    "Name": "CanvasPanelSlot_8",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'CanvasPanelSlot'",
+    "Outer": {
+      "ObjectName": "CanvasPanel'BPUI_MessageBox_C:WidgetTree.CanvasPanel_0'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.3"
+    },
+    "Properties": {
+      "LayoutData": {
+        "Offsets": {
+          "Right": 0.0,
+          "Bottom": 243.66667
+        },
+        "Anchors": {
+          "Minimum": {
+            "X": 0.0,
+            "Y": 0.5
+          },
+          "Maximum": {
+            "X": 1.0,
+            "Y": 0.5
+          }
+        },
+        "Alignment": {
+          "X": 0.5,
+          "Y": 0.5
+        }
+      },
+      "Parent": {
+        "ObjectName": "CanvasPanel'BPUI_MessageBox_C:WidgetTree.CanvasPanel_0'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.3"
+      },
+      "Content": {
+        "ObjectName": "CanvasPanel'BPUI_MessageBox_C:WidgetTree.CanvasPanel_2'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.4"
+      }
+    }
+  },
+  {
+    "Type": "CanvasPanelSlot",
+    "Name": "CanvasPanelSlot_9",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'CanvasPanelSlot'",
+    "Outer": {
+      "ObjectName": "CanvasPanel'BPUI_MessageBox_C:WidgetTree.CanvasPanel_0'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.3"
+    },
+    "Properties": {
+      "LayoutData": {
+        "Offsets": {
+          "Top": 468.0,
+          "Bottom": 20.0
+        },
+        "Anchors": {
+          "Minimum": {
+            "X": 0.5,
+            "Y": 0.5
+          },
+          "Maximum": {
+            "X": 0.5,
+            "Y": 0.5
+          }
+        },
+        "Alignment": {
+          "X": 0.5,
+          "Y": 0.0
+        }
+      },
+      "bAutoSize": true,
+      "Parent": {
+        "ObjectName": "CanvasPanel'BPUI_MessageBox_C:WidgetTree.CanvasPanel_0'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.3"
+      },
+      "Content": {
+        "ObjectName": "TextBlock'BPUI_MessageBox_C:WidgetTree.TextAutoCanceTime'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.86"
+      }
+    }
+  },
+  {
+    "Type": "CanvasPanelSlot",
+    "Name": "CanvasPanelSlot_0",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'CanvasPanelSlot'",
+    "Outer": {
+      "ObjectName": "CanvasPanel'BPUI_MessageBox_C:WidgetTree.CanvasPanel_2'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.4"
+    },
+    "Properties": {
+      "LayoutData": {
+        "Offsets": {
+          "Left": -50.0,
+          "Right": -50.0,
+          "Bottom": 456.0
+        },
+        "Anchors": {
+          "Minimum": {
+            "X": 0.0,
+            "Y": 0.5
+          },
+          "Maximum": {
+            "X": 1.0,
+            "Y": 0.5
+          }
+        },
+        "Alignment": {
+          "X": 0.5,
+          "Y": 0.5
+        }
+      },
+      "Parent": {
+        "ObjectName": "CanvasPanel'BPUI_MessageBox_C:WidgetTree.CanvasPanel_2'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.4"
+      },
+      "Content": {
+        "ObjectName": "UI_Common_Popup_C'BPUI_MessageBox_C:WidgetTree.UI_Common_Popup'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.90"
+      }
+    }
+  },
+  {
+    "Type": "CanvasPanelSlot",
+    "Name": "CanvasPanelSlot_1",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'CanvasPanelSlot'",
+    "Outer": {
+      "ObjectName": "CanvasPanel'BPUI_MessageBox_C:WidgetTree.CanvasPanel_2'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.4"
+    },
+    "Properties": {
+      "LayoutData": {
+        "Offsets": {
+          "Top": 261.79742,
+          "Right": 360.74072,
+          "Bottom": 60.0
+        },
+        "Anchors": {
+          "Minimum": {
+            "X": 0.5,
+            "Y": 0.5
+          },
+          "Maximum": {
+            "X": 0.5,
+            "Y": 0.5
+          }
+        },
+        "Alignment": {
+          "X": 0.5,
+          "Y": 0.0
+        }
+      },
+      "ZOrder": 10,
+      "Parent": {
+        "ObjectName": "CanvasPanel'BPUI_MessageBox_C:WidgetTree.CanvasPanel_2'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.4"
+      },
+      "Content": {
+        "ObjectName": "CanvasPanel'BPUI_MessageBox_C:WidgetTree.CheckBoxPanel'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.8"
+      }
+    }
+  },
+  {
+    "Type": "CanvasPanelSlot",
+    "Name": "CanvasPanelSlot_6",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'CanvasPanelSlot'",
+    "Outer": {
+      "ObjectName": "CanvasPanel'BPUI_MessageBox_C:WidgetTree.CanvasPanel_2'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.4"
+    },
+    "Properties": {
+      "LayoutData": {
+        "Offsets": {
+          "Top": 3.0,
+          "Right": 1080.0,
+          "Bottom": 250.0
+        },
+        "Anchors": {
+          "Minimum": {
+            "X": 0.5,
+            "Y": 0.5
+          },
+          "Maximum": {
+            "X": 0.5,
+            "Y": 0.5
+          }
+        },
+        "Alignment": {
+          "X": 0.5,
+          "Y": 0.5
+        }
+      },
+      "ZOrder": 1,
+      "Parent": {
+        "ObjectName": "CanvasPanel'BPUI_MessageBox_C:WidgetTree.CanvasPanel_2'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.4"
+      },
+      "Content": {
+        "ObjectName": "CanvasPanel'BPUI_MessageBox_C:WidgetTree.CanvasPanel_4'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.5"
+      }
+    }
+  },
+  {
+    "Type": "CanvasPanelSlot",
+    "Name": "CanvasPanelSlot_0",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'CanvasPanelSlot'",
+    "Outer": {
+      "ObjectName": "CanvasPanel'BPUI_MessageBox_C:WidgetTree.CanvasPanel_4'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.5"
+    },
+    "Properties": {
+      "LayoutData": {
+        "Offsets": {
+          "Top": -60.0,
+          "Right": 681.33325,
+          "Bottom": 58.148148
+        },
+        "Anchors": {
+          "Minimum": {
+            "X": 0.5,
+            "Y": 0.5
+          },
+          "Maximum": {
+            "X": 0.5,
+            "Y": 0.5
+          }
+        },
+        "Alignment": {
+          "X": 0.5,
+          "Y": 0.0
+        }
+      },
+      "Parent": {
+        "ObjectName": "CanvasPanel'BPUI_MessageBox_C:WidgetTree.CanvasPanel_4'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.5"
+      },
+      "Content": {
+        "ObjectName": "CanvasPanel'BPUI_MessageBox_C:WidgetTree.CP_info'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.11"
+      }
+    }
+  },
+  {
+    "Type": "CanvasPanelSlot",
+    "Name": "CanvasPanelSlot_1",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'CanvasPanelSlot'",
+    "Outer": {
+      "ObjectName": "CanvasPanel'BPUI_MessageBox_C:WidgetTree.CanvasPanel_4'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.5"
+    },
+    "Properties": {
+      "LayoutData": {
+        "Offsets": {
+          "Top": -198.0,
+          "Right": 300.0,
+          "Bottom": 48.0
+        },
+        "Anchors": {
+          "Minimum": {
+            "X": 0.5,
+            "Y": 0.5
+          },
+          "Maximum": {
+            "X": 0.5,
+            "Y": 0.5
+          }
+        },
+        "Alignment": {
+          "X": 0.5,
+          "Y": 0.0
+        }
+      },
+      "Parent": {
+        "ObjectName": "CanvasPanel'BPUI_MessageBox_C:WidgetTree.CanvasPanel_4'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.5"
+      },
+      "Content": {
+        "ObjectName": "TextBlock'BPUI_MessageBox_C:WidgetTree.TextBlock_Title'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.87"
+      }
+    }
+  },
+  {
+    "Type": "CanvasPanelSlot",
+    "Name": "CanvasPanelSlot_2",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'CanvasPanelSlot'",
+    "Outer": {
+      "ObjectName": "CanvasPanel'BPUI_MessageBox_C:WidgetTree.CanvasPanel_4'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.5"
+    },
+    "Properties": {
+      "LayoutData": {
+        "Offsets": {
+          "Top": 132.0,
+          "Right": 800.0,
+          "Bottom": 74.0
+        },
+        "Anchors": {
+          "Minimum": {
+            "X": 0.5,
+            "Y": 0.5
+          },
+          "Maximum": {
+            "X": 0.5,
+            "Y": 0.5
+          }
+        },
+        "Alignment": {
+          "X": 0.5,
+          "Y": 0.0
+        }
+      },
+      "Parent": {
+        "ObjectName": "CanvasPanel'BPUI_MessageBox_C:WidgetTree.CanvasPanel_4'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.5"
+      },
+      "Content": {
+        "ObjectName": "CanvasPanel'BPUI_MessageBox_C:WidgetTree.CP_Btn'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.10"
+      }
+    }
+  },
+  {
+    "Type": "CanvasPanelSlot",
+    "Name": "CanvasPanelSlot_0",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'CanvasPanelSlot'",
+    "Outer": {
+      "ObjectName": "CanvasPanel'BPUI_MessageBox_C:WidgetTree.CanvasPanel_9'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.6"
+    },
+    "Properties": {
+      "LayoutData": {
+        "Offsets": {
+          "Top": 40.0,
+          "Right": 40.0,
+          "Bottom": 40.0
+        },
+        "Anchors": {
+          "Minimum": {
+            "X": 0.5,
+            "Y": 0.5
+          },
+          "Maximum": {
+            "X": 0.5,
+            "Y": 0.5
+          }
+        },
+        "Alignment": {
+          "X": 0.5,
+          "Y": 0.5
+        }
+      },
+      "Parent": {
+        "ObjectName": "CanvasPanel'BPUI_MessageBox_C:WidgetTree.CanvasPanel_9'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.6"
+      },
+      "Content": {
+        "ObjectName": "HTKeysAction'BPUI_MessageBox_C:WidgetTree.HTKeysAction'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.36"
+      }
+    }
+  },
+  {
+    "Type": "CanvasPanelSlot",
+    "Name": "CanvasPanelSlot_0",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'CanvasPanelSlot'",
+    "Outer": {
+      "ObjectName": "CanvasPanel'BPUI_MessageBox_C:WidgetTree.CanvasPanel_97'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.7"
+    },
+    "Properties": {
+      "LayoutData": {
+        "Offsets": {
+          "Top": -21.0
+        },
+        "Anchors": {
+          "Minimum": {
+            "X": 0.5,
+            "Y": 0.5
+          },
+          "Maximum": {
+            "X": 0.5,
+            "Y": 0.5
+          }
+        },
+        "Alignment": {
+          "X": 0.5,
+          "Y": 0.0
+        }
+      },
+      "bAutoSize": true,
+      "Parent": {
+        "ObjectName": "CanvasPanel'BPUI_MessageBox_C:WidgetTree.CanvasPanel_97'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.7"
+      },
+      "Content": {
+        "ObjectName": "HorizontalBox'BPUI_MessageBox_C:WidgetTree.HorizontalBox_75'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.33"
+      }
+    }
+  },
+  {
+    "Type": "CanvasPanelSlot",
+    "Name": "CanvasPanelSlot_2",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'CanvasPanelSlot'",
+    "Outer": {
+      "ObjectName": "CanvasPanel'BPUI_MessageBox_C:WidgetTree.CanvasPanel_97'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.7"
+    },
+    "Properties": {
+      "LayoutData": {
+        "Offsets": {
+          "Left": -5.0,
+          "Right": -5.0,
+          "Bottom": 40.0
+        },
+        "Anchors": {
+          "Minimum": {
+            "X": 0.0,
+            "Y": 0.5
+          },
+          "Maximum": {
+            "X": 1.0,
+            "Y": 0.5
+          }
+        },
+        "Alignment": {
+          "X": 0.0,
+          "Y": 0.5
+        }
+      },
+      "Parent": {
+        "ObjectName": "CanvasPanel'BPUI_MessageBox_C:WidgetTree.CanvasPanel_97'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.7"
+      },
+      "Content": {
+        "ObjectName": "Image'BPUI_MessageBox_C:WidgetTree.Image_205'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.39"
+      }
+    }
+  },
+  {
+    "Type": "CanvasPanelSlot",
+    "Name": "CanvasPanelSlot_1",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'CanvasPanelSlot'",
+    "Outer": {
+      "ObjectName": "CanvasPanel'BPUI_MessageBox_C:WidgetTree.CheckBoxPanel'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.8"
+    },
+    "Properties": {
+      "LayoutData": {
+        "Offsets": {
+          "Right": 360.74072,
+          "Bottom": 60.0
+        },
+        "Anchors": {
+          "Minimum": {
+            "X": 0.5,
+            "Y": 0.5
+          },
+          "Maximum": {
+            "X": 0.5,
+            "Y": 0.5
+          }
+        },
+        "Alignment": {
+          "X": 0.5,
+          "Y": 0.5
+        }
+      },
+      "bAutoSize": true,
+      "Parent": {
+        "ObjectName": "CanvasPanel'BPUI_MessageBox_C:WidgetTree.CheckBoxPanel'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.8"
+      },
+      "Content": {
+        "ObjectName": "CanvasPanel'BPUI_MessageBox_C:WidgetTree.CanvasPanel_97'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.7"
+      }
+    }
+  },
+  {
+    "Type": "CanvasPanelSlot",
+    "Name": "CanvasPanelSlot_1",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'CanvasPanelSlot'",
+    "Outer": {
+      "ObjectName": "CanvasPanel'BPUI_MessageBox_C:WidgetTree.CloseBtnPanel'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.9"
+    },
+    "Properties": {
+      "LayoutData": {
+        "Offsets": {
+          "Top": -72.0,
+          "Right": 298.3333,
+          "Bottom": 30.8
+        },
+        "Anchors": {
+          "Minimum": {
+            "X": 0.5,
+            "Y": 1.0
+          },
+          "Maximum": {
+            "X": 0.5,
+            "Y": 1.0
+          }
+        },
+        "Alignment": {
+          "X": 0.5,
+          "Y": 0.5
+        }
+      },
+      "Parent": {
+        "ObjectName": "CanvasPanel'BPUI_MessageBox_C:WidgetTree.CloseBtnPanel'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.9"
+      },
+      "Content": {
+        "ObjectName": "Image'BPUI_MessageBox_C:WidgetTree.Image_1'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.37"
+      }
+    }
+  },
+  {
+    "Type": "CanvasPanelSlot",
+    "Name": "CanvasPanelSlot_11",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'CanvasPanelSlot'",
+    "Outer": {
+      "ObjectName": "CanvasPanel'BPUI_MessageBox_C:WidgetTree.CP_Btn'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.10"
+    },
+    "Properties": {
+      "LayoutData": {
+        "Offsets": {
+          "Left": 200.0,
+          "Right": 356.0,
+          "Bottom": 74.0
+        },
+        "Anchors": {
+          "Minimum": {
+            "X": 0.5,
+            "Y": 0.0
+          },
+          "Maximum": {
+            "X": 0.5,
+            "Y": 0.0
+          }
+        },
+        "Alignment": {
+          "X": 0.5,
+          "Y": 0.0
+        }
+      },
+      "Parent": {
+        "ObjectName": "CanvasPanel'BPUI_MessageBox_C:WidgetTree.CP_Btn'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.10"
+      },
+      "Content": {
+        "ObjectName": "W_HTButton_Com_02_C'BPUI_MessageBox_C:WidgetTree.BtnSure'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.92"
+      }
+    }
+  },
+  {
+    "Type": "CanvasPanelSlot",
+    "Name": "CanvasPanelSlot_9",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'CanvasPanelSlot'",
+    "Outer": {
+      "ObjectName": "CanvasPanel'BPUI_MessageBox_C:WidgetTree.CP_Btn'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.10"
+    },
+    "Properties": {
+      "LayoutData": {
+        "Offsets": {
+          "Left": -200.0,
+          "Right": 356.0,
+          "Bottom": 74.0
+        },
+        "Anchors": {
+          "Minimum": {
+            "X": 0.5,
+            "Y": 0.0
+          },
+          "Maximum": {
+            "X": 0.5,
+            "Y": 0.0
+          }
+        },
+        "Alignment": {
+          "X": 0.5,
+          "Y": 0.0
+        }
+      },
+      "Parent": {
+        "ObjectName": "CanvasPanel'BPUI_MessageBox_C:WidgetTree.CP_Btn'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.10"
+      },
+      "Content": {
+        "ObjectName": "W_HTButton_Com_02_C'BPUI_MessageBox_C:WidgetTree.BtnCancel'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.91"
+      }
+    }
+  },
+  {
+    "Type": "CanvasPanelSlot",
+    "Name": "CanvasPanelSlot_1",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'CanvasPanelSlot'",
+    "Outer": {
+      "ObjectName": "CanvasPanel'BPUI_MessageBox_C:WidgetTree.CP_info'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.11"
+    },
+    "Properties": {
+      "LayoutData": {
+        "Offsets": {
+          "Top": 30.0,
+          "Right": 20.0,
+          "Bottom": 25.0
+        },
+        "Anchors": {
+          "Minimum": {
+            "X": 0.5,
+            "Y": 0.0
+          },
+          "Maximum": {
+            "X": 0.5,
+            "Y": 0.0
+          }
+        },
+        "Alignment": {
+          "X": 0.5,
+          "Y": 0.4
+        }
+      },
+      "bAutoSize": true,
+      "Parent": {
+        "ObjectName": "CanvasPanel'BPUI_MessageBox_C:WidgetTree.CP_info'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.11"
+      },
+      "Content": {
+        "ObjectName": "TypingText'BPUI_MessageBox_C:WidgetTree.Content'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.89"
+      }
+    }
+  },
+  {
+    "Type": "CommonBoundActionBar",
+    "Name": "CBActionBar_Close",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'CommonBoundActionBar'",
+    "Outer": {
+      "ObjectName": "WidgetTree'BPUI_MessageBox_C:WidgetTree'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.96"
+    },
+    "Properties": {
+      "ActionButtonClass": {
+        "ObjectName": "WidgetBlueprintGeneratedClass'W_BoundActionButton_Close_C'",
+        "ObjectPath": "/Game/UI/Blueprints/BottomBar/W_BoundActionButton_Close.69"
+      },
+      "Slot": {
+        "ObjectName": "CanvasPanelSlot'BPUI_MessageBox_C:WidgetTree.CanvasPanel_0.CanvasPanelSlot_4'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.14"
+      }
+    }
+  },
+  {
+    "Type": "HorizontalBox",
+    "Name": "HorizontalBox_75",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'HorizontalBox'",
+    "Outer": {
+      "ObjectName": "WidgetTree'BPUI_MessageBox_C:WidgetTree'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.96"
+    },
+    "Properties": {
+      "Slots": [
+        {
+          "ObjectName": "HorizontalBoxSlot'BPUI_MessageBox_C:WidgetTree.HorizontalBox_75.HorizontalBoxSlot_0'",
+          "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.34"
+        },
+        {
+          "ObjectName": "HorizontalBoxSlot'BPUI_MessageBox_C:WidgetTree.HorizontalBox_75.HorizontalBoxSlot_1'",
+          "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.35"
+        }
+      ],
+      "Slot": {
+        "ObjectName": "CanvasPanelSlot'BPUI_MessageBox_C:WidgetTree.CanvasPanel_97.CanvasPanelSlot_0'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.25"
+      }
+    }
+  },
+  {
+    "Type": "HorizontalBoxSlot",
+    "Name": "HorizontalBoxSlot_0",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'HorizontalBoxSlot'",
+    "Outer": {
+      "ObjectName": "HorizontalBox'BPUI_MessageBox_C:WidgetTree.HorizontalBox_75'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.33"
+    },
+    "Properties": {
+      "Parent": {
+        "ObjectName": "HorizontalBox'BPUI_MessageBox_C:WidgetTree.HorizontalBox_75'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.33"
+      },
+      "Content": {
+        "ObjectName": "BPUI_CheckBox_12_C'BPUI_MessageBox_C:WidgetTree.MessageCheckBox'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.1"
+      }
+    }
+  },
+  {
+    "Type": "HorizontalBoxSlot",
+    "Name": "HorizontalBoxSlot_1",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'HorizontalBoxSlot'",
+    "Outer": {
+      "ObjectName": "HorizontalBox'BPUI_MessageBox_C:WidgetTree.HorizontalBox_75'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.33"
+    },
+    "Properties": {
+      "Padding": {
+        "Left": 35.0,
+        "Right": 30.0
+      },
+      "VerticalAlignment": "EVerticalAlignment::VAlign_Center",
+      "Parent": {
+        "ObjectName": "HorizontalBox'BPUI_MessageBox_C:WidgetTree.HorizontalBox_75'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.33"
+      },
+      "Content": {
+        "ObjectName": "TextBlock'BPUI_MessageBox_C:WidgetTree.TextCheckBoxTips'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.88"
+      }
+    }
+  },
+  {
+    "Type": "HTKeysAction",
+    "Name": "HTKeysAction",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'HTKeysAction'",
+    "Outer": {
+      "ObjectName": "WidgetTree'BPUI_MessageBox_C:WidgetTree'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.96"
+    },
+    "Properties": {
+      "WidgetNameToClick": "MessageCheckBox",
+      "GamepadKey": {
+        "KeyName": "Gamepad_FaceButton_Top"
+      },
+      "Slot": {
+        "ObjectName": "CanvasPanelSlot'BPUI_MessageBox_C:WidgetTree.CanvasPanel_9.CanvasPanelSlot_0'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.24"
+      }
+    }
+  },
+  {
+    "Type": "Image",
+    "Name": "Image_1",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'Image'",
+    "Outer": {
+      "ObjectName": "WidgetTree'BPUI_MessageBox_C:WidgetTree'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.96"
+    },
+    "Properties": {
+      "Brush": {
+        "ImageSize": {
+          "X": 236.0,
+          "Y": 34.0
+        }
+      },
+      "Slot": {
+        "ObjectName": "CanvasPanelSlot'BPUI_MessageBox_C:WidgetTree.CloseBtnPanel.CanvasPanelSlot_1'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.28"
+      },
+      "Visibility": "ESlateVisibility::HitTestInvisible"
+    }
+  },
+  {
+    "Type": "Image",
+    "Name": "Image_128",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'Image'",
+    "Outer": {
+      "ObjectName": "WidgetTree'BPUI_MessageBox_C:WidgetTree'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.96"
+    },
+    "Properties": {
+      "Brush": {
+        "TintColor": {
+          "SpecifiedColor": {
+            "R": 0.0,
+            "G": 0.0,
+            "B": 0.0,
+            "A": 0.25,
+            "Hex": "3F000000"
+          }
+        }
+      },
+      "Slot": {
+        "ObjectName": "CanvasPanelSlot'BPUI_MessageBox_C:WidgetTree.CanvasPanel_0.CanvasPanelSlot_5'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.15"
+      }
+    }
+  },
+  {
+    "Type": "Image",
+    "Name": "Image_205",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'Image'",
+    "Outer": {
+      "ObjectName": "WidgetTree'BPUI_MessageBox_C:WidgetTree'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.96"
+    },
+    "Properties": {
+      "Brush": {
+        "TintColor": {
+          "SpecifiedColor": {
+            "R": 0.006995,
+            "G": 0.007499,
+            "B": 0.007499,
+            "A": 1.0,
+            "Hex": "141515"
+          }
+        },
+        "DrawAs": "ESlateBrushDrawType::Box",
+        "ImageType": "ESlateBrushImageType::FullColor",
+        "ImageSize": {
+          "X": 60.0,
+          "Y": 40.0
+        },
+        "Margin": {
+          "Left": 0.5,
+          "Top": 0.5,
+          "Right": 0.5,
+          "Bottom": 0.5
+        },
+        "ResourceObject": {
+          "ObjectName": "Texture2D'YH_UI_shangpu_yuanjiaojuxing_40'",
+          "ObjectPath": "/Game/UI/UI/store/YH_UI_shangpu_yuanjiaojuxing_40.0"
+        }
+      },
+      "Slot": {
+        "ObjectName": "CanvasPanelSlot'BPUI_MessageBox_C:WidgetTree.CanvasPanel_97.CanvasPanelSlot_2'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.26"
+      }
+    }
+  },
+  {
+    "Type": "MovieScene",
+    "Name": "CloseAnim",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieScene'",
+    "Outer": {
+      "ObjectName": "WidgetAnimation'BPUI_MessageBox_C:CloseAnim_INST'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.93"
+    },
+    "Properties": {
+      "Possessables": [
+        {
+          "Tags": [],
+          "Guid": "603AC897-42EA319B-59F100AB-50299945",
+          "Name": "CanvasPanel_2",
+          "ParentGuid": "00000000-00000000-00000000-00000000",
+          "SpawnableObjectBindingID": {
+            "Guid": "00000000-00000000-00000000-00000000",
+            "SequenceId": 0,
+            "ResolveParentIndex": -1
+          }
+        },
+        {
+          "Tags": [],
+          "Guid": "B9B3812C-4F8C8202-6A033F8A-A21A84EA",
+          "Name": "Image_128",
+          "ParentGuid": "00000000-00000000-00000000-00000000",
+          "SpawnableObjectBindingID": {
+            "Guid": "00000000-00000000-00000000-00000000",
+            "SequenceId": 0,
+            "ResolveParentIndex": -1
+          }
+        },
+        {
+          "Tags": [],
+          "Guid": "CE59E555-4C26300B-2322AFAD-0D251CCD",
+          "Name": "CheckBoxPanel",
+          "ParentGuid": "00000000-00000000-00000000-00000000",
+          "SpawnableObjectBindingID": {
+            "Guid": "00000000-00000000-00000000-00000000",
+            "SequenceId": 0,
+            "ResolveParentIndex": -1
+          }
+        },
+        {
+          "Tags": [],
+          "Guid": "EF115110-432CE4DE-AF15E189-55C38C69",
+          "Name": "TextAutoCanceTime",
+          "ParentGuid": "00000000-00000000-00000000-00000000",
+          "SpawnableObjectBindingID": {
+            "Guid": "00000000-00000000-00000000-00000000",
+            "SequenceId": 0,
+            "ResolveParentIndex": -1
+          }
+        }
+      ],
+      "ObjectBindings": [
+        {
+          "ObjectGuid": "603AC897-42EA319B-59F100AB-50299945",
+          "BindingName": "CanvasPanel_2",
+          "Tracks": [
+            {
+              "ObjectName": "MovieScene2DTransformTrack'BPUI_MessageBox_C:CloseAnim_INST.CloseAnim.MovieScene2DTransformTrack_1'",
+              "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.44"
+            },
+            {
+              "ObjectName": "MovieSceneFloatTrack'BPUI_MessageBox_C:CloseAnim_INST.CloseAnim.MovieSceneFloatTrack_1'",
+              "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.77"
+            }
+          ]
+        },
+        {
+          "ObjectGuid": "B9B3812C-4F8C8202-6A033F8A-A21A84EA",
+          "BindingName": "Image_128",
+          "Tracks": [
+            {
+              "ObjectName": "MovieSceneFloatTrack'BPUI_MessageBox_C:CloseAnim_INST.CloseAnim.MovieSceneFloatTrack_8'",
+              "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.79"
+            }
+          ]
+        },
+        {
+          "ObjectGuid": "CE59E555-4C26300B-2322AFAD-0D251CCD",
+          "BindingName": "CheckBoxPanel",
+          "Tracks": [
+            {
+              "ObjectName": "MovieSceneFloatTrack'BPUI_MessageBox_C:CloseAnim_INST.CloseAnim.MovieSceneFloatTrack_0'",
+              "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.76"
+            }
+          ]
+        },
+        {
+          "ObjectGuid": "EF115110-432CE4DE-AF15E189-55C38C69",
+          "BindingName": "TextAutoCanceTime",
+          "Tracks": [
+            {
+              "ObjectName": "MovieSceneFloatTrack'BPUI_MessageBox_C:CloseAnim_INST.CloseAnim.MovieSceneFloatTrack_2'",
+              "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.78"
+            }
+          ]
+        }
+      ],
+      "PlaybackRange": {
+        "Value": {
+          "LowerBound": {
+            "Type": 1,
+            "Value": {
+              "Value": 0
+            }
+          },
+          "UpperBound": {
+            "Type": 0,
+            "Value": {
+              "Value": 14001
+            }
+          }
+        }
+      },
+      "DisplayRate": {
+        "Numerator": 30
+      },
+      "Signature": "6D2AD0A7-428DF08F-8CB8F489-82ED9583"
+    }
+  },
+  {
+    "Type": "MovieScene",
+    "Name": "OpenAnim",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieScene'",
+    "Outer": {
+      "ObjectName": "WidgetAnimation'BPUI_MessageBox_C:OpenAnim_INST'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.94"
+    },
+    "Properties": {
+      "Possessables": [
+        {
+          "Tags": [],
+          "Guid": "1C1CA6D0-4204A30F-A4746E85-94726A48",
+          "Name": "Image_128",
+          "ParentGuid": "00000000-00000000-00000000-00000000",
+          "SpawnableObjectBindingID": {
+            "Guid": "00000000-00000000-00000000-00000000",
+            "SequenceId": 0,
+            "ResolveParentIndex": -1
+          }
+        },
+        {
+          "Tags": [],
+          "Guid": "7CB8B56E-46F48F48-4264DBBC-2C6282A3",
+          "Name": "CheckBoxPanel",
+          "ParentGuid": "00000000-00000000-00000000-00000000",
+          "SpawnableObjectBindingID": {
+            "Guid": "00000000-00000000-00000000-00000000",
+            "SequenceId": 0,
+            "ResolveParentIndex": -1
+          }
+        },
+        {
+          "Tags": [],
+          "Guid": "C3DB64D7-49621D61-43C1D78D-EDBECA71",
+          "Name": "TextAutoCanceTime",
+          "ParentGuid": "00000000-00000000-00000000-00000000",
+          "SpawnableObjectBindingID": {
+            "Guid": "00000000-00000000-00000000-00000000",
+            "SequenceId": 0,
+            "ResolveParentIndex": -1
+          }
+        },
+        {
+          "Tags": [],
+          "Guid": "CDB4AB7C-4D8DC853-0620DA93-D76C68C6",
+          "Name": "CanvasPanel_2",
+          "ParentGuid": "00000000-00000000-00000000-00000000",
+          "SpawnableObjectBindingID": {
+            "Guid": "00000000-00000000-00000000-00000000",
+            "SequenceId": 0,
+            "ResolveParentIndex": -1
+          }
+        }
+      ],
+      "ObjectBindings": [
+        {
+          "ObjectGuid": "1C1CA6D0-4204A30F-A4746E85-94726A48",
+          "BindingName": "Image_128",
+          "Tracks": [
+            {
+              "ObjectName": "MovieSceneFloatTrack'BPUI_MessageBox_C:OpenAnim_INST.OpenAnim.MovieSceneFloatTrack_8'",
+              "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.83"
+            }
+          ]
+        },
+        {
+          "ObjectGuid": "7CB8B56E-46F48F48-4264DBBC-2C6282A3",
+          "BindingName": "CheckBoxPanel",
+          "Tracks": [
+            {
+              "ObjectName": "MovieSceneFloatTrack'BPUI_MessageBox_C:OpenAnim_INST.OpenAnim.MovieSceneFloatTrack_0'",
+              "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.80"
+            }
+          ]
+        },
+        {
+          "ObjectGuid": "C3DB64D7-49621D61-43C1D78D-EDBECA71",
+          "BindingName": "TextAutoCanceTime",
+          "Tracks": [
+            {
+              "ObjectName": "MovieSceneFloatTrack'BPUI_MessageBox_C:OpenAnim_INST.OpenAnim.MovieSceneFloatTrack_2'",
+              "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.81"
+            }
+          ]
+        },
+        {
+          "ObjectGuid": "CDB4AB7C-4D8DC853-0620DA93-D76C68C6",
+          "BindingName": "CanvasPanel_2",
+          "Tracks": [
+            {
+              "ObjectName": "MovieScene2DTransformTrack'BPUI_MessageBox_C:OpenAnim_INST.OpenAnim.MovieScene2DTransformTrack_0'",
+              "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.45"
+            },
+            {
+              "ObjectName": "MovieSceneFloatTrack'BPUI_MessageBox_C:OpenAnim_INST.OpenAnim.MovieSceneFloatTrack_4'",
+              "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.82"
+            }
+          ]
+        }
+      ],
+      "PlaybackRange": {
+        "Value": {
+          "LowerBound": {
+            "Type": 1,
+            "Value": {
+              "Value": 0
+            }
+          },
+          "UpperBound": {
+            "Type": 0,
+            "Value": {
+              "Value": 28001
+            }
+          }
+        }
+      },
+      "DisplayRate": {
+        "Numerator": 30
+      },
+      "Signature": "97E7EC75-47F64B63-857E48B4-D9542E11"
+    }
+  },
+  {
+    "Type": "MovieScene2DTransformSection",
+    "Name": "MovieScene2DTransformSection_0",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieScene2DTransformSection'",
+    "Outer": {
+      "ObjectName": "MovieScene2DTransformTrack'BPUI_MessageBox_C:CloseAnim_INST.CloseAnim.MovieScene2DTransformTrack_1'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.44"
+    },
+    "Properties": {
+      "TransformMask": {
+        "Mask": 2
+      },
+      "Translation": {
+        "PreInfinityExtrap": "RCCE_Constant",
+        "PostInfinityExtrap": "RCCE_Constant",
+        "Times": [
+          {
+            "Value": 0
+          }
+        ],
+        "Values": [
+          {
+            "Value": 0.0,
+            "Tangent": {
+              "ArriveTangent": 0.0,
+              "LeaveTangent": 0.0,
+              "ArriveTangentWeight": 0.0,
+              "LeaveTangentWeight": 0.0,
+              "TangentWeightMode": 0
+            },
+            "InterpMode": 2,
+            "TangentMode": 0
+          }
+        ],
+        "DefaultValue": 0.0,
+        "bHasDefaultValue": false,
+        "TickResolution": {
+          "Numerator": 60000,
+          "Denominator": 1
+        },
+        "bShowCurve": false,
+        "StructFallback": null
+      },
+      "Translation[1]": {
+        "PreInfinityExtrap": "RCCE_Constant",
+        "PostInfinityExtrap": "RCCE_Constant",
+        "Times": [
+          {
+            "Value": 0
+          },
+          {
+            "Value": 14000
+          }
+        ],
+        "Values": [
+          {
+            "Value": 0.0,
+            "Tangent": {
+              "ArriveTangent": 0.0,
+              "LeaveTangent": 0.0,
+              "ArriveTangentWeight": 0.0,
+              "LeaveTangentWeight": 0.0,
+              "TangentWeightMode": 0
+            },
+            "InterpMode": 2,
+            "TangentMode": 0
+          },
+          {
+            "Value": 70.0,
+            "Tangent": {
+              "ArriveTangent": 0.0,
+              "LeaveTangent": 0.0,
+              "ArriveTangentWeight": 0.0,
+              "LeaveTangentWeight": 0.0,
+              "TangentWeightMode": 0
+            },
+            "InterpMode": 2,
+            "TangentMode": 0
+          }
+        ],
+        "DefaultValue": 0.0,
+        "bHasDefaultValue": false,
+        "TickResolution": {
+          "Numerator": 60000,
+          "Denominator": 1
+        },
+        "bShowCurve": false,
+        "StructFallback": null
+      },
+      "Rotation": {
+        "PreInfinityExtrap": "RCCE_Constant",
+        "PostInfinityExtrap": "RCCE_Constant",
+        "Times": [
+          {
+            "Value": 0
+          }
+        ],
+        "Values": [
+          {
+            "Value": 0.0,
+            "Tangent": {
+              "ArriveTangent": 0.0,
+              "LeaveTangent": 0.0,
+              "ArriveTangentWeight": 0.0,
+              "LeaveTangentWeight": 0.0,
+              "TangentWeightMode": 0
+            },
+            "InterpMode": 2,
+            "TangentMode": 0
+          }
+        ],
+        "DefaultValue": 0.0,
+        "bHasDefaultValue": false,
+        "TickResolution": {
+          "Numerator": 60000,
+          "Denominator": 1
+        },
+        "bShowCurve": false,
+        "StructFallback": null
+      },
+      "Scale": {
+        "PreInfinityExtrap": "RCCE_Constant",
+        "PostInfinityExtrap": "RCCE_Constant",
+        "Times": [
+          {
+            "Value": 0
+          }
+        ],
+        "Values": [
+          {
+            "Value": 1.0,
+            "Tangent": {
+              "ArriveTangent": 0.0,
+              "LeaveTangent": 0.0,
+              "ArriveTangentWeight": 0.0,
+              "LeaveTangentWeight": 0.0,
+              "TangentWeightMode": 0
+            },
+            "InterpMode": 2,
+            "TangentMode": 0
+          }
+        ],
+        "DefaultValue": 0.0,
+        "bHasDefaultValue": false,
+        "TickResolution": {
+          "Numerator": 60000,
+          "Denominator": 1
+        },
+        "bShowCurve": false,
+        "StructFallback": null
+      },
+      "Scale[1]": {
+        "PreInfinityExtrap": "RCCE_Constant",
+        "PostInfinityExtrap": "RCCE_Constant",
+        "Times": [
+          {
+            "Value": 0
+          }
+        ],
+        "Values": [
+          {
+            "Value": 1.0,
+            "Tangent": {
+              "ArriveTangent": 0.0,
+              "LeaveTangent": 0.0,
+              "ArriveTangentWeight": 0.0,
+              "LeaveTangentWeight": 0.0,
+              "TangentWeightMode": 0
+            },
+            "InterpMode": 2,
+            "TangentMode": 0
+          }
+        ],
+        "DefaultValue": 0.0,
+        "bHasDefaultValue": false,
+        "TickResolution": {
+          "Numerator": 60000,
+          "Denominator": 1
+        },
+        "bShowCurve": false,
+        "StructFallback": null
+      },
+      "Shear": {
+        "PreInfinityExtrap": "RCCE_Constant",
+        "PostInfinityExtrap": "RCCE_Constant",
+        "Times": [
+          {
+            "Value": 0
+          }
+        ],
+        "Values": [
+          {
+            "Value": 0.0,
+            "Tangent": {
+              "ArriveTangent": 0.0,
+              "LeaveTangent": 0.0,
+              "ArriveTangentWeight": 0.0,
+              "LeaveTangentWeight": 0.0,
+              "TangentWeightMode": 0
+            },
+            "InterpMode": 2,
+            "TangentMode": 0
+          }
+        ],
+        "DefaultValue": 0.0,
+        "bHasDefaultValue": false,
+        "TickResolution": {
+          "Numerator": 60000,
+          "Denominator": 1
+        },
+        "bShowCurve": false,
+        "StructFallback": null
+      },
+      "Shear[1]": {
+        "PreInfinityExtrap": "RCCE_Constant",
+        "PostInfinityExtrap": "RCCE_Constant",
+        "Times": [
+          {
+            "Value": 0
+          }
+        ],
+        "Values": [
+          {
+            "Value": 0.0,
+            "Tangent": {
+              "ArriveTangent": 0.0,
+              "LeaveTangent": 0.0,
+              "ArriveTangentWeight": 0.0,
+              "LeaveTangentWeight": 0.0,
+              "TangentWeightMode": 0
+            },
+            "InterpMode": 2,
+            "TangentMode": 0
+          }
+        ],
+        "DefaultValue": 0.0,
+        "bHasDefaultValue": false,
+        "TickResolution": {
+          "Numerator": 60000,
+          "Denominator": 1
+        },
+        "bShowCurve": false,
+        "StructFallback": null
+      },
+      "Easing": {
+        "EaseIn": {
+          "ObjectName": "MovieSceneBuiltInEasingFunction'BPUI_MessageBox_C:CloseAnim_INST.CloseAnim.MovieScene2DTransformTrack_1.MovieScene2DTransformSection_0.EaseInFunction'",
+          "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.46"
+        },
+        "EaseOut": {
+          "ObjectName": "MovieSceneBuiltInEasingFunction'BPUI_MessageBox_C:CloseAnim_INST.CloseAnim.MovieScene2DTransformTrack_1.MovieScene2DTransformSection_0.EaseOutFunction'",
+          "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.47"
+        }
+      },
+      "SectionRange": {
+        "Value": {
+          "LowerBound": {
+            "Type": 1,
+            "Value": {
+              "Value": 0
+            }
+          },
+          "UpperBound": {
+            "Type": 1,
+            "Value": {
+              "Value": 14000
+            }
+          }
+        }
+      },
+      "Signature": "38D9C8E8-4134D1EE-10852F9D-AD75646D"
+    }
+  },
+  {
+    "Type": "MovieScene2DTransformSection",
+    "Name": "MovieScene2DTransformSection_0",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieScene2DTransformSection'",
+    "Outer": {
+      "ObjectName": "MovieScene2DTransformTrack'BPUI_MessageBox_C:OpenAnim_INST.OpenAnim.MovieScene2DTransformTrack_0'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.45"
+    },
+    "Properties": {
+      "TransformMask": {
+        "Mask": 2
+      },
+      "Translation": {
+        "PreInfinityExtrap": "RCCE_Constant",
+        "PostInfinityExtrap": "RCCE_Constant",
+        "Times": [
+          {
+            "Value": 0
+          }
+        ],
+        "Values": [
+          {
+            "Value": 0.0,
+            "Tangent": {
+              "ArriveTangent": 0.0,
+              "LeaveTangent": 0.0,
+              "ArriveTangentWeight": 0.0,
+              "LeaveTangentWeight": 0.0,
+              "TangentWeightMode": 0
+            },
+            "InterpMode": 2,
+            "TangentMode": 0
+          }
+        ],
+        "DefaultValue": 0.0,
+        "bHasDefaultValue": false,
+        "TickResolution": {
+          "Numerator": 60000,
+          "Denominator": 1
+        },
+        "bShowCurve": false,
+        "StructFallback": null
+      },
+      "Translation[1]": {
+        "PreInfinityExtrap": "RCCE_Constant",
+        "PostInfinityExtrap": "RCCE_Constant",
+        "Times": [
+          {
+            "Value": 0
+          },
+          {
+            "Value": 28000
+          }
+        ],
+        "Values": [
+          {
+            "Value": 200.0,
+            "Tangent": {
+              "ArriveTangent": -0.38723904,
+              "LeaveTangent": -0.38723904,
+              "ArriveTangentWeight": 161.85558,
+              "LeaveTangentWeight": 161.85558,
+              "TangentWeightMode": 3
+            },
+            "InterpMode": 2,
+            "TangentMode": 1
+          },
+          {
+            "Value": 0.0,
+            "Tangent": {
+              "ArriveTangent": 0.0,
+              "LeaveTangent": 0.0,
+              "ArriveTangentWeight": 0.0,
+              "LeaveTangentWeight": 0.0,
+              "TangentWeightMode": 0
+            },
+            "InterpMode": 2,
+            "TangentMode": 0
+          }
+        ],
+        "DefaultValue": 0.0,
+        "bHasDefaultValue": false,
+        "TickResolution": {
+          "Numerator": 60000,
+          "Denominator": 1
+        },
+        "bShowCurve": false,
+        "StructFallback": null
+      },
+      "Rotation": {
+        "PreInfinityExtrap": "RCCE_Constant",
+        "PostInfinityExtrap": "RCCE_Constant",
+        "Times": [
+          {
+            "Value": 0
+          }
+        ],
+        "Values": [
+          {
+            "Value": 0.0,
+            "Tangent": {
+              "ArriveTangent": 0.0,
+              "LeaveTangent": 0.0,
+              "ArriveTangentWeight": 0.0,
+              "LeaveTangentWeight": 0.0,
+              "TangentWeightMode": 0
+            },
+            "InterpMode": 2,
+            "TangentMode": 0
+          }
+        ],
+        "DefaultValue": 0.0,
+        "bHasDefaultValue": false,
+        "TickResolution": {
+          "Numerator": 60000,
+          "Denominator": 1
+        },
+        "bShowCurve": false,
+        "StructFallback": null
+      },
+      "Scale": {
+        "PreInfinityExtrap": "RCCE_Constant",
+        "PostInfinityExtrap": "RCCE_Constant",
+        "Times": [
+          {
+            "Value": 0
+          }
+        ],
+        "Values": [
+          {
+            "Value": 1.0,
+            "Tangent": {
+              "ArriveTangent": 0.0,
+              "LeaveTangent": 0.0,
+              "ArriveTangentWeight": 0.0,
+              "LeaveTangentWeight": 0.0,
+              "TangentWeightMode": 0
+            },
+            "InterpMode": 2,
+            "TangentMode": 0
+          }
+        ],
+        "DefaultValue": 0.0,
+        "bHasDefaultValue": false,
+        "TickResolution": {
+          "Numerator": 60000,
+          "Denominator": 1
+        },
+        "bShowCurve": false,
+        "StructFallback": null
+      },
+      "Scale[1]": {
+        "PreInfinityExtrap": "RCCE_Constant",
+        "PostInfinityExtrap": "RCCE_Constant",
+        "Times": [
+          {
+            "Value": 0
+          }
+        ],
+        "Values": [
+          {
+            "Value": 1.0,
+            "Tangent": {
+              "ArriveTangent": 0.0,
+              "LeaveTangent": 0.0,
+              "ArriveTangentWeight": 0.0,
+              "LeaveTangentWeight": 0.0,
+              "TangentWeightMode": 0
+            },
+            "InterpMode": 2,
+            "TangentMode": 0
+          }
+        ],
+        "DefaultValue": 0.0,
+        "bHasDefaultValue": false,
+        "TickResolution": {
+          "Numerator": 60000,
+          "Denominator": 1
+        },
+        "bShowCurve": false,
+        "StructFallback": null
+      },
+      "Shear": {
+        "PreInfinityExtrap": "RCCE_Constant",
+        "PostInfinityExtrap": "RCCE_Constant",
+        "Times": [
+          {
+            "Value": 0
+          }
+        ],
+        "Values": [
+          {
+            "Value": 0.0,
+            "Tangent": {
+              "ArriveTangent": 0.0,
+              "LeaveTangent": 0.0,
+              "ArriveTangentWeight": 0.0,
+              "LeaveTangentWeight": 0.0,
+              "TangentWeightMode": 0
+            },
+            "InterpMode": 2,
+            "TangentMode": 0
+          }
+        ],
+        "DefaultValue": 0.0,
+        "bHasDefaultValue": false,
+        "TickResolution": {
+          "Numerator": 60000,
+          "Denominator": 1
+        },
+        "bShowCurve": false,
+        "StructFallback": null
+      },
+      "Shear[1]": {
+        "PreInfinityExtrap": "RCCE_Constant",
+        "PostInfinityExtrap": "RCCE_Constant",
+        "Times": [
+          {
+            "Value": 0
+          }
+        ],
+        "Values": [
+          {
+            "Value": 0.0,
+            "Tangent": {
+              "ArriveTangent": 0.0,
+              "LeaveTangent": 0.0,
+              "ArriveTangentWeight": 0.0,
+              "LeaveTangentWeight": 0.0,
+              "TangentWeightMode": 0
+            },
+            "InterpMode": 2,
+            "TangentMode": 0
+          }
+        ],
+        "DefaultValue": 0.0,
+        "bHasDefaultValue": false,
+        "TickResolution": {
+          "Numerator": 60000,
+          "Denominator": 1
+        },
+        "bShowCurve": false,
+        "StructFallback": null
+      },
+      "Easing": {
+        "EaseIn": {
+          "ObjectName": "MovieSceneBuiltInEasingFunction'BPUI_MessageBox_C:OpenAnim_INST.OpenAnim.MovieScene2DTransformTrack_0.MovieScene2DTransformSection_0.EaseInFunction'",
+          "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.56"
+        },
+        "EaseOut": {
+          "ObjectName": "MovieSceneBuiltInEasingFunction'BPUI_MessageBox_C:OpenAnim_INST.OpenAnim.MovieScene2DTransformTrack_0.MovieScene2DTransformSection_0.EaseOutFunction'",
+          "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.57"
+        }
+      },
+      "SectionRange": {
+        "Value": {
+          "LowerBound": {
+            "Type": 1,
+            "Value": {
+              "Value": 0
+            }
+          },
+          "UpperBound": {
+            "Type": 1,
+            "Value": {
+              "Value": 28000
+            }
+          }
+        }
+      },
+      "Signature": "05DAA568-482810F0-39CC0B9A-5DAAA966"
+    }
+  },
+  {
+    "Type": "MovieScene2DTransformTrack",
+    "Name": "MovieScene2DTransformTrack_1",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieScene2DTransformTrack'",
+    "Outer": {
+      "ObjectName": "MovieScene'BPUI_MessageBox_C:CloseAnim_INST.CloseAnim'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.40"
+    },
+    "Properties": {
+      "PropertyBinding": {
+        "PropertyName": "RenderTransform",
+        "PropertyPath": "RenderTransform",
+        "bCanUseClassLookup": true
+      },
+      "Sections": [
+        {
+          "ObjectName": "MovieScene2DTransformSection'BPUI_MessageBox_C:CloseAnim_INST.CloseAnim.MovieScene2DTransformTrack_1.MovieScene2DTransformSection_0'",
+          "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.42"
+        }
+      ],
+      "EvaluationFieldGuid": "72D0BAE2-407703B9-821B9D96-C46F8C3C",
+      "EvaluationField": {
+        "Entries": [
+          {
+            "Section": {
+              "ObjectName": "MovieScene2DTransformSection'BPUI_MessageBox_C:CloseAnim_INST.CloseAnim.MovieScene2DTransformTrack_1.MovieScene2DTransformSection_0'",
+              "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.42"
+            },
+            "Range": {
+              "LowerBound": {
+                "Type": "ERangeBoundTypes::Inclusive",
+                "Value": {
+                  "Value": 0
+                }
+              },
+              "UpperBound": {
+                "Type": "ERangeBoundTypes::Inclusive",
+                "Value": {
+                  "Value": 14000
+                }
+              }
+            },
+            "ForcedTime": {
+              "Value": -2147483648
+            },
+            "Flags": "ESectionEvaluationFlags::None",
+            "LegacySortOrder": 0
+          }
+        ]
+      },
+      "Signature": "72D0BAE2-407703B9-821B9D96-C46F8C3C"
+    }
+  },
+  {
+    "Type": "MovieScene2DTransformTrack",
+    "Name": "MovieScene2DTransformTrack_0",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieScene2DTransformTrack'",
+    "Outer": {
+      "ObjectName": "MovieScene'BPUI_MessageBox_C:OpenAnim_INST.OpenAnim'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.41"
+    },
+    "Properties": {
+      "PropertyBinding": {
+        "PropertyName": "RenderTransform",
+        "PropertyPath": "RenderTransform",
+        "bCanUseClassLookup": true
+      },
+      "Sections": [
+        {
+          "ObjectName": "MovieScene2DTransformSection'BPUI_MessageBox_C:OpenAnim_INST.OpenAnim.MovieScene2DTransformTrack_0.MovieScene2DTransformSection_0'",
+          "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.43"
+        }
+      ],
+      "EvaluationFieldGuid": "9D6CDCF3-4A0AE7BF-533F8583-2FA27611",
+      "EvaluationField": {
+        "Entries": [
+          {
+            "Section": {
+              "ObjectName": "MovieScene2DTransformSection'BPUI_MessageBox_C:OpenAnim_INST.OpenAnim.MovieScene2DTransformTrack_0.MovieScene2DTransformSection_0'",
+              "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.43"
+            },
+            "Range": {
+              "LowerBound": {
+                "Type": "ERangeBoundTypes::Inclusive",
+                "Value": {
+                  "Value": 0
+                }
+              },
+              "UpperBound": {
+                "Type": "ERangeBoundTypes::Inclusive",
+                "Value": {
+                  "Value": 28000
+                }
+              }
+            },
+            "ForcedTime": {
+              "Value": -2147483648
+            },
+            "Flags": "ESectionEvaluationFlags::None",
+            "LegacySortOrder": 0
+          }
+        ]
+      },
+      "Signature": "9D6CDCF3-4A0AE7BF-533F8583-2FA27611"
+    }
+  },
+  {
+    "Type": "MovieSceneBuiltInEasingFunction",
+    "Name": "EaseInFunction",
+    "Flags": "RF_Public | RF_Transactional | RF_DefaultSubObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneBuiltInEasingFunction'",
+    "Outer": {
+      "ObjectName": "MovieScene2DTransformSection'BPUI_MessageBox_C:CloseAnim_INST.CloseAnim.MovieScene2DTransformTrack_1.MovieScene2DTransformSection_0'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.42"
+    }
+  },
+  {
+    "Type": "MovieSceneBuiltInEasingFunction",
+    "Name": "EaseOutFunction",
+    "Flags": "RF_Public | RF_Transactional | RF_DefaultSubObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneBuiltInEasingFunction'",
+    "Outer": {
+      "ObjectName": "MovieScene2DTransformSection'BPUI_MessageBox_C:CloseAnim_INST.CloseAnim.MovieScene2DTransformTrack_1.MovieScene2DTransformSection_0'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.42"
+    }
+  },
+  {
+    "Type": "MovieSceneBuiltInEasingFunction",
+    "Name": "EaseInFunction",
+    "Flags": "RF_Public | RF_Transactional | RF_DefaultSubObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneBuiltInEasingFunction'",
+    "Outer": {
+      "ObjectName": "MovieSceneFloatSection'BPUI_MessageBox_C:CloseAnim_INST.CloseAnim.MovieSceneFloatTrack_0.MovieSceneFloatSection_0'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.68"
+    }
+  },
+  {
+    "Type": "MovieSceneBuiltInEasingFunction",
+    "Name": "EaseOutFunction",
+    "Flags": "RF_Public | RF_Transactional | RF_DefaultSubObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneBuiltInEasingFunction'",
+    "Outer": {
+      "ObjectName": "MovieSceneFloatSection'BPUI_MessageBox_C:CloseAnim_INST.CloseAnim.MovieSceneFloatTrack_0.MovieSceneFloatSection_0'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.68"
+    }
+  },
+  {
+    "Type": "MovieSceneBuiltInEasingFunction",
+    "Name": "EaseInFunction",
+    "Flags": "RF_Public | RF_Transactional | RF_DefaultSubObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneBuiltInEasingFunction'",
+    "Outer": {
+      "ObjectName": "MovieSceneFloatSection'BPUI_MessageBox_C:CloseAnim_INST.CloseAnim.MovieSceneFloatTrack_1.MovieSceneFloatSection_0'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.69"
+    }
+  },
+  {
+    "Type": "MovieSceneBuiltInEasingFunction",
+    "Name": "EaseOutFunction",
+    "Flags": "RF_Public | RF_Transactional | RF_DefaultSubObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneBuiltInEasingFunction'",
+    "Outer": {
+      "ObjectName": "MovieSceneFloatSection'BPUI_MessageBox_C:CloseAnim_INST.CloseAnim.MovieSceneFloatTrack_1.MovieSceneFloatSection_0'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.69"
+    }
+  },
+  {
+    "Type": "MovieSceneBuiltInEasingFunction",
+    "Name": "EaseInFunction",
+    "Flags": "RF_Public | RF_Transactional | RF_DefaultSubObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneBuiltInEasingFunction'",
+    "Outer": {
+      "ObjectName": "MovieSceneFloatSection'BPUI_MessageBox_C:CloseAnim_INST.CloseAnim.MovieSceneFloatTrack_2.MovieSceneFloatSection_0'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.70"
+    }
+  },
+  {
+    "Type": "MovieSceneBuiltInEasingFunction",
+    "Name": "EaseOutFunction",
+    "Flags": "RF_Public | RF_Transactional | RF_DefaultSubObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneBuiltInEasingFunction'",
+    "Outer": {
+      "ObjectName": "MovieSceneFloatSection'BPUI_MessageBox_C:CloseAnim_INST.CloseAnim.MovieSceneFloatTrack_2.MovieSceneFloatSection_0'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.70"
+    }
+  },
+  {
+    "Type": "MovieSceneBuiltInEasingFunction",
+    "Name": "EaseInFunction",
+    "Flags": "RF_Public | RF_Transactional | RF_DefaultSubObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneBuiltInEasingFunction'",
+    "Outer": {
+      "ObjectName": "MovieSceneFloatSection'BPUI_MessageBox_C:CloseAnim_INST.CloseAnim.MovieSceneFloatTrack_8.MovieSceneFloatSection_0'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.71"
+    }
+  },
+  {
+    "Type": "MovieSceneBuiltInEasingFunction",
+    "Name": "EaseOutFunction",
+    "Flags": "RF_Public | RF_Transactional | RF_DefaultSubObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneBuiltInEasingFunction'",
+    "Outer": {
+      "ObjectName": "MovieSceneFloatSection'BPUI_MessageBox_C:CloseAnim_INST.CloseAnim.MovieSceneFloatTrack_8.MovieSceneFloatSection_0'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.71"
+    }
+  },
+  {
+    "Type": "MovieSceneBuiltInEasingFunction",
+    "Name": "EaseInFunction",
+    "Flags": "RF_Public | RF_Transactional | RF_DefaultSubObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneBuiltInEasingFunction'",
+    "Outer": {
+      "ObjectName": "MovieScene2DTransformSection'BPUI_MessageBox_C:OpenAnim_INST.OpenAnim.MovieScene2DTransformTrack_0.MovieScene2DTransformSection_0'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.43"
+    }
+  },
+  {
+    "Type": "MovieSceneBuiltInEasingFunction",
+    "Name": "EaseOutFunction",
+    "Flags": "RF_Public | RF_Transactional | RF_DefaultSubObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneBuiltInEasingFunction'",
+    "Outer": {
+      "ObjectName": "MovieScene2DTransformSection'BPUI_MessageBox_C:OpenAnim_INST.OpenAnim.MovieScene2DTransformTrack_0.MovieScene2DTransformSection_0'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.43"
+    }
+  },
+  {
+    "Type": "MovieSceneBuiltInEasingFunction",
+    "Name": "EaseInFunction",
+    "Flags": "RF_Public | RF_Transactional | RF_DefaultSubObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneBuiltInEasingFunction'",
+    "Outer": {
+      "ObjectName": "MovieSceneFloatSection'BPUI_MessageBox_C:OpenAnim_INST.OpenAnim.MovieSceneFloatTrack_0.MovieSceneFloatSection_0'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.72"
+    }
+  },
+  {
+    "Type": "MovieSceneBuiltInEasingFunction",
+    "Name": "EaseOutFunction",
+    "Flags": "RF_Public | RF_Transactional | RF_DefaultSubObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneBuiltInEasingFunction'",
+    "Outer": {
+      "ObjectName": "MovieSceneFloatSection'BPUI_MessageBox_C:OpenAnim_INST.OpenAnim.MovieSceneFloatTrack_0.MovieSceneFloatSection_0'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.72"
+    }
+  },
+  {
+    "Type": "MovieSceneBuiltInEasingFunction",
+    "Name": "EaseInFunction",
+    "Flags": "RF_Public | RF_Transactional | RF_DefaultSubObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneBuiltInEasingFunction'",
+    "Outer": {
+      "ObjectName": "MovieSceneFloatSection'BPUI_MessageBox_C:OpenAnim_INST.OpenAnim.MovieSceneFloatTrack_2.MovieSceneFloatSection_0'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.73"
+    }
+  },
+  {
+    "Type": "MovieSceneBuiltInEasingFunction",
+    "Name": "EaseOutFunction",
+    "Flags": "RF_Public | RF_Transactional | RF_DefaultSubObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneBuiltInEasingFunction'",
+    "Outer": {
+      "ObjectName": "MovieSceneFloatSection'BPUI_MessageBox_C:OpenAnim_INST.OpenAnim.MovieSceneFloatTrack_2.MovieSceneFloatSection_0'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.73"
+    }
+  },
+  {
+    "Type": "MovieSceneBuiltInEasingFunction",
+    "Name": "EaseInFunction",
+    "Flags": "RF_Public | RF_Transactional | RF_DefaultSubObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneBuiltInEasingFunction'",
+    "Outer": {
+      "ObjectName": "MovieSceneFloatSection'BPUI_MessageBox_C:OpenAnim_INST.OpenAnim.MovieSceneFloatTrack_4.MovieSceneFloatSection_0'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.74"
+    }
+  },
+  {
+    "Type": "MovieSceneBuiltInEasingFunction",
+    "Name": "EaseOutFunction",
+    "Flags": "RF_Public | RF_Transactional | RF_DefaultSubObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneBuiltInEasingFunction'",
+    "Outer": {
+      "ObjectName": "MovieSceneFloatSection'BPUI_MessageBox_C:OpenAnim_INST.OpenAnim.MovieSceneFloatTrack_4.MovieSceneFloatSection_0'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.74"
+    }
+  },
+  {
+    "Type": "MovieSceneBuiltInEasingFunction",
+    "Name": "EaseInFunction",
+    "Flags": "RF_Public | RF_Transactional | RF_DefaultSubObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneBuiltInEasingFunction'",
+    "Outer": {
+      "ObjectName": "MovieSceneFloatSection'BPUI_MessageBox_C:OpenAnim_INST.OpenAnim.MovieSceneFloatTrack_8.MovieSceneFloatSection_0'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.75"
+    }
+  },
+  {
+    "Type": "MovieSceneBuiltInEasingFunction",
+    "Name": "EaseOutFunction",
+    "Flags": "RF_Public | RF_Transactional | RF_DefaultSubObject | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneBuiltInEasingFunction'",
+    "Outer": {
+      "ObjectName": "MovieSceneFloatSection'BPUI_MessageBox_C:OpenAnim_INST.OpenAnim.MovieSceneFloatTrack_8.MovieSceneFloatSection_0'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.75"
+    }
+  },
+  {
+    "Type": "MovieSceneCompiledData",
+    "Name": "CompiledData",
+    "Flags": "RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneCompiledData'",
+    "Outer": {
+      "ObjectName": "WidgetAnimation'BPUI_MessageBox_C:CloseAnim_INST'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.93"
+    },
+    "Properties": {
+      "EntityComponentField": {
+        "PersistentEntityTree": {
+          "SerializedData": {
+            "Data": {
+              "Entries": [
+                {
+                  "StartIndex": 0,
+                  "Size": 5,
+                  "Capacity": 5
+                }
+              ],
+              "Items": [
+                {
+                  "EntityIndex": 0,
+                  "MetaDataIndex": -1
+                },
+                {
+                  "EntityIndex": 1,
+                  "MetaDataIndex": -1
+                },
+                {
+                  "EntityIndex": 2,
+                  "MetaDataIndex": -1
+                },
+                {
+                  "EntityIndex": 3,
+                  "MetaDataIndex": -1
+                },
+                {
+                  "EntityIndex": 4,
+                  "MetaDataIndex": -1
+                }
+              ]
+            },
+            "RootNode": {
+              "Range": {
+                "LowerBound": {
+                  "Type": 2,
+                  "Value": {
+                    "Value": 0
+                  }
+                },
+                "UpperBound": {
+                  "Type": 2,
+                  "Value": {
+                    "Value": 0
+                  }
+                }
+              },
+              "Parent": {
+                "ChildrenHandle": {
+                  "EntryIndex": -1
+                },
+                "Index": -1
+              },
+              "ChildrenID": {
+                "EntryIndex": 0
+              },
+              "DataID": {
+                "EntryIndex": -1
+              }
+            },
+            "ChildNodes": {
+              "Entries": [
+                {
+                  "StartIndex": 0,
+                  "Size": 1,
+                  "Capacity": 1
+                }
+              ],
+              "Items": [
+                {
+                  "Range": {
+                    "LowerBound": {
+                      "Type": 1,
+                      "Value": {
+                        "Value": 0
+                      }
+                    },
+                    "UpperBound": {
+                      "Type": 1,
+                      "Value": {
+                        "Value": 14000
+                      }
+                    }
+                  },
+                  "Parent": {
+                    "ChildrenHandle": {
+                      "EntryIndex": -1
+                    },
+                    "Index": 0
+                  },
+                  "ChildrenID": {
+                    "EntryIndex": -1
+                  },
+                  "DataID": {
+                    "EntryIndex": 0
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "Entities": [
+          {
+            "Key": {
+              "EntityOwner": {
+                "ObjectName": "MovieScene2DTransformSection'BPUI_MessageBox_C:CloseAnim_INST.CloseAnim.MovieScene2DTransformTrack_1.MovieScene2DTransformSection_0'",
+                "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.42"
+              },
+              "EntityID": 0
+            },
+            "SharedMetaDataIndex": 0
+          },
+          {
+            "Key": {
+              "EntityOwner": {
+                "ObjectName": "MovieSceneFloatSection'BPUI_MessageBox_C:CloseAnim_INST.CloseAnim.MovieSceneFloatTrack_1.MovieSceneFloatSection_0'",
+                "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.69"
+              },
+              "EntityID": 0
+            },
+            "SharedMetaDataIndex": 1
+          },
+          {
+            "Key": {
+              "EntityOwner": {
+                "ObjectName": "MovieSceneFloatSection'BPUI_MessageBox_C:CloseAnim_INST.CloseAnim.MovieSceneFloatTrack_8.MovieSceneFloatSection_0'",
+                "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.71"
+              },
+              "EntityID": 0
+            },
+            "SharedMetaDataIndex": 2
+          },
+          {
+            "Key": {
+              "EntityOwner": {
+                "ObjectName": "MovieSceneFloatSection'BPUI_MessageBox_C:CloseAnim_INST.CloseAnim.MovieSceneFloatTrack_0.MovieSceneFloatSection_0'",
+                "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.68"
+              },
+              "EntityID": 0
+            },
+            "SharedMetaDataIndex": 3
+          },
+          {
+            "Key": {
+              "EntityOwner": {
+                "ObjectName": "MovieSceneFloatSection'BPUI_MessageBox_C:CloseAnim_INST.CloseAnim.MovieSceneFloatTrack_2.MovieSceneFloatSection_0'",
+                "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.70"
+              },
+              "EntityID": 0
+            },
+            "SharedMetaDataIndex": 4
+          }
+        ],
+        "SharedMetaData": [
+          {
+            "ObjectBindingID": "603AC897-42EA319B-59F100AB-50299945"
+          },
+          {
+            "ObjectBindingID": "603AC897-42EA319B-59F100AB-50299945"
+          },
+          {
+            "ObjectBindingID": "B9B3812C-4F8C8202-6A033F8A-A21A84EA"
+          },
+          {
+            "ObjectBindingID": "CE59E555-4C26300B-2322AFAD-0D251CCD"
+          },
+          {
+            "ObjectBindingID": "EF115110-432CE4DE-AF15E189-55C38C69"
+          }
+        ]
+      },
+      "DeterminismFences": [
+        {
+          "FrameNumber": {
+            "Value": 14000
+          },
+          "bInclusive": false
+        }
+      ],
+      "CompiledSignature": "B4C46791-45DBBED7-2CB200B1-618DE31B",
+      "CompilerVersion": "7D4B9809-2FAC4A6B-964ECF72-D8279EF8",
+      "AccumulatedMask": "EMovieSceneSequenceCompilerMask::EntityComponentField",
+      "AllocatedMask": "EMovieSceneSequenceCompilerMask::EntityComponentField"
+    }
+  },
+  {
+    "Type": "MovieSceneCompiledData",
+    "Name": "CompiledData",
+    "Flags": "RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneCompiledData'",
+    "Outer": {
+      "ObjectName": "WidgetAnimation'BPUI_MessageBox_C:OpenAnim_INST'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.94"
+    },
+    "Properties": {
+      "EntityComponentField": {
+        "PersistentEntityTree": {
+          "SerializedData": {
+            "Data": {
+              "Entries": [
+                {
+                  "StartIndex": 0,
+                  "Size": 5,
+                  "Capacity": 5
+                }
+              ],
+              "Items": [
+                {
+                  "EntityIndex": 0,
+                  "MetaDataIndex": -1
+                },
+                {
+                  "EntityIndex": 1,
+                  "MetaDataIndex": -1
+                },
+                {
+                  "EntityIndex": 2,
+                  "MetaDataIndex": -1
+                },
+                {
+                  "EntityIndex": 3,
+                  "MetaDataIndex": -1
+                },
+                {
+                  "EntityIndex": 4,
+                  "MetaDataIndex": -1
+                }
+              ]
+            },
+            "RootNode": {
+              "Range": {
+                "LowerBound": {
+                  "Type": 2,
+                  "Value": {
+                    "Value": 0
+                  }
+                },
+                "UpperBound": {
+                  "Type": 2,
+                  "Value": {
+                    "Value": 0
+                  }
+                }
+              },
+              "Parent": {
+                "ChildrenHandle": {
+                  "EntryIndex": -1
+                },
+                "Index": -1
+              },
+              "ChildrenID": {
+                "EntryIndex": 0
+              },
+              "DataID": {
+                "EntryIndex": -1
+              }
+            },
+            "ChildNodes": {
+              "Entries": [
+                {
+                  "StartIndex": 0,
+                  "Size": 1,
+                  "Capacity": 1
+                }
+              ],
+              "Items": [
+                {
+                  "Range": {
+                    "LowerBound": {
+                      "Type": 1,
+                      "Value": {
+                        "Value": 0
+                      }
+                    },
+                    "UpperBound": {
+                      "Type": 1,
+                      "Value": {
+                        "Value": 28000
+                      }
+                    }
+                  },
+                  "Parent": {
+                    "ChildrenHandle": {
+                      "EntryIndex": -1
+                    },
+                    "Index": 0
+                  },
+                  "ChildrenID": {
+                    "EntryIndex": -1
+                  },
+                  "DataID": {
+                    "EntryIndex": 0
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "Entities": [
+          {
+            "Key": {
+              "EntityOwner": {
+                "ObjectName": "MovieSceneFloatSection'BPUI_MessageBox_C:OpenAnim_INST.OpenAnim.MovieSceneFloatTrack_8.MovieSceneFloatSection_0'",
+                "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.75"
+              },
+              "EntityID": 0
+            },
+            "SharedMetaDataIndex": 0
+          },
+          {
+            "Key": {
+              "EntityOwner": {
+                "ObjectName": "MovieSceneFloatSection'BPUI_MessageBox_C:OpenAnim_INST.OpenAnim.MovieSceneFloatTrack_0.MovieSceneFloatSection_0'",
+                "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.72"
+              },
+              "EntityID": 0
+            },
+            "SharedMetaDataIndex": 1
+          },
+          {
+            "Key": {
+              "EntityOwner": {
+                "ObjectName": "MovieSceneFloatSection'BPUI_MessageBox_C:OpenAnim_INST.OpenAnim.MovieSceneFloatTrack_2.MovieSceneFloatSection_0'",
+                "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.73"
+              },
+              "EntityID": 0
+            },
+            "SharedMetaDataIndex": 2
+          },
+          {
+            "Key": {
+              "EntityOwner": {
+                "ObjectName": "MovieScene2DTransformSection'BPUI_MessageBox_C:OpenAnim_INST.OpenAnim.MovieScene2DTransformTrack_0.MovieScene2DTransformSection_0'",
+                "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.43"
+              },
+              "EntityID": 0
+            },
+            "SharedMetaDataIndex": 3
+          },
+          {
+            "Key": {
+              "EntityOwner": {
+                "ObjectName": "MovieSceneFloatSection'BPUI_MessageBox_C:OpenAnim_INST.OpenAnim.MovieSceneFloatTrack_4.MovieSceneFloatSection_0'",
+                "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.74"
+              },
+              "EntityID": 0
+            },
+            "SharedMetaDataIndex": 4
+          }
+        ],
+        "SharedMetaData": [
+          {
+            "ObjectBindingID": "1C1CA6D0-4204A30F-A4746E85-94726A48"
+          },
+          {
+            "ObjectBindingID": "7CB8B56E-46F48F48-4264DBBC-2C6282A3"
+          },
+          {
+            "ObjectBindingID": "C3DB64D7-49621D61-43C1D78D-EDBECA71"
+          },
+          {
+            "ObjectBindingID": "CDB4AB7C-4D8DC853-0620DA93-D76C68C6"
+          },
+          {
+            "ObjectBindingID": "CDB4AB7C-4D8DC853-0620DA93-D76C68C6"
+          }
+        ]
+      },
+      "DeterminismFences": [
+        {
+          "FrameNumber": {
+            "Value": 28000
+          },
+          "bInclusive": false
+        }
+      ],
+      "CompiledSignature": "8A9C2B76-442B105C-3ECB61A0-68553805",
+      "CompilerVersion": "7D4B9809-2FAC4A6B-964ECF72-D8279EF8",
+      "AccumulatedMask": "EMovieSceneSequenceCompilerMask::EntityComponentField",
+      "AllocatedMask": "EMovieSceneSequenceCompilerMask::EntityComponentField"
+    }
+  },
+  {
+    "Type": "MovieSceneFloatSection",
+    "Name": "MovieSceneFloatSection_0",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneFloatSection'",
+    "Outer": {
+      "ObjectName": "MovieSceneFloatTrack'BPUI_MessageBox_C:CloseAnim_INST.CloseAnim.MovieSceneFloatTrack_0'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.76"
+    },
+    "Properties": {
+      "FloatCurve": {
+        "PreInfinityExtrap": "RCCE_Constant",
+        "PostInfinityExtrap": "RCCE_Constant",
+        "Times": [
+          {
+            "Value": 0
+          },
+          {
+            "Value": 14000
+          }
+        ],
+        "Values": [
+          {
+            "Value": 1.0,
+            "Tangent": {
+              "ArriveTangent": 0.0,
+              "LeaveTangent": -7.142857E-05,
+              "ArriveTangentWeight": 0.0,
+              "LeaveTangentWeight": 0.0,
+              "TangentWeightMode": 0
+            },
+            "InterpMode": 0,
+            "TangentMode": 0
+          },
+          {
+            "Value": 0.0,
+            "Tangent": {
+              "ArriveTangent": -7.142857E-05,
+              "LeaveTangent": 7.142857E-05,
+              "ArriveTangentWeight": 0.0,
+              "LeaveTangentWeight": 0.0,
+              "TangentWeightMode": 0
+            },
+            "InterpMode": 0,
+            "TangentMode": 0
+          }
+        ],
+        "DefaultValue": 0.0,
+        "bHasDefaultValue": false,
+        "TickResolution": {
+          "Numerator": 60000,
+          "Denominator": 1
+        },
+        "bShowCurve": false,
+        "StructFallback": null
+      },
+      "Easing": {
+        "EaseIn": null,
+        "EaseOut": null
+      },
+      "SectionRange": {
+        "Value": {
+          "LowerBound": {
+            "Type": 1,
+            "Value": {
+              "Value": 0
+            }
+          },
+          "UpperBound": {
+            "Type": 1,
+            "Value": {
+              "Value": 14000
+            }
+          }
+        }
+      },
+      "Signature": "6FEEC955-494EB6F5-48354799-461CC107"
+    }
+  },
+  {
+    "Type": "MovieSceneFloatSection",
+    "Name": "MovieSceneFloatSection_0",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneFloatSection'",
+    "Outer": {
+      "ObjectName": "MovieSceneFloatTrack'BPUI_MessageBox_C:CloseAnim_INST.CloseAnim.MovieSceneFloatTrack_1'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.77"
+    },
+    "Properties": {
+      "FloatCurve": {
+        "PreInfinityExtrap": "RCCE_Constant",
+        "PostInfinityExtrap": "RCCE_Constant",
+        "Times": [
+          {
+            "Value": 0
+          },
+          {
+            "Value": 14000
+          }
+        ],
+        "Values": [
+          {
+            "Value": 1.0,
+            "Tangent": {
+              "ArriveTangent": 0.0,
+              "LeaveTangent": -7.142857E-05,
+              "ArriveTangentWeight": 0.0,
+              "LeaveTangentWeight": 0.0,
+              "TangentWeightMode": 0
+            },
+            "InterpMode": 0,
+            "TangentMode": 0
+          },
+          {
+            "Value": 0.0,
+            "Tangent": {
+              "ArriveTangent": -7.142857E-05,
+              "LeaveTangent": 0.0,
+              "ArriveTangentWeight": 0.0,
+              "LeaveTangentWeight": 0.0,
+              "TangentWeightMode": 0
+            },
+            "InterpMode": 0,
+            "TangentMode": 0
+          }
+        ],
+        "DefaultValue": 0.0,
+        "bHasDefaultValue": false,
+        "TickResolution": {
+          "Numerator": 60000,
+          "Denominator": 1
+        },
+        "bShowCurve": false,
+        "StructFallback": null
+      },
+      "Easing": {
+        "EaseIn": {
+          "ObjectName": "MovieSceneBuiltInEasingFunction'BPUI_MessageBox_C:CloseAnim_INST.CloseAnim.MovieSceneFloatTrack_1.MovieSceneFloatSection_0.EaseInFunction'",
+          "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.50"
+        },
+        "EaseOut": {
+          "ObjectName": "MovieSceneBuiltInEasingFunction'BPUI_MessageBox_C:CloseAnim_INST.CloseAnim.MovieSceneFloatTrack_1.MovieSceneFloatSection_0.EaseOutFunction'",
+          "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.51"
+        }
+      },
+      "SectionRange": {
+        "Value": {
+          "LowerBound": {
+            "Type": 1,
+            "Value": {
+              "Value": 0
+            }
+          },
+          "UpperBound": {
+            "Type": 1,
+            "Value": {
+              "Value": 14000
+            }
+          }
+        }
+      },
+      "Signature": "5A6F0C0B-4D4A0591-60D90598-AF60E236"
+    }
+  },
+  {
+    "Type": "MovieSceneFloatSection",
+    "Name": "MovieSceneFloatSection_0",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneFloatSection'",
+    "Outer": {
+      "ObjectName": "MovieSceneFloatTrack'BPUI_MessageBox_C:CloseAnim_INST.CloseAnim.MovieSceneFloatTrack_2'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.78"
+    },
+    "Properties": {
+      "FloatCurve": {
+        "PreInfinityExtrap": "RCCE_Constant",
+        "PostInfinityExtrap": "RCCE_Constant",
+        "Times": [
+          {
+            "Value": 0
+          },
+          {
+            "Value": 14000
+          }
+        ],
+        "Values": [
+          {
+            "Value": 1.0,
+            "Tangent": {
+              "ArriveTangent": 0.0,
+              "LeaveTangent": -7.142857E-05,
+              "ArriveTangentWeight": 0.0,
+              "LeaveTangentWeight": 0.0,
+              "TangentWeightMode": 0
+            },
+            "InterpMode": 0,
+            "TangentMode": 0
+          },
+          {
+            "Value": 0.0,
+            "Tangent": {
+              "ArriveTangent": -7.142857E-05,
+              "LeaveTangent": 7.142857E-05,
+              "ArriveTangentWeight": 0.0,
+              "LeaveTangentWeight": 0.0,
+              "TangentWeightMode": 0
+            },
+            "InterpMode": 0,
+            "TangentMode": 0
+          }
+        ],
+        "DefaultValue": 0.0,
+        "bHasDefaultValue": false,
+        "TickResolution": {
+          "Numerator": 60000,
+          "Denominator": 1
+        },
+        "bShowCurve": false,
+        "StructFallback": null
+      },
+      "Easing": {
+        "EaseIn": null,
+        "EaseOut": null
+      },
+      "SectionRange": {
+        "Value": {
+          "LowerBound": {
+            "Type": 1,
+            "Value": {
+              "Value": 0
+            }
+          },
+          "UpperBound": {
+            "Type": 1,
+            "Value": {
+              "Value": 14000
+            }
+          }
+        }
+      },
+      "Signature": "945EE232-4D856701-DDB079A4-750483A8"
+    }
+  },
+  {
+    "Type": "MovieSceneFloatSection",
+    "Name": "MovieSceneFloatSection_0",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneFloatSection'",
+    "Outer": {
+      "ObjectName": "MovieSceneFloatTrack'BPUI_MessageBox_C:CloseAnim_INST.CloseAnim.MovieSceneFloatTrack_8'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.79"
+    },
+    "Properties": {
+      "FloatCurve": {
+        "PreInfinityExtrap": "RCCE_Constant",
+        "PostInfinityExtrap": "RCCE_Constant",
+        "Times": [
+          {
+            "Value": 0
+          },
+          {
+            "Value": 14000
+          }
+        ],
+        "Values": [
+          {
+            "Value": 1.0,
+            "Tangent": {
+              "ArriveTangent": 0.0,
+              "LeaveTangent": -7.142857E-05,
+              "ArriveTangentWeight": 0.0,
+              "LeaveTangentWeight": 0.0,
+              "TangentWeightMode": 0
+            },
+            "InterpMode": 0,
+            "TangentMode": 0
+          },
+          {
+            "Value": 0.0,
+            "Tangent": {
+              "ArriveTangent": -7.142857E-05,
+              "LeaveTangent": 0.00016666666,
+              "ArriveTangentWeight": 0.0,
+              "LeaveTangentWeight": 0.0,
+              "TangentWeightMode": 0
+            },
+            "InterpMode": 0,
+            "TangentMode": 0
+          }
+        ],
+        "DefaultValue": 0.0,
+        "bHasDefaultValue": false,
+        "TickResolution": {
+          "Numerator": 60000,
+          "Denominator": 1
+        },
+        "bShowCurve": false,
+        "StructFallback": null
+      },
+      "Easing": {
+        "EaseIn": {
+          "ObjectName": "MovieSceneBuiltInEasingFunction'BPUI_MessageBox_C:CloseAnim_INST.CloseAnim.MovieSceneFloatTrack_8.MovieSceneFloatSection_0.EaseInFunction'",
+          "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.54"
+        },
+        "EaseOut": {
+          "ObjectName": "MovieSceneBuiltInEasingFunction'BPUI_MessageBox_C:CloseAnim_INST.CloseAnim.MovieSceneFloatTrack_8.MovieSceneFloatSection_0.EaseOutFunction'",
+          "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.55"
+        }
+      },
+      "SectionRange": {
+        "Value": {
+          "LowerBound": {
+            "Type": 1,
+            "Value": {
+              "Value": 0
+            }
+          },
+          "UpperBound": {
+            "Type": 1,
+            "Value": {
+              "Value": 14000
+            }
+          }
+        }
+      },
+      "Signature": "FAE8DE27-4D75E259-173FCC9E-3499AFEC"
+    }
+  },
+  {
+    "Type": "MovieSceneFloatSection",
+    "Name": "MovieSceneFloatSection_0",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneFloatSection'",
+    "Outer": {
+      "ObjectName": "MovieSceneFloatTrack'BPUI_MessageBox_C:OpenAnim_INST.OpenAnim.MovieSceneFloatTrack_0'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.80"
+    },
+    "Properties": {
+      "FloatCurve": {
+        "PreInfinityExtrap": "RCCE_Constant",
+        "PostInfinityExtrap": "RCCE_Constant",
+        "Times": [
+          {
+            "Value": 0
+          },
+          {
+            "Value": 8000
+          },
+          {
+            "Value": 28000
+          }
+        ],
+        "Values": [
+          {
+            "Value": 0.0,
+            "Tangent": {
+              "ArriveTangent": 0.0,
+              "LeaveTangent": 0.0,
+              "ArriveTangentWeight": 0.0,
+              "LeaveTangentWeight": 0.0,
+              "TangentWeightMode": 0
+            },
+            "InterpMode": 0,
+            "TangentMode": 0
+          },
+          {
+            "Value": 0.0,
+            "Tangent": {
+              "ArriveTangent": 0.0,
+              "LeaveTangent": 5E-05,
+              "ArriveTangentWeight": 0.0,
+              "LeaveTangentWeight": 0.0,
+              "TangentWeightMode": 0
+            },
+            "InterpMode": 0,
+            "TangentMode": 0
+          },
+          {
+            "Value": 1.0,
+            "Tangent": {
+              "ArriveTangent": 5E-05,
+              "LeaveTangent": 0.0,
+              "ArriveTangentWeight": 0.0,
+              "LeaveTangentWeight": 0.0,
+              "TangentWeightMode": 0
+            },
+            "InterpMode": 0,
+            "TangentMode": 0
+          }
+        ],
+        "DefaultValue": 0.0,
+        "bHasDefaultValue": false,
+        "TickResolution": {
+          "Numerator": 60000,
+          "Denominator": 1
+        },
+        "bShowCurve": false,
+        "StructFallback": null
+      },
+      "Easing": {
+        "EaseIn": null,
+        "EaseOut": null
+      },
+      "SectionRange": {
+        "Value": {
+          "LowerBound": {
+            "Type": 1,
+            "Value": {
+              "Value": 0
+            }
+          },
+          "UpperBound": {
+            "Type": 1,
+            "Value": {
+              "Value": 28000
+            }
+          }
+        }
+      },
+      "Signature": "A42CBB2F-4AB4D735-388C9B94-B4FE623C"
+    }
+  },
+  {
+    "Type": "MovieSceneFloatSection",
+    "Name": "MovieSceneFloatSection_0",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneFloatSection'",
+    "Outer": {
+      "ObjectName": "MovieSceneFloatTrack'BPUI_MessageBox_C:OpenAnim_INST.OpenAnim.MovieSceneFloatTrack_2'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.81"
+    },
+    "Properties": {
+      "FloatCurve": {
+        "PreInfinityExtrap": "RCCE_Constant",
+        "PostInfinityExtrap": "RCCE_Constant",
+        "Times": [
+          {
+            "Value": 0
+          },
+          {
+            "Value": 8000
+          },
+          {
+            "Value": 28000
+          }
+        ],
+        "Values": [
+          {
+            "Value": 0.0,
+            "Tangent": {
+              "ArriveTangent": 0.0,
+              "LeaveTangent": 0.0,
+              "ArriveTangentWeight": 0.0,
+              "LeaveTangentWeight": 0.0,
+              "TangentWeightMode": 0
+            },
+            "InterpMode": 0,
+            "TangentMode": 0
+          },
+          {
+            "Value": 0.0,
+            "Tangent": {
+              "ArriveTangent": 0.0,
+              "LeaveTangent": 5E-05,
+              "ArriveTangentWeight": 0.0,
+              "LeaveTangentWeight": 0.0,
+              "TangentWeightMode": 0
+            },
+            "InterpMode": 0,
+            "TangentMode": 0
+          },
+          {
+            "Value": 1.0,
+            "Tangent": {
+              "ArriveTangent": 5E-05,
+              "LeaveTangent": 0.0,
+              "ArriveTangentWeight": 0.0,
+              "LeaveTangentWeight": 0.0,
+              "TangentWeightMode": 0
+            },
+            "InterpMode": 0,
+            "TangentMode": 0
+          }
+        ],
+        "DefaultValue": 0.0,
+        "bHasDefaultValue": false,
+        "TickResolution": {
+          "Numerator": 60000,
+          "Denominator": 1
+        },
+        "bShowCurve": false,
+        "StructFallback": null
+      },
+      "Easing": {
+        "EaseIn": null,
+        "EaseOut": null
+      },
+      "SectionRange": {
+        "Value": {
+          "LowerBound": {
+            "Type": 1,
+            "Value": {
+              "Value": 0
+            }
+          },
+          "UpperBound": {
+            "Type": 1,
+            "Value": {
+              "Value": 28000
+            }
+          }
+        }
+      },
+      "Signature": "3025290A-4A488201-D477D9B7-972EC283"
+    }
+  },
+  {
+    "Type": "MovieSceneFloatSection",
+    "Name": "MovieSceneFloatSection_0",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneFloatSection'",
+    "Outer": {
+      "ObjectName": "MovieSceneFloatTrack'BPUI_MessageBox_C:OpenAnim_INST.OpenAnim.MovieSceneFloatTrack_4'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.82"
+    },
+    "Properties": {
+      "FloatCurve": {
+        "PreInfinityExtrap": "RCCE_Constant",
+        "PostInfinityExtrap": "RCCE_Constant",
+        "Times": [
+          {
+            "Value": 0
+          },
+          {
+            "Value": 28000
+          }
+        ],
+        "Values": [
+          {
+            "Value": 0.0,
+            "Tangent": {
+              "ArriveTangent": 0.0,
+              "LeaveTangent": 3.5714285E-05,
+              "ArriveTangentWeight": 0.0,
+              "LeaveTangentWeight": 0.0,
+              "TangentWeightMode": 0
+            },
+            "InterpMode": 0,
+            "TangentMode": 0
+          },
+          {
+            "Value": 1.0,
+            "Tangent": {
+              "ArriveTangent": 3.5714285E-05,
+              "LeaveTangent": 0.0,
+              "ArriveTangentWeight": 0.0,
+              "LeaveTangentWeight": 0.0,
+              "TangentWeightMode": 0
+            },
+            "InterpMode": 0,
+            "TangentMode": 0
+          }
+        ],
+        "DefaultValue": 0.0,
+        "bHasDefaultValue": false,
+        "TickResolution": {
+          "Numerator": 60000,
+          "Denominator": 1
+        },
+        "bShowCurve": false,
+        "StructFallback": null
+      },
+      "Easing": {
+        "EaseIn": {
+          "ObjectName": "MovieSceneBuiltInEasingFunction'BPUI_MessageBox_C:OpenAnim_INST.OpenAnim.MovieSceneFloatTrack_4.MovieSceneFloatSection_0.EaseInFunction'",
+          "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.62"
+        },
+        "EaseOut": {
+          "ObjectName": "MovieSceneBuiltInEasingFunction'BPUI_MessageBox_C:OpenAnim_INST.OpenAnim.MovieSceneFloatTrack_4.MovieSceneFloatSection_0.EaseOutFunction'",
+          "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.63"
+        }
+      },
+      "SectionRange": {
+        "Value": {
+          "LowerBound": {
+            "Type": 1,
+            "Value": {
+              "Value": 0
+            }
+          },
+          "UpperBound": {
+            "Type": 1,
+            "Value": {
+              "Value": 28000
+            }
+          }
+        }
+      },
+      "Signature": "E0788C51-4C33B55C-9175D6A6-98E446B9"
+    }
+  },
+  {
+    "Type": "MovieSceneFloatSection",
+    "Name": "MovieSceneFloatSection_0",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneFloatSection'",
+    "Outer": {
+      "ObjectName": "MovieSceneFloatTrack'BPUI_MessageBox_C:OpenAnim_INST.OpenAnim.MovieSceneFloatTrack_8'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.83"
+    },
+    "Properties": {
+      "FloatCurve": {
+        "PreInfinityExtrap": "RCCE_Constant",
+        "PostInfinityExtrap": "RCCE_Constant",
+        "Times": [
+          {
+            "Value": 0
+          },
+          {
+            "Value": 20000
+          },
+          {
+            "Value": 28000
+          }
+        ],
+        "Values": [
+          {
+            "Value": 0.0,
+            "Tangent": {
+              "ArriveTangent": 0.0,
+              "LeaveTangent": 5E-05,
+              "ArriveTangentWeight": 0.0,
+              "LeaveTangentWeight": 0.0,
+              "TangentWeightMode": 0
+            },
+            "InterpMode": 0,
+            "TangentMode": 0
+          },
+          {
+            "Value": 1.0,
+            "Tangent": {
+              "ArriveTangent": 5E-05,
+              "LeaveTangent": 0.0,
+              "ArriveTangentWeight": 0.0,
+              "LeaveTangentWeight": 0.0,
+              "TangentWeightMode": 0
+            },
+            "InterpMode": 0,
+            "TangentMode": 0
+          },
+          {
+            "Value": 1.0,
+            "Tangent": {
+              "ArriveTangent": 0.0,
+              "LeaveTangent": 0.0,
+              "ArriveTangentWeight": 0.0,
+              "LeaveTangentWeight": 0.0,
+              "TangentWeightMode": 0
+            },
+            "InterpMode": 0,
+            "TangentMode": 0
+          }
+        ],
+        "DefaultValue": 0.0,
+        "bHasDefaultValue": false,
+        "TickResolution": {
+          "Numerator": 60000,
+          "Denominator": 1
+        },
+        "bShowCurve": false,
+        "StructFallback": null
+      },
+      "Easing": {
+        "EaseIn": {
+          "ObjectName": "MovieSceneBuiltInEasingFunction'BPUI_MessageBox_C:OpenAnim_INST.OpenAnim.MovieSceneFloatTrack_8.MovieSceneFloatSection_0.EaseInFunction'",
+          "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.64"
+        },
+        "EaseOut": {
+          "ObjectName": "MovieSceneBuiltInEasingFunction'BPUI_MessageBox_C:OpenAnim_INST.OpenAnim.MovieSceneFloatTrack_8.MovieSceneFloatSection_0.EaseOutFunction'",
+          "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.65"
+        }
+      },
+      "SectionRange": {
+        "Value": {
+          "LowerBound": {
+            "Type": 1,
+            "Value": {
+              "Value": 0
+            }
+          },
+          "UpperBound": {
+            "Type": 1,
+            "Value": {
+              "Value": 28000
+            }
+          }
+        }
+      },
+      "Signature": "507C4CF8-4F19C7F2-133EB99D-1A570DF8"
+    }
+  },
+  {
+    "Type": "MovieSceneFloatTrack",
+    "Name": "MovieSceneFloatTrack_0",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneFloatTrack'",
+    "Outer": {
+      "ObjectName": "MovieScene'BPUI_MessageBox_C:CloseAnim_INST.CloseAnim'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.40"
+    },
+    "Properties": {
+      "PropertyBinding": {
+        "PropertyName": "RenderOpacity",
+        "PropertyPath": "RenderOpacity",
+        "bCanUseClassLookup": true
+      },
+      "Sections": [
+        {
+          "ObjectName": "MovieSceneFloatSection'BPUI_MessageBox_C:CloseAnim_INST.CloseAnim.MovieSceneFloatTrack_0.MovieSceneFloatSection_0'",
+          "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.68"
+        }
+      ],
+      "EvaluationFieldGuid": "18B1D4DA-49B503FB-7DCBBE98-A88C7C4B",
+      "EvaluationField": {
+        "Entries": [
+          {
+            "Section": {
+              "ObjectName": "MovieSceneFloatSection'BPUI_MessageBox_C:CloseAnim_INST.CloseAnim.MovieSceneFloatTrack_0.MovieSceneFloatSection_0'",
+              "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.68"
+            },
+            "Range": {
+              "LowerBound": {
+                "Type": "ERangeBoundTypes::Inclusive",
+                "Value": {
+                  "Value": 0
+                }
+              },
+              "UpperBound": {
+                "Type": "ERangeBoundTypes::Inclusive",
+                "Value": {
+                  "Value": 14000
+                }
+              }
+            },
+            "ForcedTime": {
+              "Value": -2147483648
+            },
+            "Flags": "ESectionEvaluationFlags::None",
+            "LegacySortOrder": 0
+          }
+        ]
+      },
+      "Signature": "18B1D4DA-49B503FB-7DCBBE98-A88C7C4B"
+    }
+  },
+  {
+    "Type": "MovieSceneFloatTrack",
+    "Name": "MovieSceneFloatTrack_1",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneFloatTrack'",
+    "Outer": {
+      "ObjectName": "MovieScene'BPUI_MessageBox_C:CloseAnim_INST.CloseAnim'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.40"
+    },
+    "Properties": {
+      "PropertyBinding": {
+        "PropertyName": "RenderOpacity",
+        "PropertyPath": "RenderOpacity",
+        "bCanUseClassLookup": true
+      },
+      "Sections": [
+        {
+          "ObjectName": "MovieSceneFloatSection'BPUI_MessageBox_C:CloseAnim_INST.CloseAnim.MovieSceneFloatTrack_1.MovieSceneFloatSection_0'",
+          "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.69"
+        }
+      ],
+      "EvaluationFieldGuid": "DCC878FE-4C68D8EC-66BA1CBE-1E5FAC46",
+      "EvaluationField": {
+        "Entries": [
+          {
+            "Section": {
+              "ObjectName": "MovieSceneFloatSection'BPUI_MessageBox_C:CloseAnim_INST.CloseAnim.MovieSceneFloatTrack_1.MovieSceneFloatSection_0'",
+              "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.69"
+            },
+            "Range": {
+              "LowerBound": {
+                "Type": "ERangeBoundTypes::Inclusive",
+                "Value": {
+                  "Value": 0
+                }
+              },
+              "UpperBound": {
+                "Type": "ERangeBoundTypes::Inclusive",
+                "Value": {
+                  "Value": 14000
+                }
+              }
+            },
+            "ForcedTime": {
+              "Value": -2147483648
+            },
+            "Flags": "ESectionEvaluationFlags::None",
+            "LegacySortOrder": 0
+          }
+        ]
+      },
+      "Signature": "DCC878FE-4C68D8EC-66BA1CBE-1E5FAC46"
+    }
+  },
+  {
+    "Type": "MovieSceneFloatTrack",
+    "Name": "MovieSceneFloatTrack_2",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneFloatTrack'",
+    "Outer": {
+      "ObjectName": "MovieScene'BPUI_MessageBox_C:CloseAnim_INST.CloseAnim'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.40"
+    },
+    "Properties": {
+      "PropertyBinding": {
+        "PropertyName": "RenderOpacity",
+        "PropertyPath": "RenderOpacity",
+        "bCanUseClassLookup": true
+      },
+      "Sections": [
+        {
+          "ObjectName": "MovieSceneFloatSection'BPUI_MessageBox_C:CloseAnim_INST.CloseAnim.MovieSceneFloatTrack_2.MovieSceneFloatSection_0'",
+          "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.70"
+        }
+      ],
+      "EvaluationFieldGuid": "F32B640F-49C057DF-1FD53CB3-B533FD16",
+      "EvaluationField": {
+        "Entries": [
+          {
+            "Section": {
+              "ObjectName": "MovieSceneFloatSection'BPUI_MessageBox_C:CloseAnim_INST.CloseAnim.MovieSceneFloatTrack_2.MovieSceneFloatSection_0'",
+              "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.70"
+            },
+            "Range": {
+              "LowerBound": {
+                "Type": "ERangeBoundTypes::Inclusive",
+                "Value": {
+                  "Value": 0
+                }
+              },
+              "UpperBound": {
+                "Type": "ERangeBoundTypes::Inclusive",
+                "Value": {
+                  "Value": 14000
+                }
+              }
+            },
+            "ForcedTime": {
+              "Value": -2147483648
+            },
+            "Flags": "ESectionEvaluationFlags::None",
+            "LegacySortOrder": 0
+          }
+        ]
+      },
+      "Signature": "F32B640F-49C057DF-1FD53CB3-B533FD16"
+    }
+  },
+  {
+    "Type": "MovieSceneFloatTrack",
+    "Name": "MovieSceneFloatTrack_8",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneFloatTrack'",
+    "Outer": {
+      "ObjectName": "MovieScene'BPUI_MessageBox_C:CloseAnim_INST.CloseAnim'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.40"
+    },
+    "Properties": {
+      "PropertyBinding": {
+        "PropertyName": "RenderOpacity",
+        "PropertyPath": "RenderOpacity",
+        "bCanUseClassLookup": true
+      },
+      "Sections": [
+        {
+          "ObjectName": "MovieSceneFloatSection'BPUI_MessageBox_C:CloseAnim_INST.CloseAnim.MovieSceneFloatTrack_8.MovieSceneFloatSection_0'",
+          "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.71"
+        }
+      ],
+      "EvaluationFieldGuid": "6F515968-475FF831-CF903798-B112ED9B",
+      "EvaluationField": {
+        "Entries": [
+          {
+            "Section": {
+              "ObjectName": "MovieSceneFloatSection'BPUI_MessageBox_C:CloseAnim_INST.CloseAnim.MovieSceneFloatTrack_8.MovieSceneFloatSection_0'",
+              "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.71"
+            },
+            "Range": {
+              "LowerBound": {
+                "Type": "ERangeBoundTypes::Inclusive",
+                "Value": {
+                  "Value": 0
+                }
+              },
+              "UpperBound": {
+                "Type": "ERangeBoundTypes::Inclusive",
+                "Value": {
+                  "Value": 14000
+                }
+              }
+            },
+            "ForcedTime": {
+              "Value": -2147483648
+            },
+            "Flags": "ESectionEvaluationFlags::None",
+            "LegacySortOrder": 0
+          }
+        ]
+      },
+      "Signature": "6F515968-475FF831-CF903798-B112ED9B"
+    }
+  },
+  {
+    "Type": "MovieSceneFloatTrack",
+    "Name": "MovieSceneFloatTrack_0",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneFloatTrack'",
+    "Outer": {
+      "ObjectName": "MovieScene'BPUI_MessageBox_C:OpenAnim_INST.OpenAnim'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.41"
+    },
+    "Properties": {
+      "PropertyBinding": {
+        "PropertyName": "RenderOpacity",
+        "PropertyPath": "RenderOpacity",
+        "bCanUseClassLookup": true
+      },
+      "Sections": [
+        {
+          "ObjectName": "MovieSceneFloatSection'BPUI_MessageBox_C:OpenAnim_INST.OpenAnim.MovieSceneFloatTrack_0.MovieSceneFloatSection_0'",
+          "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.72"
+        }
+      ],
+      "EvaluationFieldGuid": "1F6DA3ED-4DAF6024-A2942B8B-ED411010",
+      "EvaluationField": {
+        "Entries": [
+          {
+            "Section": {
+              "ObjectName": "MovieSceneFloatSection'BPUI_MessageBox_C:OpenAnim_INST.OpenAnim.MovieSceneFloatTrack_0.MovieSceneFloatSection_0'",
+              "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.72"
+            },
+            "Range": {
+              "LowerBound": {
+                "Type": "ERangeBoundTypes::Inclusive",
+                "Value": {
+                  "Value": 0
+                }
+              },
+              "UpperBound": {
+                "Type": "ERangeBoundTypes::Inclusive",
+                "Value": {
+                  "Value": 28000
+                }
+              }
+            },
+            "ForcedTime": {
+              "Value": -2147483648
+            },
+            "Flags": "ESectionEvaluationFlags::None",
+            "LegacySortOrder": 0
+          }
+        ]
+      },
+      "Signature": "1F6DA3ED-4DAF6024-A2942B8B-ED411010"
+    }
+  },
+  {
+    "Type": "MovieSceneFloatTrack",
+    "Name": "MovieSceneFloatTrack_2",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneFloatTrack'",
+    "Outer": {
+      "ObjectName": "MovieScene'BPUI_MessageBox_C:OpenAnim_INST.OpenAnim'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.41"
+    },
+    "Properties": {
+      "PropertyBinding": {
+        "PropertyName": "RenderOpacity",
+        "PropertyPath": "RenderOpacity",
+        "bCanUseClassLookup": true
+      },
+      "Sections": [
+        {
+          "ObjectName": "MovieSceneFloatSection'BPUI_MessageBox_C:OpenAnim_INST.OpenAnim.MovieSceneFloatTrack_2.MovieSceneFloatSection_0'",
+          "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.73"
+        }
+      ],
+      "EvaluationFieldGuid": "6B9E46A0-41561913-4CA95E80-CB871D4A",
+      "EvaluationField": {
+        "Entries": [
+          {
+            "Section": {
+              "ObjectName": "MovieSceneFloatSection'BPUI_MessageBox_C:OpenAnim_INST.OpenAnim.MovieSceneFloatTrack_2.MovieSceneFloatSection_0'",
+              "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.73"
+            },
+            "Range": {
+              "LowerBound": {
+                "Type": "ERangeBoundTypes::Inclusive",
+                "Value": {
+                  "Value": 0
+                }
+              },
+              "UpperBound": {
+                "Type": "ERangeBoundTypes::Inclusive",
+                "Value": {
+                  "Value": 28000
+                }
+              }
+            },
+            "ForcedTime": {
+              "Value": -2147483648
+            },
+            "Flags": "ESectionEvaluationFlags::None",
+            "LegacySortOrder": 0
+          }
+        ]
+      },
+      "Signature": "6B9E46A0-41561913-4CA95E80-CB871D4A"
+    }
+  },
+  {
+    "Type": "MovieSceneFloatTrack",
+    "Name": "MovieSceneFloatTrack_4",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneFloatTrack'",
+    "Outer": {
+      "ObjectName": "MovieScene'BPUI_MessageBox_C:OpenAnim_INST.OpenAnim'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.41"
+    },
+    "Properties": {
+      "PropertyBinding": {
+        "PropertyName": "RenderOpacity",
+        "PropertyPath": "RenderOpacity",
+        "bCanUseClassLookup": true
+      },
+      "Sections": [
+        {
+          "ObjectName": "MovieSceneFloatSection'BPUI_MessageBox_C:OpenAnim_INST.OpenAnim.MovieSceneFloatTrack_4.MovieSceneFloatSection_0'",
+          "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.74"
+        }
+      ],
+      "EvaluationFieldGuid": "479965FA-4D45F157-65CBD680-7FDA20CA",
+      "EvaluationField": {
+        "Entries": [
+          {
+            "Section": {
+              "ObjectName": "MovieSceneFloatSection'BPUI_MessageBox_C:OpenAnim_INST.OpenAnim.MovieSceneFloatTrack_4.MovieSceneFloatSection_0'",
+              "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.74"
+            },
+            "Range": {
+              "LowerBound": {
+                "Type": "ERangeBoundTypes::Inclusive",
+                "Value": {
+                  "Value": 0
+                }
+              },
+              "UpperBound": {
+                "Type": "ERangeBoundTypes::Inclusive",
+                "Value": {
+                  "Value": 28000
+                }
+              }
+            },
+            "ForcedTime": {
+              "Value": -2147483648
+            },
+            "Flags": "ESectionEvaluationFlags::None",
+            "LegacySortOrder": 0
+          }
+        ]
+      },
+      "Signature": "479965FA-4D45F157-65CBD680-7FDA20CA"
+    }
+  },
+  {
+    "Type": "MovieSceneFloatTrack",
+    "Name": "MovieSceneFloatTrack_8",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'MovieSceneFloatTrack'",
+    "Outer": {
+      "ObjectName": "MovieScene'BPUI_MessageBox_C:OpenAnim_INST.OpenAnim'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.41"
+    },
+    "Properties": {
+      "PropertyBinding": {
+        "PropertyName": "RenderOpacity",
+        "PropertyPath": "RenderOpacity",
+        "bCanUseClassLookup": true
+      },
+      "Sections": [
+        {
+          "ObjectName": "MovieSceneFloatSection'BPUI_MessageBox_C:OpenAnim_INST.OpenAnim.MovieSceneFloatTrack_8.MovieSceneFloatSection_0'",
+          "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.75"
+        }
+      ],
+      "EvaluationFieldGuid": "337D81C2-4BCC98AE-BBC4EE8F-A8CFBC57",
+      "EvaluationField": {
+        "Entries": [
+          {
+            "Section": {
+              "ObjectName": "MovieSceneFloatSection'BPUI_MessageBox_C:OpenAnim_INST.OpenAnim.MovieSceneFloatTrack_8.MovieSceneFloatSection_0'",
+              "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.75"
+            },
+            "Range": {
+              "LowerBound": {
+                "Type": "ERangeBoundTypes::Inclusive",
+                "Value": {
+                  "Value": 0
+                }
+              },
+              "UpperBound": {
+                "Type": "ERangeBoundTypes::Inclusive",
+                "Value": {
+                  "Value": 28000
+                }
+              }
+            },
+            "ForcedTime": {
+              "Value": -2147483648
+            },
+            "Flags": "ESectionEvaluationFlags::None",
+            "LegacySortOrder": 0
+          }
+        ]
+      },
+      "Signature": "337D81C2-4BCC98AE-BBC4EE8F-A8CFBC57"
+    }
+  },
+  {
+    "Type": "Overlay",
+    "Name": "Overlay_0",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'Overlay'",
+    "Outer": {
+      "ObjectName": "WidgetTree'BPUI_MessageBox_C:WidgetTree'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.96"
+    },
+    "Properties": {
+      "Slots": [
+        {
+          "ObjectName": "OverlaySlot'BPUI_MessageBox_C:WidgetTree.Overlay_0.OverlaySlot_2'",
+          "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.85"
+        }
+      ]
+    }
+  },
+  {
+    "Type": "OverlaySlot",
+    "Name": "OverlaySlot_2",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'OverlaySlot'",
+    "Outer": {
+      "ObjectName": "Overlay'BPUI_MessageBox_C:WidgetTree.Overlay_0'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.84"
+    },
+    "Properties": {
+      "HorizontalAlignment": "EHorizontalAlignment::HAlign_Fill",
+      "VerticalAlignment": "EVerticalAlignment::VAlign_Fill",
+      "Parent": {
+        "ObjectName": "Overlay'BPUI_MessageBox_C:WidgetTree.Overlay_0'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.84"
+      },
+      "Content": {
+        "ObjectName": "CanvasPanel'BPUI_MessageBox_C:WidgetTree.CanvasPanel_0'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.3"
+      }
+    }
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "TextAutoCanceTime",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'TextBlock'",
+    "Outer": {
+      "ObjectName": "WidgetTree'BPUI_MessageBox_C:WidgetTree'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.96"
+    },
+    "Properties": {
+      "ColorAndOpacity": {
+        "SpecifiedColor": {
+          "R": 0.739583,
+          "G": 0.678695,
+          "B": 0.508464,
+          "A": 1.0,
+          "Hex": "E0D7BD"
+        }
+      },
+      "Font": {
+        "FontObject": {
+          "ObjectName": "Font'MiSans-Extralight'",
+          "ObjectPath": "/Game/Environment/Building/TrainStation/Fonts/MiSans-Extralight.0"
+        },
+        "TypefaceFontName": "Blod",
+        "Size": 18.0
+      },
+      "Justification": "ETextJustify::Center",
+      "Slot": {
+        "ObjectName": "CanvasPanelSlot'BPUI_MessageBox_C:WidgetTree.CanvasPanel_0.CanvasPanelSlot_9'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.17"
+      },
+      "Visibility": "ESlateVisibility::Hidden"
+    }
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "TextBlock_Title",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'TextBlock'",
+    "Outer": {
+      "ObjectName": "WidgetTree'BPUI_MessageBox_C:WidgetTree'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.96"
+    },
+    "Properties": {
+      "Text": {
+        "TableId": "/Game/Text/ST_Ui.ST_Ui",
+        "Key": "UI_CloneSystemChallengeFailed_TipsTitle",
+        "SourceString": "提示",
+        "LocalizedString": "提示"
+      },
+      "ColorAndOpacity": {
+        "SpecifiedColor": {
+          "R": 0.715694,
+          "G": 0.715694,
+          "B": 0.715694,
+          "A": 1.0,
+          "Hex": "DCDCDC"
+        }
+      },
+      "Font": {
+        "FontObject": {
+          "ObjectName": "Font'MiSans-Extralight'",
+          "ObjectPath": "/Game/Environment/Building/TrainStation/Fonts/MiSans-Extralight.0"
+        },
+        "OutlineSettings": {
+          "OutlineSize": 4,
+          "OutlineColor": {
+            "R": 0.004777,
+            "G": 0.004777,
+            "B": 0.004777,
+            "A": 1.0,
+            "Hex": "0F0F0F"
+          }
+        },
+        "TypefaceFontName": "Blod",
+        "Size": 26.0
+      },
+      "Justification": "ETextJustify::Center",
+      "Slot": {
+        "ObjectName": "CanvasPanelSlot'BPUI_MessageBox_C:WidgetTree.CanvasPanel_4.CanvasPanelSlot_1'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.22"
+      }
+    }
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "TextCheckBoxTips",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'TextBlock'",
+    "Outer": {
+      "ObjectName": "WidgetTree'BPUI_MessageBox_C:WidgetTree'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.96"
+    },
+    "Properties": {
+      "Text": {
+        "TableId": "/Game/Text/ST_Ui.ST_Ui",
+        "Key": "Dialogue_1",
+        "SourceString": "今日不再提示",
+        "LocalizedString": "今日不再提示"
+      },
+      "ColorAndOpacity": {
+        "SpecifiedColor": {
+          "R": 0.3,
+          "G": 0.3,
+          "B": 0.3,
+          "A": 1.0,
+          "Hex": "959595"
+        }
+      },
+      "Font": {
+        "FontObject": {
+          "ObjectName": "Font'MiSans-Extralight'",
+          "ObjectPath": "/Game/Environment/Building/TrainStation/Fonts/MiSans-Extralight.0"
+        },
+        "OutlineSettings": {
+          "OutlineSize": 1,
+          "OutlineColor": {
+            "R": 0.0,
+            "G": 0.0,
+            "B": 0.0,
+            "A": 0.3,
+            "Hex": "4C000000"
+          }
+        },
+        "TypefaceFontName": "Blod",
+        "Size": 20.0
+      },
+      "Slot": {
+        "ObjectName": "HorizontalBoxSlot'BPUI_MessageBox_C:WidgetTree.HorizontalBox_75.HorizontalBoxSlot_1'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.35"
+      }
+    }
+  },
+  {
+    "Type": "TypingText",
+    "Name": "Content",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'TypingText'",
+    "Outer": {
+      "ObjectName": "WidgetTree'BPUI_MessageBox_C:WidgetTree'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.96"
+    },
+    "Properties": {
+      "LineHeight": 20,
+      "TextStyleSet": {
+        "ObjectName": "DataTable'DT_RichTextBPUI_MessageBox'",
+        "ObjectPath": "/Game/DataTable/UIStyle/DT_RichTextBPUI_MessageBox.0"
+      },
+      "DefaultTextStyleOverride": {
+        "Font": {
+          "FontObject": {
+            "ObjectName": "Font'MiSans-Extralight'",
+            "ObjectPath": "/Game/Environment/Building/TrainStation/Fonts/MiSans-Extralight.0"
+          },
+          "TypefaceFontName": "Blod"
+        },
+        "ColorAndOpacity": {
+          "SpecifiedColor": {
+            "R": 0.05,
+            "G": 0.05,
+            "B": 0.05,
+            "A": 1.0,
+            "Hex": "3F3F3F"
+          }
+        },
+        "ShadowColorAndOpacity": {
+          "R": 0.0,
+          "G": 0.0,
+          "B": 0.0,
+          "A": 0.0,
+          "Hex": "000000"
+        }
+      },
+      "bOverrideDefaultStyle": true,
+      "Justification": "ETextJustify::Center",
+      "WrapTextAt": 1080.0,
+      "Slot": {
+        "ObjectName": "CanvasPanelSlot'BPUI_MessageBox_C:WidgetTree.CP_info.CanvasPanelSlot_1'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.31"
+      }
+    }
+  },
+  {
+    "Type": "UI_Common_Popup_C",
+    "Name": "UI_Common_Popup",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "WidgetBlueprintGeneratedClass'/Game/UI/Blueprints/UI_Common_Popup.UI_Common_Popup_C'",
+    "Outer": {
+      "ObjectName": "WidgetTree'BPUI_MessageBox_C:WidgetTree'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.96"
+    },
+    "Template": {
+      "ObjectName": "UI_Common_Popup_C'Default__UI_Common_Popup_C'",
+      "ObjectPath": "/Game/UI/Blueprints/UI_Common_Popup.29"
+    },
+    "Properties": {
+      "PopupTitle": {
+        "CultureInvariantString": null
+      },
+      "PopupTitle Visible": false,
+      "Slot": {
+        "ObjectName": "CanvasPanelSlot'BPUI_MessageBox_C:WidgetTree.CanvasPanel_2.CanvasPanelSlot_0'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.18"
+      }
+    }
+  },
+  {
+    "Type": "W_HTButton_Com_02_C",
+    "Name": "BtnCancel",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "WidgetBlueprintGeneratedClass'/Game/UI/Blueprints/W_HTButton_Com_02.W_HTButton_Com_02_C'",
+    "Outer": {
+      "ObjectName": "WidgetTree'BPUI_MessageBox_C:WidgetTree'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.96"
+    },
+    "Template": {
+      "ObjectName": "W_HTButton_Com_02_C'Default__W_HTButton_Com_02_C'",
+      "ObjectPath": "/Game/UI/Blueprints/W_HTButton_Com_02.243"
+    },
+    "Properties": {
+      "bOverride_ButtonText": true,
+      "ButtonText": {
+        "TableId": "/Game/Text/ST_Ui.ST_Ui",
+        "Key": "common_2",
+        "SourceString": "取消",
+        "LocalizedString": "取消"
+      },
+      "ClickSound": null,
+      "KeysAction_GamepadKey": {
+        "KeyName": "Gamepad_FaceButton_Right"
+      },
+      "KeysAction_GamepadKey_IgnoreViewportWidgets": true,
+      "bCanDisableInput": false,
+      "OnSelectedChangedBase": {
+        "InvocationList": [
+          {
+            "Object": {
+              "ObjectName": "W_HTButton_Com_02_C'BPUI_MessageBox_C:WidgetTree.BtnCancel'",
+              "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.91"
+            },
+            "FunctionName": "HandleOnSelectedChanged"
+          }
+        ]
+      },
+      "OnButtonBaseClicked": {
+        "InvocationList": [
+          {
+            "Object": {
+              "ObjectName": "W_HTButton_Com_02_C'BPUI_MessageBox_C:WidgetTree.BtnCancel'",
+              "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.91"
+            },
+            "FunctionName": "HandleOnButtonClicked"
+          }
+        ]
+      },
+      "OnButtonBaseDoubleClicked": {
+        "InvocationList": [
+          {
+            "Object": {
+              "ObjectName": "W_HTButton_Com_02_C'BPUI_MessageBox_C:WidgetTree.BtnCancel'",
+              "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.91"
+            },
+            "FunctionName": "HandleOnButtonDoubleClicked"
+          }
+        ]
+      },
+      "OnButtonBaseHovered": {
+        "InvocationList": [
+          {
+            "Object": {
+              "ObjectName": "W_HTButton_Com_02_C'BPUI_MessageBox_C:WidgetTree.BtnCancel'",
+              "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.91"
+            },
+            "FunctionName": "HandleOnButtonHovered"
+          }
+        ]
+      },
+      "OnButtonBaseUnhovered": {
+        "InvocationList": [
+          {
+            "Object": {
+              "ObjectName": "W_HTButton_Com_02_C'BPUI_MessageBox_C:WidgetTree.BtnCancel'",
+              "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.91"
+            },
+            "FunctionName": "HandleOnButtonUnhovered"
+          }
+        ]
+      },
+      "Slot": {
+        "ObjectName": "CanvasPanelSlot'BPUI_MessageBox_C:WidgetTree.CP_Btn.CanvasPanelSlot_9'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.30"
+      }
+    }
+  },
+  {
+    "Type": "W_HTButton_Com_02_C",
+    "Name": "BtnSure",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "WidgetBlueprintGeneratedClass'/Game/UI/Blueprints/W_HTButton_Com_02.W_HTButton_Com_02_C'",
+    "Outer": {
+      "ObjectName": "WidgetTree'BPUI_MessageBox_C:WidgetTree'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.96"
+    },
+    "Template": {
+      "ObjectName": "W_HTButton_Com_02_C'Default__W_HTButton_Com_02_C'",
+      "ObjectPath": "/Game/UI/Blueprints/W_HTButton_Com_02.243"
+    },
+    "Properties": {
+      "bOverride_ButtonText": true,
+      "ButtonText": {
+        "TableId": "/Game/Text/ST_Ui.ST_Ui",
+        "Key": "common_1",
+        "SourceString": "确认",
+        "LocalizedString": "确认"
+      },
+      "ClickSound": null,
+      "KeysAction_GamepadKey": {
+        "KeyName": "Gamepad_FaceButton_Bottom"
+      },
+      "KeysAction_GamepadKey_IgnoreViewportWidgets": true,
+      "bCanDisableInput": false,
+      "OnSelectedChangedBase": {
+        "InvocationList": [
+          {
+            "Object": {
+              "ObjectName": "W_HTButton_Com_02_C'BPUI_MessageBox_C:WidgetTree.BtnSure'",
+              "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.92"
+            },
+            "FunctionName": "HandleOnSelectedChanged"
+          }
+        ]
+      },
+      "OnButtonBaseClicked": {
+        "InvocationList": [
+          {
+            "Object": {
+              "ObjectName": "W_HTButton_Com_02_C'BPUI_MessageBox_C:WidgetTree.BtnSure'",
+              "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.92"
+            },
+            "FunctionName": "HandleOnButtonClicked"
+          }
+        ]
+      },
+      "OnButtonBaseDoubleClicked": {
+        "InvocationList": [
+          {
+            "Object": {
+              "ObjectName": "W_HTButton_Com_02_C'BPUI_MessageBox_C:WidgetTree.BtnSure'",
+              "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.92"
+            },
+            "FunctionName": "HandleOnButtonDoubleClicked"
+          }
+        ]
+      },
+      "OnButtonBaseHovered": {
+        "InvocationList": [
+          {
+            "Object": {
+              "ObjectName": "W_HTButton_Com_02_C'BPUI_MessageBox_C:WidgetTree.BtnSure'",
+              "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.92"
+            },
+            "FunctionName": "HandleOnButtonHovered"
+          }
+        ]
+      },
+      "OnButtonBaseUnhovered": {
+        "InvocationList": [
+          {
+            "Object": {
+              "ObjectName": "W_HTButton_Com_02_C'BPUI_MessageBox_C:WidgetTree.BtnSure'",
+              "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.92"
+            },
+            "FunctionName": "HandleOnButtonUnhovered"
+          }
+        ]
+      },
+      "Slot": {
+        "ObjectName": "CanvasPanelSlot'BPUI_MessageBox_C:WidgetTree.CP_Btn.CanvasPanelSlot_11'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.29"
+      }
+    }
+  },
+  {
+    "Type": "WidgetAnimation",
+    "Name": "CloseAnim_INST",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'WidgetAnimation'",
+    "Outer": {
+      "ObjectName": "WidgetBlueprintGeneratedClass'BPUI_MessageBox_C'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.95"
+    },
+    "Properties": {
+      "MovieScene": {
+        "ObjectName": "MovieScene'BPUI_MessageBox_C:CloseAnim_INST.CloseAnim'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.40"
+      },
+      "AnimationBindings": [
+        {
+          "WidgetName": "CheckBoxPanel",
+          "SlotWidgetName": "None",
+          "AnimationGuid": "CE59E555-4C26300B-2322AFAD-0D251CCD",
+          "bIsRootWidget": false,
+          "DynamicBinding": {
+            "Function": null,
+            "ResolveParamsProperty": {
+              "Path": [],
+              "ResolvedOwner": null
+            }
+          }
+        },
+        {
+          "WidgetName": "Image_128",
+          "SlotWidgetName": "None",
+          "AnimationGuid": "B9B3812C-4F8C8202-6A033F8A-A21A84EA",
+          "bIsRootWidget": false,
+          "DynamicBinding": {
+            "Function": null,
+            "ResolveParamsProperty": {
+              "Path": [],
+              "ResolvedOwner": null
+            }
+          }
+        },
+        {
+          "WidgetName": "TextAutoCanceTime",
+          "SlotWidgetName": "None",
+          "AnimationGuid": "EF115110-432CE4DE-AF15E189-55C38C69",
+          "bIsRootWidget": false,
+          "DynamicBinding": {
+            "Function": null,
+            "ResolveParamsProperty": {
+              "Path": [],
+              "ResolvedOwner": null
+            }
+          }
+        },
+        {
+          "WidgetName": "CanvasPanel_2",
+          "SlotWidgetName": "None",
+          "AnimationGuid": "603AC897-42EA319B-59F100AB-50299945",
+          "bIsRootWidget": false,
+          "DynamicBinding": {
+            "Function": null,
+            "ResolveParamsProperty": {
+              "Path": [],
+              "ResolvedOwner": null
+            }
+          }
+        }
+      ],
+      "DisplayLabel": "CloseAnim",
+      "CompiledData": {
+        "ObjectName": "MovieSceneCompiledData'BPUI_MessageBox_C:CloseAnim_INST.CompiledData'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.66"
+      },
+      "Signature": "B4C46791-45DBBED7-2CB200B1-618DE31B"
+    }
+  },
+  {
+    "Type": "WidgetAnimation",
+    "Name": "OpenAnim_INST",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'WidgetAnimation'",
+    "Outer": {
+      "ObjectName": "WidgetBlueprintGeneratedClass'BPUI_MessageBox_C'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.95"
+    },
+    "Properties": {
+      "MovieScene": {
+        "ObjectName": "MovieScene'BPUI_MessageBox_C:OpenAnim_INST.OpenAnim'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.41"
+      },
+      "AnimationBindings": [
+        {
+          "WidgetName": "CheckBoxPanel",
+          "SlotWidgetName": "None",
+          "AnimationGuid": "7CB8B56E-46F48F48-4264DBBC-2C6282A3",
+          "bIsRootWidget": false,
+          "DynamicBinding": {
+            "Function": null,
+            "ResolveParamsProperty": {
+              "Path": [],
+              "ResolvedOwner": null
+            }
+          }
+        },
+        {
+          "WidgetName": "TextAutoCanceTime",
+          "SlotWidgetName": "None",
+          "AnimationGuid": "C3DB64D7-49621D61-43C1D78D-EDBECA71",
+          "bIsRootWidget": false,
+          "DynamicBinding": {
+            "Function": null,
+            "ResolveParamsProperty": {
+              "Path": [],
+              "ResolvedOwner": null
+            }
+          }
+        },
+        {
+          "WidgetName": "Image_128",
+          "SlotWidgetName": "None",
+          "AnimationGuid": "1C1CA6D0-4204A30F-A4746E85-94726A48",
+          "bIsRootWidget": false,
+          "DynamicBinding": {
+            "Function": null,
+            "ResolveParamsProperty": {
+              "Path": [],
+              "ResolvedOwner": null
+            }
+          }
+        },
+        {
+          "WidgetName": "CanvasPanel_2",
+          "SlotWidgetName": "None",
+          "AnimationGuid": "CDB4AB7C-4D8DC853-0620DA93-D76C68C6",
+          "bIsRootWidget": false,
+          "DynamicBinding": {
+            "Function": null,
+            "ResolveParamsProperty": {
+              "Path": [],
+              "ResolvedOwner": null
+            }
+          }
+        }
+      ],
+      "DisplayLabel": "OpenAnim",
+      "CompiledData": {
+        "ObjectName": "MovieSceneCompiledData'BPUI_MessageBox_C:OpenAnim_INST.CompiledData'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.67"
+      },
+      "Signature": "8A9C2B76-442B105C-3ECB61A0-68553805"
+    }
+  },
+  {
+    "Type": "WidgetBlueprintGeneratedClass",
+    "Name": "BPUI_MessageBox_C",
+    "Flags": "RF_Public | RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'WidgetBlueprintGeneratedClass'",
+    "Package": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox",
+    "Properties": {
+      "WidgetTree": {
+        "ObjectName": "WidgetTree'BPUI_MessageBox_C:WidgetTree'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.96"
+      },
+      "bClassRequiresNativeTick": true,
+      "Animations": [
+        {
+          "ObjectName": "WidgetAnimation'BPUI_MessageBox_C:OpenAnim_INST'",
+          "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.94"
+        },
+        {
+          "ObjectName": "WidgetAnimation'BPUI_MessageBox_C:CloseAnim_INST'",
+          "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.93"
+        }
+      ],
+      "CookedPropertyGuids": [
+        {
+          "Key": "CBActionBar_Close",
+          "Value": "C754ED62-7503356D-B7084EC5-265598F3"
+        },
+        {
+          "Key": "Image_1",
+          "Value": "17B01630-7B673F61-9E29E818-AB4410B5"
+        },
+        {
+          "Key": "Image_128",
+          "Value": "E4C51B9E-582F3223-8CAFFFD8-12B1655C"
+        },
+        {
+          "Key": "Image_205",
+          "Value": "886AFE0A-453F1CAF-6C756E9F-F5C6C6C8"
+        }
+      ]
+    },
+    "SuperStruct": {
+      "ObjectName": "Class'HTUI_MessageBox'",
+      "ObjectPath": "/Script/HTGame"
+    },
+    "ChildProperties": [
+      {
+        "Type": "ObjectProperty",
+        "Name": "Image_205",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 8,
+        "PropertyFlags": "BlueprintVisible | ExportObject | BlueprintReadOnly | DisableEditOnInstance | InstancedReference | RepSkip | PersistentInstance",
+        "PropertyClass": {
+          "ObjectName": "Class'Image'",
+          "ObjectPath": "/Script/UMG"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "Image_128",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 8,
+        "PropertyFlags": "BlueprintVisible | ExportObject | BlueprintReadOnly | DisableEditOnInstance | InstancedReference | RepSkip | PersistentInstance",
+        "PropertyClass": {
+          "ObjectName": "Class'Image'",
+          "ObjectPath": "/Script/UMG"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "Image_1",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 8,
+        "PropertyFlags": "BlueprintVisible | ExportObject | BlueprintReadOnly | DisableEditOnInstance | InstancedReference | RepSkip | PersistentInstance",
+        "PropertyClass": {
+          "ObjectName": "Class'Image'",
+          "ObjectPath": "/Script/UMG"
+        }
+      },
+      {
+        "Type": "ObjectProperty",
+        "Name": "CBActionBar_Close",
+        "Flags": "RF_Public | RF_LoadCompleted",
+        "ElementSize": 8,
+        "PropertyFlags": "BlueprintVisible | ExportObject | BlueprintReadOnly | DisableEditOnInstance | InstancedReference | RepSkip | PersistentInstance",
+        "PropertyClass": {
+          "ObjectName": "Class'CommonBoundActionBar'",
+          "ObjectPath": "/Script/CommonUI"
+        }
+      }
+    ],
+    "ClassFlags": "CLASS_EditInlineNew | CLASS_CompiledFromBlueprint | CLASS_DefaultToInstanced | CLASS_HasInstancedReference",
+    "ClassWithin": {
+      "ObjectName": "Class'Object'",
+      "ObjectPath": "/Script/CoreUObject"
+    },
+    "ClassConfigName": "Engine",
+    "bCooked": true,
+    "ClassDefaultObject": {
+      "ObjectName": "BPUI_MessageBox_C'Default__BPUI_MessageBox_C'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.2"
+    },
+    "EditorTags": {
+      "BlueprintType": "BPTYPE_Normal"
+    }
+  },
+  {
+    "Type": "WidgetTree",
+    "Name": "WidgetTree",
+    "Flags": "RF_Transactional | RF_WasLoaded | RF_LoadCompleted",
+    "Class": "UScriptClass'WidgetTree'",
+    "Outer": {
+      "ObjectName": "WidgetBlueprintGeneratedClass'BPUI_MessageBox_C'",
+      "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.95"
+    },
+    "Properties": {
+      "RootWidget": {
+        "ObjectName": "Overlay'BPUI_MessageBox_C:WidgetTree.Overlay_0'",
+        "ObjectPath": "/Game/UI/Blueprints/MessageBox/BPUI_MessageBox.84"
+      }
+    }
+  }
+]

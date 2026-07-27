@@ -1,0 +1,185 @@
+﻿{
+	"Format": "NTE.CharacterModSpec",
+	"Version": 1,
+	"WorkspaceName": "004_lacrimosa_kawaii_preset_validation",
+	"Appearance":
+	{
+		"AppearanceRowName": "Player004",
+		"PlayerAppearanceAssetPath": "/Game/Characters/Player/004_lacrimosa/mod/Generated/MeshAsset_Player004_NTE_AttachedSmoke"
+	},
+	"MainMeshPath": "/Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+	"MainAnimBlueprintPath": "/Game/Characters/Player/004_lacrimosa/mod/Runtime/ABP_NTE_ModToggle_PostProcess",
+	"AttachedMeshes": [
+		{
+			"Id": "hair_tail",
+			"Label": "Hair Tail",
+			"MeshPath": "/Game/Characters/Player/004_lacrimosa/player_004_lacrimosa_skin",
+			"AnimBlueprintPath": "/Game/Characters/Player/004_lacrimosa/mod/Runtime/ABP_NTE_ModToggle_PostProcess",
+			"SocketName": "Bip001-Head",
+			"MeshComponentOwnedTags": [
+				"NTE.Attached.hair_tail"
+			],
+			"RelativeLocation":
+			{
+				"X": 0,
+				"Y": 0,
+				"Z": 0
+			},
+			"RelativeRotation":
+			{
+				"Pitch": 0,
+				"Yaw": 0,
+				"Roll": 0
+			},
+			"RelativeScale":
+			{
+				"X": 1,
+				"Y": 1,
+				"Z": 1
+			},
+			"KawaiiPresetId": "hair_tail_kawaii",
+			"SyncToUIShow": false,
+			"EnableRuntimeActions": false
+		}
+	],
+	"MaterialOperations": [],
+	"RuntimeActions": [],
+	"RuntimeUi":
+	{
+		"EnableUi": false,
+		"DefaultVisible": false
+	},
+	"KawaiiPresets": [
+		{
+			"Id": "hair_tail_kawaii",
+			"Label": "Hair Tail Kawaii",
+			"TargetMeshId": "hair_tail",
+			"SourceKind": "Manual",
+			"SourceAnimBlueprintJson": "F:/F-model/Output/Exports/HT/Content/Characters/Player/004_lacrimosa/Anim/ABP_Source.json",
+			"SourceNodeName": "AnimGraphNode_KawaiiPhysics",
+			"SchemaStatus": "Unknown",
+			"RootBone": "hair_tail_01",
+			"ExcludeBones": [
+				"hair_tail_socket"
+			],
+			"AdditionalRootBones": [
+				{
+					"RootBone": "hair_side_01",
+					"OverrideExcludeBones": [
+						"hair_side_socket"
+					],
+					"UseOverrideExcludeBones": true
+				}
+			],
+			"PhysicsSettings":
+			{
+				"Damping": 0.10000000149011612,
+				"Stiffness": 0.05000000074505806,
+				"WorldDampingLocation": 0,
+				"WorldDampingRotation": 0,
+				"Radius": 3,
+				"LimitAngle": 35,
+				"ForwardMoveOffset": 0,
+				"HasForwardMoveOffset": true
+			},
+			"DummyBoneLength": 5,
+			"BoneForwardAxis": "X_Positive",
+			"TargetFramerate": 60,
+			"OverrideTargetFramerate": false,
+			"WarmUpFrames": 0,
+			"UseWarmUpWhenResetDynamics": true,
+			"NeedWarmUp": false,
+			"TeleportDistanceThreshold": 0,
+			"TeleportRotationThreshold": 0,
+			"PlanarConstraint": "None",
+			"ResetBoneTransformWhenBoneNotFound": false,
+			"Curves": [],
+			"RuntimeAnimBlueprintPath": "/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Anim/ABP_NTE_hair_tail_Kawaii",
+			"LimitsDataAssetPath": "/Game/Characters/Player/004_lacrimosa/mod/Physics/DA_KawaiiLimits_Test",
+			"OutputLimitsDataAssetPath": "/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Data/DA_NTE_hair_tail_kawaii_KawaiiLimits",
+			"BoneConstraintsDataAssetPath": "/Game/Characters/Player/004_lacrimosa/mod/Physics/DA_KawaiiBoneConstraints_Test",
+			"OutputBoneConstraintsDataAssetPath": "/Game/Characters/Player/004_lacrimosa/mod/Kawaii/Data/DA_NTE_hair_tail_kawaii_KawaiiConstraints",
+			"SphericalLimitsDataCount": 1,
+			"CapsuleLimitsDataCount": 0,
+			"BoxLimitsDataCount": 0,
+			"PlanarLimitsDataCount": 0,
+			"CollisionLimits": [
+				{
+					"LimitKind": "Spherical",
+					"DrivingBone": "Bip001-Head",
+					"OffsetLocation":
+					{
+						"X": 0,
+						"Y": 0,
+						"Z": 5
+					},
+					"OffsetRotation":
+					{
+						"Pitch": 0,
+						"Yaw": 0,
+						"Roll": 0
+					},
+					"Radius": 8,
+					"Length": 0,
+					"SphereRadius": 0,
+					"Extent":
+					{
+						"X": 0,
+						"Y": 0,
+						"Z": 0
+					},
+					"Plane":
+					{
+						"X": 0,
+						"Y": 0,
+						"Z": 0,
+						"W": 0
+					},
+					"LimitType": "Outer",
+					"SourceType": "DataAsset",
+					"Enable": true
+				}
+			],
+			"BoneConstraintGlobalComplianceType": "Leather",
+			"BoneConstraintIterationCountBeforeCollision": 0,
+			"BoneConstraintIterationCountAfterCollision": 0,
+			"AutoAddChildDummyBoneConstraint": true,
+			"BoneConstraintCount": 0,
+			"BoneConstraintsDataCount": 0,
+			"Gravity":
+			{
+				"X": 0,
+				"Y": 0,
+				"Z": -980
+			},
+			"EnableWind": false,
+			"WindScale": 1,
+			"HasUseRelativeMove": true,
+			"UseRelativeMove": false,
+			"MovementReferenceDisplacement":
+			{
+				"X": 0,
+				"Y": 0,
+				"Z": 0
+			},
+			"AllowWorldCollision": false,
+			"OverrideCollisionParams": false,
+			"IgnoreSelfComponent": true,
+			"IgnoreBones": [
+				"weapon_root"
+			],
+			"IgnoreBoneNamePrefix": [
+				"Socket_"
+			],
+			"KawaiiPhysicsTag": "NTE.HairTail",
+			"UnsupportedSourceFields": []
+		}
+	],
+	"Package":
+	{
+		"ModName": "lacrimosa004_kawaii_preset_validation_P",
+		"ModsDir": "F:/Neverness To Everness/Client/WindowsNoEditor/HT/Content/Paks/Mods",
+		"JobFilename": "F:/NTE/PhyLab/Saved/NTEBuildTool/Packages/lacrimosa004_kawaii_preset_validation_P/lacrimosa004_kawaii_preset_validation_P.job.json",
+		"BuildAfterCreate": false
+	}
+}
