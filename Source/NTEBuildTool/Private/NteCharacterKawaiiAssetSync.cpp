@@ -472,6 +472,48 @@ int32 GetArrayLength(UObject& Object, const TCHAR* ArrayName)
 	return Helper.Num();
 }
 
+FString RestoreSourceBoneName(const FString& BoneName, const TMap<FString, FString>& TargetToSource)
+{
+	if (const FString* SourceBone = TargetToSource.Find(BoneName))
+	{
+		return *SourceBone;
+	}
+	return BoneName;
+}
+
+void RestoreSourceBoneNames(TArray<FString>& BoneNames, const TMap<FString, FString>& TargetToSource)
+{
+	for (FString& BoneName : BoneNames)
+	{
+		BoneName = RestoreSourceBoneName(BoneName, TargetToSource);
+	}
+}
+
+void RestoreSourceBoneReferences(FNteCharacterKawaiiPresetSpec& Preset)
+{
+	TMap<FString, FString> TargetToSource;
+	for (const FNteCharacterKawaiiBoneRemapSpec& Remap : Preset.BoneRemaps)
+	{
+		if (!Remap.SourceBone.IsEmpty() && !Remap.TargetBone.IsEmpty() && !TargetToSource.Contains(Remap.TargetBone))
+		{
+			TargetToSource.Add(Remap.TargetBone, Remap.SourceBone);
+		}
+	}
+
+	Preset.RootBone = RestoreSourceBoneName(Preset.RootBone, TargetToSource);
+	RestoreSourceBoneNames(Preset.ExcludeBones, TargetToSource);
+	for (FNteCharacterKawaiiAdditionalRootBoneSpec& AdditionalRootBone : Preset.AdditionalRootBones)
+	{
+		AdditionalRootBone.RootBone = RestoreSourceBoneName(AdditionalRootBone.RootBone, TargetToSource);
+		RestoreSourceBoneNames(AdditionalRootBone.OverrideExcludeBones, TargetToSource);
+	}
+	for (FNteCharacterKawaiiLimitSpec& Limit : Preset.CollisionLimits)
+	{
+		Limit.DrivingBone = RestoreSourceBoneName(Limit.DrivingBone, TargetToSource);
+	}
+	RestoreSourceBoneNames(Preset.IgnoreBones, TargetToSource);
+}
+
 void ReadLimitsDataAsset(
 	const FString& LimitsDataAssetPath,
 	FNteCharacterKawaiiPresetSpec& Preset,
@@ -611,6 +653,11 @@ FNteCharacterKawaiiAssetSyncResult SyncKawaiiPresetSpecFromGeneratedAssets(
 
 	ReadLimitsDataAsset(InOutPreset.OutputLimitsDataAssetPath, InOutPreset, Result);
 	ReadBoneConstraintsDataAsset(InOutPreset.OutputBoneConstraintsDataAssetPath, InOutPreset, Result);
+	RestoreSourceBoneReferences(InOutPreset);
+	if (!InOutPreset.BoneRemaps.IsEmpty())
+	{
+		AddUpdated(Result, TEXT("SourceBoneReferencesRestoredFromBoneRemaps"));
+	}
 
 	if (InOutPreset.SourceKind.IsEmpty())
 	{

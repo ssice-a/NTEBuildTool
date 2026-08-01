@@ -9,6 +9,7 @@
 
 #include "Animation/AnimBlueprint.h"
 #include "Animation/AnimInstance.h"
+#include "AnimGraphNode_LayeredBoneBlend.h"
 #include "Blueprint/UserWidget.h"
 #include "Blueprint/WidgetTree.h"
 #include "Components/Button.h"
@@ -46,6 +47,8 @@
 #include "UObject/UnrealType.h"
 #include "Rendering/SkeletalMeshLODRenderData.h"
 #include "Rendering/SkeletalMeshRenderData.h"
+#include "Rendering/SkinWeightVertexBuffer.h"
+#include "ReferenceSkeleton.h"
 #include "StaticMeshResources.h"
 #include "StaticParameterSet.h"
 #include "Engine/Texture.h"
@@ -512,6 +515,219 @@ bool ReadAnimNodeBoolProperty(const UEdGraphNode& Node, const TCHAR* PropertyNam
 	return true;
 }
 
+const void* AnimNodeStructContainer(const UEdGraphNode& Node, UScriptStruct*& OutStruct)
+{
+	const FStructProperty* NodeProperty = FindAnimGraphNodeStructProperty(Node);
+	OutStruct = NodeProperty ? NodeProperty->Struct : nullptr;
+	return NodeProperty && OutStruct
+		? NodeProperty->ContainerPtrToValuePtr<void>(&Node)
+		: nullptr;
+}
+
+FString ReadObjectReferenceField(const void* Container, const UStruct* Struct, const TCHAR* PropertyName)
+{
+	if (!Container || !Struct)
+	{
+		return FString();
+	}
+
+	const FProperty* Property = Struct->FindPropertyByName(PropertyName);
+	if (const FObjectPropertyBase* ObjectProperty = CastField<FObjectPropertyBase>(Property))
+	{
+		const UObject* Value = ObjectProperty->GetObjectPropertyValue_InContainer(Container);
+		return Value ? Value->GetPathName() : FString();
+	}
+	if (const FSoftObjectProperty* SoftObjectProperty = CastField<FSoftObjectProperty>(Property))
+	{
+		const FSoftObjectPtr Value = SoftObjectProperty->GetPropertyValue_InContainer(Container);
+		return Value.ToSoftObjectPath().ToString();
+	}
+	return FString();
+}
+
+bool ReadFloatField(const void* Container, const UStruct* Struct, const TCHAR* PropertyName, double& OutValue)
+{
+	if (!Container || !Struct)
+	{
+		return false;
+	}
+	const FProperty* Property = Struct->FindPropertyByName(PropertyName);
+	if (const FNumericProperty* NumericProperty = CastField<FNumericProperty>(Property))
+	{
+		const void* ValueContainer = NumericProperty->ContainerPtrToValuePtr<void>(Container);
+		if (NumericProperty->IsFloatingPoint())
+		{
+			OutValue = NumericProperty->GetFloatingPointPropertyValue(ValueContainer);
+			return true;
+		}
+		if (NumericProperty->IsInteger())
+		{
+			OutValue = NumericProperty->GetSignedIntPropertyValue(ValueContainer);
+			return true;
+		}
+	}
+	return false;
+}
+
+bool ReadBoolField(const void* Container, const UStruct* Struct, const TCHAR* PropertyName, bool& OutValue)
+{
+	if (!Container || !Struct)
+	{
+		return false;
+	}
+	if (const FBoolProperty* BoolProperty = CastField<FBoolProperty>(Struct->FindPropertyByName(PropertyName)))
+	{
+		OutValue = BoolProperty->GetPropertyValue_InContainer(Container);
+		return true;
+	}
+	return false;
+}
+
+FString ReadBoneReferenceContainer(const void* Container, const UStruct* Struct, const TCHAR* PropertyName)
+{
+	if (!Container || !Struct)
+	{
+		return FString();
+	}
+	const FStructProperty* BoneProperty = CastField<FStructProperty>(Struct->FindPropertyByName(PropertyName));
+	if (!BoneProperty || !BoneProperty->Struct)
+	{
+		return FString();
+	}
+	const void* BoneContainer = BoneProperty->ContainerPtrToValuePtr<void>(Container);
+	if (const FNameProperty* BoneNameProperty = CastField<FNameProperty>(BoneProperty->Struct->FindPropertyByName(TEXT("BoneName"))))
+	{
+		return BoneNameProperty->GetPropertyValue_InContainer(BoneContainer).ToString();
+	}
+	return FString();
+}
+
+TArray<TSharedPtr<FJsonValue>> ReadBoneReferenceArray(const void* Container, const UStruct* Struct, const TCHAR* PropertyName)
+{
+	TArray<TSharedPtr<FJsonValue>> Values;
+	if (!Container || !Struct)
+	{
+		return Values;
+	}
+	const FArrayProperty* ArrayProperty = CastField<FArrayProperty>(Struct->FindPropertyByName(PropertyName));
+	const FStructProperty* InnerStruct = ArrayProperty ? CastField<FStructProperty>(ArrayProperty->Inner) : nullptr;
+	if (!ArrayProperty || !InnerStruct || !InnerStruct->Struct)
+	{
+		return Values;
+	}
+	FScriptArrayHelper Helper(ArrayProperty, ArrayProperty->ContainerPtrToValuePtr<void>(Container));
+	for (int32 Index = 0; Index < Helper.Num(); ++Index)
+	{
+		const void* Element = Helper.GetRawPtr(Index);
+		if (const FNameProperty* BoneNameProperty = CastField<FNameProperty>(InnerStruct->Struct->FindPropertyByName(TEXT("BoneName"))))
+		{
+			Values.Add(MakeShared<FJsonValueString>(BoneNameProperty->GetPropertyValue_InContainer(Element).ToString()));
+		}
+		else if (const FStructProperty* RootBoneProperty = CastField<FStructProperty>(InnerStruct->Struct->FindPropertyByName(TEXT("RootBone"))))
+		{
+			const void* RootBoneContainer = RootBoneProperty->ContainerPtrToValuePtr<void>(Element);
+			if (const FNameProperty* RootBoneNameProperty = CastField<FNameProperty>(RootBoneProperty->Struct->FindPropertyByName(TEXT("BoneName"))))
+			{
+				Values.Add(MakeShared<FJsonValueString>(RootBoneNameProperty->GetPropertyValue_InContainer(RootBoneContainer).ToString()));
+			}
+		}
+	}
+	return Values;
+}
+
+void AddKawaiiLimitArrayInfo(const void* Container, const UStruct* Struct, const TCHAR* PropertyName, FJsonObject& Object)
+{
+	if (!Container || !Struct)
+	{
+		return;
+	}
+	const FArrayProperty* ArrayProperty = CastField<FArrayProperty>(Struct->FindPropertyByName(PropertyName));
+	if (!ArrayProperty)
+	{
+		return;
+	}
+	FScriptArrayHelper Helper(ArrayProperty, ArrayProperty->ContainerPtrToValuePtr<void>(Container));
+	Object.SetNumberField(FString::Printf(TEXT("%sCount"), PropertyName), Helper.Num());
+	TArray<TSharedPtr<FJsonValue>> Entries;
+	const FStructProperty* InnerStruct = CastField<FStructProperty>(ArrayProperty->Inner);
+	if (InnerStruct && InnerStruct->Struct)
+	{
+		for (int32 Index = 0; Index < Helper.Num(); ++Index)
+		{
+			const void* Element = Helper.GetRawPtr(Index);
+			const TSharedRef<FJsonObject> Entry = MakeShared<FJsonObject>();
+			Entry->SetStringField(TEXT("DrivingBone"), ReadBoneReferenceContainer(Element, InnerStruct->Struct, TEXT("DrivingBone")));
+			bool bEnable = false;
+			if (ReadBoolField(Element, InnerStruct->Struct, TEXT("bEnable"), bEnable))
+			{
+				Entry->SetBoolField(TEXT("Enable"), bEnable);
+			}
+			double Radius = 0.0;
+			if (ReadFloatField(Element, InnerStruct->Struct, TEXT("Radius"), Radius))
+			{
+				Entry->SetNumberField(TEXT("Radius"), Radius);
+			}
+			double Length = 0.0;
+			if (ReadFloatField(Element, InnerStruct->Struct, TEXT("Length"), Length))
+			{
+				Entry->SetNumberField(TEXT("Length"), Length);
+			}
+			Entries.Add(MakeShared<FJsonValueObject>(Entry));
+		}
+	}
+	Object.SetArrayField(FString::Printf(TEXT("%sEntries"), PropertyName), Entries);
+}
+
+void AddKawaiiNodeRuntimeInfo(const UEdGraphNode& Node, FJsonObject& Object)
+{
+	UScriptStruct* NodeStruct = nullptr;
+	const void* NodeContainer = AnimNodeStructContainer(Node, NodeStruct);
+	if (!NodeContainer || !NodeStruct)
+	{
+		Object.SetBoolField(TEXT("RuntimeNodePropertiesReadable"), false);
+		return;
+	}
+	Object.SetBoolField(TEXT("RuntimeNodePropertiesReadable"), true);
+	Object.SetStringField(TEXT("ExcludeBones"), FString());
+	Object.SetArrayField(TEXT("ExcludeBoneNames"), ReadBoneReferenceArray(NodeContainer, NodeStruct, TEXT("ExcludeBones")));
+	Object.SetArrayField(TEXT("AdditionalRootBoneNames"), ReadBoneReferenceArray(NodeContainer, NodeStruct, TEXT("AdditionalRootBones")));
+	for (const TCHAR* PropertyName : {
+		TEXT("LimitsDataAsset"), TEXT("PhysicsAssetForLimits"), TEXT("BoneConstraintsDataAsset")})
+	{
+		Object.SetStringField(PropertyName, ReadObjectReferenceField(NodeContainer, NodeStruct, PropertyName));
+	}
+	for (const TCHAR* PropertyName : {
+		TEXT("bUseRelativeMove"), TEXT("bAllowWorldCollision"), TEXT("bOverrideCollisionParams"),
+		TEXT("bIgnoreSelfComponent"), TEXT("bEnableWind"), TEXT("bUpdatePhysicsSettingsInGame")})
+	{
+		bool Value = false;
+		if (ReadBoolField(NodeContainer, NodeStruct, PropertyName, Value))
+		{
+			Object.SetBoolField(PropertyName, Value);
+		}
+	}
+	for (const TCHAR* PropertyName : {
+		TEXT("SphericalLimits"), TEXT("CapsuleLimits"), TEXT("BoxLimits"), TEXT("PlanarLimits"),
+		TEXT("BoneConstraints"), TEXT("MergedBoneConstraints")})
+	{
+		AddKawaiiLimitArrayInfo(NodeContainer, NodeStruct, PropertyName, Object);
+	}
+}
+
+void AddKawaiiDataAssetInfo(const UObject& Asset, FJsonObject& Object)
+{
+	const UStruct* Struct = Asset.GetClass();
+	const void* Container = &Asset;
+	Object.SetStringField(TEXT("Skeleton"), ReadObjectReferenceField(Container, Struct, TEXT("Skeleton")));
+	Object.SetStringField(TEXT("PreviewSkeleton"), ReadObjectReferenceField(Container, Struct, TEXT("PreviewSkeleton")));
+	for (const TCHAR* PropertyName : {
+		TEXT("SphericalLimits"), TEXT("CapsuleLimits"), TEXT("BoxLimits"), TEXT("PlanarLimits"),
+		TEXT("BoneConstraintsData"), TEXT("BoneConstraints")})
+	{
+		AddKawaiiLimitArrayInfo(Container, Struct, PropertyName, Object);
+	}
+}
+
 void AddAnimBlueprintGraphSummary(const UAnimBlueprint& AnimBlueprint, FJsonObject& Object)
 {
 	const UEdGraph* AnimGraph = FindAnimGraph(AnimBlueprint);
@@ -526,16 +742,23 @@ void AddAnimBlueprintGraphSummary(const UAnimBlueprint& AnimBlueprint, FJsonObje
 
 	constexpr const TCHAR* CopyPoseClass = TEXT("AnimGraphNode_CopyPoseFromMesh");
 	constexpr const TCHAR* LocalToComponentClass = TEXT("AnimGraphNode_LocalToComponentSpace");
+	constexpr const TCHAR* LocalRefPoseClass = TEXT("AnimGraphNode_LocalRefPose");
+	constexpr const TCHAR* LayeredBoneBlendClass = TEXT("AnimGraphNode_LayeredBoneBlend");
 	constexpr const TCHAR* KawaiiClass = TEXT("AnimGraphNode_KawaiiPhysics");
 	constexpr const TCHAR* ComponentToLocalClass = TEXT("AnimGraphNode_ComponentToLocalSpace");
 	constexpr const TCHAR* RootClass = TEXT("AnimGraphNode_Root");
 
 	const int32 CopyPoseCount = CountNodesByClass(*AnimGraph, CopyPoseClass);
 	const int32 LocalToComponentCount = CountNodesByClass(*AnimGraph, LocalToComponentClass);
+	const int32 LocalRefPoseCount = CountNodesByClass(*AnimGraph, LocalRefPoseClass);
+	const int32 LayeredBoneBlendCount = CountNodesByClass(*AnimGraph, LayeredBoneBlendClass);
 	const int32 KawaiiCount = CountNodesByClass(*AnimGraph, KawaiiClass);
 	const int32 ComponentToLocalCount = CountNodesByClass(*AnimGraph, ComponentToLocalClass);
 	const int32 RootCount = CountNodesByClass(*AnimGraph, RootClass);
 	const bool bCopyPoseLinkedToLocal = AnyNodeLinksToClass(*AnimGraph, CopyPoseClass, LocalToComponentClass);
+	const bool bLinkedInputPoseLinkedToLayered = AnyNodeLinksToClass(*AnimGraph, TEXT("AnimGraphNode_LinkedInputPose"), LayeredBoneBlendClass);
+	const bool bLocalRefPoseLinkedToLayered = AnyNodeLinksToClass(*AnimGraph, LocalRefPoseClass, LayeredBoneBlendClass);
+	const bool bLayeredLinkedToLocalToComponent = AnyNodeLinksToClass(*AnimGraph, LayeredBoneBlendClass, LocalToComponentClass);
 	const bool bLocalLinkedToKawaii = AnyNodeLinksToClass(*AnimGraph, LocalToComponentClass, KawaiiClass);
 	const bool bKawaiiLinkedToComponent = AnyNodeLinksToClass(*AnimGraph, KawaiiClass, ComponentToLocalClass);
 	const bool bComponentLinkedToRoot = AnyNodeLinksToClass(*AnimGraph, ComponentToLocalClass, RootClass);
@@ -544,10 +767,15 @@ void AddAnimBlueprintGraphSummary(const UAnimBlueprint& AnimBlueprint, FJsonObje
 	Summary->SetNumberField(TEXT("NodeCount"), AnimGraph->Nodes.Num());
 	Summary->SetNumberField(TEXT("CopyPoseFromMeshCount"), CopyPoseCount);
 	Summary->SetNumberField(TEXT("LocalToComponentSpaceCount"), LocalToComponentCount);
+	Summary->SetNumberField(TEXT("LocalRefPoseCount"), LocalRefPoseCount);
+	Summary->SetNumberField(TEXT("LayeredBoneBlendCount"), LayeredBoneBlendCount);
 	Summary->SetNumberField(TEXT("KawaiiPhysicsCount"), KawaiiCount);
 	Summary->SetNumberField(TEXT("ComponentToLocalSpaceCount"), ComponentToLocalCount);
 	Summary->SetNumberField(TEXT("RootCount"), RootCount);
 	Summary->SetBoolField(TEXT("CopyPoseLinkedToLocalToComponent"), bCopyPoseLinkedToLocal);
+	Summary->SetBoolField(TEXT("LinkedInputPoseLinkedToLayeredBoneBlend"), bLinkedInputPoseLinkedToLayered);
+	Summary->SetBoolField(TEXT("LocalRefPoseLinkedToLayeredBoneBlend"), bLocalRefPoseLinkedToLayered);
+	Summary->SetBoolField(TEXT("LayeredBoneBlendLinkedToLocalToComponent"), bLayeredLinkedToLocalToComponent);
 	Summary->SetBoolField(TEXT("LocalToComponentLinkedToKawaii"), bLocalLinkedToKawaii);
 	Summary->SetBoolField(TEXT("KawaiiLinkedToComponentToLocal"), bKawaiiLinkedToComponent);
 	Summary->SetBoolField(TEXT("ComponentToLocalLinkedToRoot"), bComponentLinkedToRoot);
@@ -562,9 +790,26 @@ void AddAnimBlueprintGraphSummary(const UAnimBlueprint& AnimBlueprint, FJsonObje
 			&& bLocalLinkedToKawaii
 			&& bKawaiiLinkedToComponent
 			&& bComponentLinkedToRoot);
+	Summary->SetBoolField(
+		TEXT("HasExpectedPostProcessKawaiiChain"),
+		CopyPoseCount == 0
+			&& LocalRefPoseCount == 1
+			&& LayeredBoneBlendCount == 1
+			&& LocalToComponentCount > 0
+			&& KawaiiCount > 0
+			&& ComponentToLocalCount > 0
+			&& RootCount > 0
+			&& bLinkedInputPoseLinkedToLayered
+			&& bLocalRefPoseLinkedToLayered
+			&& bLayeredLinkedToLocalToComponent
+			&& bLocalLinkedToKawaii
+			&& bKawaiiLinkedToComponent
+			&& bComponentLinkedToRoot);
 
 	TArray<TSharedPtr<FJsonValue>> CopyPoseNodes;
 	TArray<TSharedPtr<FJsonValue>> KawaiiNodes;
+	TArray<TSharedPtr<FJsonValue>> ReferencePoseBranchFilters;
+	bool bReferencePoseBranchDepthsAllZero = true;
 	for (const UEdGraphNode* Node : AnimGraph->Nodes)
 	{
 		if (NodeClassIs(Node, CopyPoseClass))
@@ -579,6 +824,23 @@ void AddAnimBlueprintGraphSummary(const UAnimBlueprint& AnimBlueprint, FJsonObje
 			}
 			CopyPoseNodes.Add(MakeShared<FJsonValueObject>(CopyPoseObject));
 		}
+		else if (NodeClassIs(Node, LayeredBoneBlendClass))
+		{
+			if (const UAnimGraphNode_LayeredBoneBlend* LayeredBlendNode = Cast<UAnimGraphNode_LayeredBoneBlend>(Node))
+			{
+				for (const FInputBlendPose& Layer : LayeredBlendNode->Node.LayerSetup)
+				{
+					for (const FBranchFilter& Filter : Layer.BranchFilters)
+					{
+						const TSharedRef<FJsonObject> FilterObject = MakeShared<FJsonObject>();
+						FilterObject->SetStringField(TEXT("BoneName"), Filter.BoneName.ToString());
+						FilterObject->SetNumberField(TEXT("BlendDepth"), Filter.BlendDepth);
+						ReferencePoseBranchFilters.Add(MakeShared<FJsonValueObject>(FilterObject));
+						bReferencePoseBranchDepthsAllZero &= Filter.BlendDepth == 0;
+					}
+				}
+			}
+		}
 		else if (NodeClassIs(Node, KawaiiClass))
 		{
 			const TSharedRef<FJsonObject> KawaiiObject = MakeShared<FJsonObject>();
@@ -586,11 +848,14 @@ void AddAnimBlueprintGraphSummary(const UAnimBlueprint& AnimBlueprint, FJsonObje
 			KawaiiObject->SetStringField(TEXT("Title"), Node->GetNodeTitle(ENodeTitleType::FullTitle).ToString());
 			KawaiiObject->SetStringField(TEXT("RootBone"), ReadAnimNodeBoneReferenceName(*Node, TEXT("RootBone")));
 			KawaiiObject->SetBoolField(TEXT("LinkedToComponentToLocal"), NodeLinksToClass(*Node, ComponentToLocalClass));
+			AddKawaiiNodeRuntimeInfo(*Node, *KawaiiObject);
 			KawaiiNodes.Add(MakeShared<FJsonValueObject>(KawaiiObject));
 		}
 	}
 	Summary->SetArrayField(TEXT("CopyPoseNodes"), CopyPoseNodes);
 	Summary->SetArrayField(TEXT("KawaiiNodes"), KawaiiNodes);
+	Summary->SetArrayField(TEXT("ReferencePoseBranchFilters"), ReferencePoseBranchFilters);
+	Summary->SetBoolField(TEXT("ReferencePoseBranchDepthsAllZero"), bReferencePoseBranchDepthsAllZero);
 
 	Object.SetObjectField(TEXT("AnimGraphSummary"), Summary);
 }
@@ -623,6 +888,8 @@ void AddSCSNodeInfo(const USCS_Node& Node, const TMap<const USCS_Node*, FString>
 	const UActorComponent* ComponentTemplate = Node.ComponentTemplate;
 	Object.SetStringField(TEXT("VariableName"), Node.GetVariableName().ToString());
 	Object.SetStringField(TEXT("ParentVariableName"), ParentVariableNames.FindRef(&Node));
+	Object.SetStringField(TEXT("ParentComponentOrVariableName"), Node.ParentComponentOrVariableName.ToString());
+	Object.SetBoolField(TEXT("IsParentComponentNative"), Node.bIsParentComponentNative);
 	Object.SetStringField(TEXT("AttachToName"), Node.AttachToName.ToString());
 	Object.SetStringField(TEXT("ComponentTemplateName"), ComponentTemplate ? ComponentTemplate->GetName() : FString());
 	Object.SetStringField(TEXT("ComponentClass"), ComponentTemplate ? ComponentTemplate->GetClass()->GetPathName() : FString());
@@ -828,6 +1095,18 @@ void AddWidgetBlueprintInfo(const UWidgetBlueprint& WidgetBlueprint, FJsonObject
 
 void AddSkeletalMeshInfo(const USkeletalMesh& SkeletalMesh, FJsonObject& Object)
 {
+	const FReferenceSkeleton& ReferenceSkeleton = SkeletalMesh.GetRefSkeleton();
+	TArray<TSharedPtr<FJsonValue>> ReferenceBones;
+	for (int32 BoneIndex = 0; BoneIndex < ReferenceSkeleton.GetNum(); ++BoneIndex)
+	{
+		const TSharedRef<FJsonObject> Entry = MakeShared<FJsonObject>();
+		Entry->SetNumberField(TEXT("Index"), BoneIndex);
+		Entry->SetStringField(TEXT("Name"), ReferenceSkeleton.GetBoneName(BoneIndex).ToString());
+		Entry->SetNumberField(TEXT("ParentIndex"), ReferenceSkeleton.GetParentIndex(BoneIndex));
+		ReferenceBones.Add(MakeShared<FJsonValueObject>(Entry));
+	}
+	Object.SetArrayField(TEXT("ReferenceSkeleton"), ReferenceBones);
+
 	TArray<TSharedPtr<FJsonValue>> Materials;
 	const TArray<FSkeletalMaterial>& SkeletalMaterials = SkeletalMesh.GetMaterials();
 	for (int32 Index = 0; Index < SkeletalMaterials.Num(); ++Index)
@@ -855,6 +1134,7 @@ void AddSkeletalMeshInfo(const USkeletalMesh& SkeletalMesh, FJsonObject& Object)
 		for (int32 LodIndex = 0; LodIndex < RenderData->LODRenderData.Num(); ++LodIndex)
 		{
 			const FSkeletalMeshLODRenderData& LodData = RenderData->LODRenderData[LodIndex];
+			const FSkinWeightVertexBuffer* SkinWeights = LodData.GetSkinWeightVertexBuffer();
 			for (int32 SectionIndex = 0; SectionIndex < LodData.RenderSections.Num(); ++SectionIndex)
 			{
 				const FSkelMeshRenderSection& Section = LodData.RenderSections[SectionIndex];
@@ -863,6 +1143,75 @@ void AddSkeletalMeshInfo(const USkeletalMesh& SkeletalMesh, FJsonObject& Object)
 				Entry->SetNumberField(TEXT("SectionIndex"), SectionIndex);
 				Entry->SetNumberField(TEXT("MaterialIndex"), Section.MaterialIndex);
 				Entry->SetNumberField(TEXT("NumTriangles"), Section.NumTriangles);
+				Entry->SetNumberField(TEXT("BaseVertexIndex"), Section.BaseVertexIndex);
+				Entry->SetNumberField(TEXT("NumVertices"), Section.NumVertices);
+				Entry->SetNumberField(TEXT("MaxBoneInfluences"), Section.MaxBoneInfluences);
+
+				TArray<TSharedPtr<FJsonValue>> BoneMap;
+				for (int32 LocalBoneIndex = 0; LocalBoneIndex < Section.BoneMap.Num(); ++LocalBoneIndex)
+				{
+					const int32 SkeletonBoneIndex = Section.BoneMap[LocalBoneIndex];
+					const TSharedRef<FJsonObject> BoneEntry = MakeShared<FJsonObject>();
+					BoneEntry->SetNumberField(TEXT("LocalIndex"), LocalBoneIndex);
+					BoneEntry->SetNumberField(TEXT("SkeletonIndex"), SkeletonBoneIndex);
+					BoneEntry->SetStringField(
+						TEXT("Name"),
+						ReferenceSkeleton.IsValidIndex(SkeletonBoneIndex)
+							? ReferenceSkeleton.GetBoneName(SkeletonBoneIndex).ToString()
+							: FString());
+					BoneMap.Add(MakeShared<FJsonValueObject>(BoneEntry));
+				}
+				Entry->SetArrayField(TEXT("BoneMap"), BoneMap);
+
+				TMap<int32, int32> WeightedBoneInfluenceCounts;
+				int32 InvalidSkinWeightReferenceCount = 0;
+				if (SkinWeights)
+				{
+					const uint32 VertexEnd = Section.BaseVertexIndex + Section.NumVertices;
+					for (uint32 VertexIndex = Section.BaseVertexIndex; VertexIndex < VertexEnd; ++VertexIndex)
+					{
+						uint32 VertexWeightOffset = 0;
+						uint32 VertexInfluenceCount = 0;
+						SkinWeights->GetVertexInfluenceOffsetCount(VertexIndex, VertexWeightOffset, VertexInfluenceCount);
+						for (uint32 InfluenceIndex = 0; InfluenceIndex < VertexInfluenceCount; ++InfluenceIndex)
+						{
+							if (SkinWeights->GetBoneWeight(VertexIndex, InfluenceIndex) == 0)
+							{
+								continue;
+							}
+
+							const int32 LocalBoneIndex = static_cast<int32>(SkinWeights->GetBoneIndex(VertexIndex, InfluenceIndex));
+							if (!Section.BoneMap.IsValidIndex(LocalBoneIndex))
+							{
+								++InvalidSkinWeightReferenceCount;
+								continue;
+							}
+
+							const int32 SkeletonBoneIndex = Section.BoneMap[LocalBoneIndex];
+							if (!ReferenceSkeleton.IsValidIndex(SkeletonBoneIndex))
+							{
+								++InvalidSkinWeightReferenceCount;
+								continue;
+							}
+							++WeightedBoneInfluenceCounts.FindOrAdd(SkeletonBoneIndex);
+						}
+					}
+				}
+
+				TArray<int32> WeightedBoneIndices;
+				WeightedBoneInfluenceCounts.GetKeys(WeightedBoneIndices);
+				WeightedBoneIndices.Sort();
+				TArray<TSharedPtr<FJsonValue>> WeightedBones;
+				for (const int32 SkeletonBoneIndex : WeightedBoneIndices)
+				{
+					const TSharedRef<FJsonObject> BoneEntry = MakeShared<FJsonObject>();
+					BoneEntry->SetNumberField(TEXT("SkeletonIndex"), SkeletonBoneIndex);
+					BoneEntry->SetStringField(TEXT("Name"), ReferenceSkeleton.GetBoneName(SkeletonBoneIndex).ToString());
+					BoneEntry->SetNumberField(TEXT("InfluenceCount"), WeightedBoneInfluenceCounts[SkeletonBoneIndex]);
+					WeightedBones.Add(MakeShared<FJsonValueObject>(BoneEntry));
+				}
+				Entry->SetArrayField(TEXT("WeightedBones"), WeightedBones);
+				Entry->SetNumberField(TEXT("InvalidSkinWeightReferenceCount"), InvalidSkinWeightReferenceCount);
 				LodSections.Add(MakeShared<FJsonValueObject>(Entry));
 			}
 		}
@@ -914,22 +1263,22 @@ void AddStaticMeshInfo(const UStaticMesh& StaticMesh, FJsonObject& Object)
 	Object.SetArrayField(TEXT("LodSections"), LodSections);
 }
 
-TSharedRef<FJsonObject> MakeFashionMeshDataObject(const FHTFashionMeshData& MeshData)
+TSharedRef<FJsonObject> MakeFashionMeshDataObject(const FCharacterMeshData& MeshData)
 {
 	const TSharedRef<FJsonObject> Object = MakeShared<FJsonObject>();
 	Object->SetStringField(TEXT("CharacterMesh"), ObjectPackagePath(MeshData.CharacterMesh.Get()));
 	Object->SetStringField(TEXT("CharacterMeshObjectPath"), ObjectPath(MeshData.CharacterMesh.Get()));
-	Object->SetStringField(TEXT("AnimInstanceClass"), ClassPath(MeshData.AnimInstance.Get()));
+	Object->SetStringField(TEXT("AnimInstanceClass"), ClassPath(Cast<UClass>(MeshData.AnimInstance.Get())));
 	return Object;
 }
 
-TSharedRef<FJsonObject> MakeFashionAttachedMeshDataObject(const FHTFashionAttachedMeshData& MeshData)
+TSharedRef<FJsonObject> MakeFashionAttachedMeshDataObject(const FAttachedMeshData& MeshData)
 {
 	const TSharedRef<FJsonObject> Object = MakeShared<FJsonObject>();
 	Object->SetStringField(TEXT("CharacterMesh"), ObjectPackagePath(MeshData.CharacterMesh.Get()));
 	Object->SetStringField(TEXT("CharacterMeshObjectPath"), ObjectPath(MeshData.CharacterMesh.Get()));
-	Object->SetStringField(TEXT("AnimInstanceClass"), ClassPath(MeshData.AnimInstance.Get()));
-	Object->SetStringField(TEXT("MobileAnimInstanceClass"), ClassPath(MeshData.MobileAnimInstance.Get()));
+	Object->SetStringField(TEXT("AnimInstanceClass"), ClassPath(Cast<UClass>(MeshData.AnimInstance.Get())));
+	Object->SetStringField(TEXT("MobileAnimInstanceClass"), ClassPath(Cast<UClass>(MeshData.MobileAnimInstance.Get())));
 	Object->SetStringField(TEXT("SocketName"), MeshData.SocketName.ToString());
 	Object->SetArrayField(TEXT("MeshComponentOwnedTags"), NTEBuildTool::Json::StringArrayToJsonValues([&MeshData]()
 	{
@@ -953,10 +1302,10 @@ void AddHTPlayerAppearanceInfo(const UHTPlayerAppearance& Appearance, FJsonObjec
 	Object.SetNumberField(TEXT("CapsuleRadius"), Appearance.CapsuleRadius);
 	Object.SetObjectField(TEXT("RelativeLocation"), MakeVectorObject(Appearance.RelativeLocation));
 	Object.SetNumberField(TEXT("FPSCameraCapsuleTopOffset"), Appearance.FPSCameraCapsuleTopOffset);
-	Object.SetStringField(TEXT("UltraSkillSequenceClass"), ClassPath(Appearance.UltraSkillSequence.Get()));
+	Object.SetStringField(TEXT("UltraSkillSequence"), ObjectPath(Appearance.UltraSkillSequence.Get()));
 
 	TArray<TSharedPtr<FJsonValue>> AttachedMeshes;
-	for (const FHTFashionAttachedMeshData& AttachedMesh : Appearance.ArrayFashionAttachedMeshData)
+	for (const FAttachedMeshData& AttachedMesh : Appearance.ArrayFashionAttachedMeshData)
 	{
 		AttachedMeshes.Add(MakeShared<FJsonValueObject>(MakeFashionAttachedMeshDataObject(AttachedMesh)));
 	}
@@ -1001,6 +1350,11 @@ TSharedRef<FJsonObject> InspectAsset(const FString& AssetPath)
 		AddBlueprintBinaryPatternInfo(*AnimBlueprint, *Object);
 		AddBlueprintGraphInfo(*AnimBlueprint, *Object);
 		AddAnimBlueprintGraphSummary(*AnimBlueprint, *Object);
+	}
+	else if (Asset->GetClass()->GetName().Contains(TEXT("KawaiiPhysicsLimitsDataAsset"))
+		|| Asset->GetClass()->GetName().Contains(TEXT("KawaiiPhysicsBoneConstraintsDataAsset")))
+	{
+		AddKawaiiDataAssetInfo(*Asset, *Object);
 	}
 	else if (const UWidgetBlueprint* WidgetBlueprint = Cast<UWidgetBlueprint>(Asset))
 	{

@@ -20,6 +20,7 @@ struct FNteCharacterMaterialOperationWriteResult
 	FString Id;
 	FString TargetMeshPath;
 	int32 SlotIndex = INDEX_NONE;
+	FString ExistingMaterialPath;
 	FString SourceMaterialJson;
 	FString ParentMaterialPath;
 	FString OutputMaterialPath;

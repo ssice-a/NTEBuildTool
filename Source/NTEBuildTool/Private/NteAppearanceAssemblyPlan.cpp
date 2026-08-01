@@ -48,12 +48,33 @@ TSharedRef<FJsonObject> MeshDataPlanToJson(const FNteAppearanceMeshDataPlan& Mes
 	AddStringIfNotEmpty(Object, TEXT("MobileAnimInstancePath"), MeshData.MobileAnimInstancePath);
 	AddStringIfNotEmpty(Object, TEXT("UIAnimInstancePath"), MeshData.UIAnimInstancePath);
 	AddStringIfNotEmpty(Object, TEXT("SocketName"), MeshData.SocketName);
+	AddStringIfNotEmpty(Object, TEXT("PresentationSocketName"), MeshData.PresentationSocketName);
 	Object->SetArrayField(TEXT("MeshComponentOwnedTags"), Json::StringArrayToJsonValues(MeshData.MeshComponentOwnedTags));
+	Object->SetArrayField(TEXT("PresentationTargetIds"), Json::StringArrayToJsonValues(MeshData.PresentationTargetIds));
 	Object->SetObjectField(TEXT("RelativeLocation"), VectorToJson(MeshData.RelativeLocation));
 	Object->SetObjectField(TEXT("RelativeRotation"), RotatorToJson(MeshData.RelativeRotation));
 	Object->SetObjectField(TEXT("RelativeScale3D"), VectorToJson(MeshData.RelativeScale3D));
 	Object->SetBoolField(TEXT("SyncToUIShow"), MeshData.bSyncToUIShow);
 	Object->SetBoolField(TEXT("RuntimeActionsEnabled"), MeshData.bRuntimeActionsEnabled);
+	return Object;
+}
+
+TSharedRef<FJsonObject> PresentationTargetPlanToJson(const FNteAppearancePresentationTargetPlan& Target)
+{
+	TSharedRef<FJsonObject> Object = MakeShared<FJsonObject>();
+	AddStringIfNotEmpty(Object, TEXT("Id"), Target.Id);
+	AddStringIfNotEmpty(Object, TEXT("BlueprintClassPath"), Target.BlueprintClassPath);
+	AddStringIfNotEmpty(Object, TEXT("ParentMeshComponentName"), Target.ParentMeshComponentName);
+	AddStringIfNotEmpty(Object, TEXT("MainAnimInstancePath"), Target.MainAnimInstancePath);
+	Object->SetBoolField(TEXT("ConfigureMainMesh"), Target.bConfigureMainMesh);
+	return Object;
+}
+
+TSharedRef<FJsonObject> NPCAppearanceTargetPlanToJson(const FNteNPCAppearanceTargetPlan& Target)
+{
+	TSharedRef<FJsonObject> Object = MakeShared<FJsonObject>();
+	AddStringIfNotEmpty(Object, TEXT("AssetPath"), Target.AssetPath);
+	AddStringIfNotEmpty(Object, TEXT("MainAnimInstancePath"), Target.MainAnimInstancePath);
 	return Object;
 }
 
@@ -64,6 +85,7 @@ FNteAppearanceMeshDataPlan MainMeshPlanFromSpec(const FNteCharacterModSpec& Spec
 	MeshData.Label = TEXT("Main");
 	MeshData.CharacterMeshPath = Spec.MainMeshPath;
 	MeshData.AnimInstancePath = Spec.MainAnimBlueprintPath;
+	MeshData.UIAnimInstancePath = Spec.Appearance.MainUIAnimBlueprintPath;
 	MeshData.bSyncToUIShow = false;
 	return MeshData;
 }
@@ -99,7 +121,9 @@ FNteAppearanceMeshDataPlan AttachedMeshPlanFromSpec(
 	MeshData.MobileAnimInstancePath = AttachedMesh.MobileAnimBlueprintPath;
 	MeshData.UIAnimInstancePath = AttachedMesh.UIAnimBlueprintPath;
 	MeshData.SocketName = AttachedMesh.SocketName;
+	MeshData.PresentationSocketName = AttachedMesh.PresentationSocketName;
 	MeshData.MeshComponentOwnedTags = AttachedMesh.MeshComponentOwnedTags;
+	MeshData.PresentationTargetIds = AttachedMesh.PresentationTargetIds;
 	MeshData.RelativeLocation = AttachedMesh.RelativeLocation;
 	MeshData.RelativeRotation = AttachedMesh.RelativeRotation;
 	MeshData.RelativeScale3D = AttachedMesh.RelativeScale;
@@ -114,8 +138,36 @@ FNteAppearanceAssemblyPlan BuildAppearanceAssemblyPlanFromSpec(const FNteCharact
 	FNteAppearanceAssemblyPlan Plan;
 	const FNteCharacterKawaiiPlan KawaiiPlan = BuildCharacterKawaiiPlanFromSpec(Spec);
 	Plan.PlayerAppearanceAssetPath = Spec.Appearance.PlayerAppearanceAssetPath;
-	Plan.UIActorClassPath = Spec.Appearance.UIActorClassPath;
+	for (const FNteCharacterNPCAppearanceTargetSpec& SpecTarget : Spec.Appearance.NPCAppearanceTargets)
+	{
+		FNteNPCAppearanceTargetPlan Target;
+		Target.AssetPath = SpecTarget.AssetPath;
+		Target.MainAnimInstancePath = SpecTarget.MainAnimBlueprintPath;
+		Plan.NPCAppearanceTargets.Add(MoveTemp(Target));
+	}
+	Plan.CapsuleHalfHeight = Spec.Appearance.CapsuleHalfHeight;
+	Plan.CapsuleRadius = Spec.Appearance.CapsuleRadius;
+	Plan.RelativeLocation = Spec.Appearance.RelativeLocation;
 	Plan.MainMesh = MainMeshPlanFromSpec(Spec);
+	for (const FNteCharacterPresentationTargetSpec& SpecTarget : Spec.Appearance.PresentationTargets)
+	{
+		FNteAppearancePresentationTargetPlan Target;
+		Target.Id = SpecTarget.Id;
+		Target.BlueprintClassPath = SpecTarget.BlueprintClassPath;
+		Target.ParentMeshComponentName = SpecTarget.ParentMeshComponentName;
+		Target.MainAnimInstancePath = SpecTarget.MainAnimBlueprintPath;
+		Target.bConfigureMainMesh = SpecTarget.bConfigureMainMesh;
+		Plan.PresentationTargets.Add(MoveTemp(Target));
+	}
+	if (Plan.PresentationTargets.IsEmpty() && !Spec.Appearance.UIActorClassPath.IsEmpty())
+	{
+		FNteAppearancePresentationTargetPlan LegacyUiTarget;
+		LegacyUiTarget.Id = TEXT("ui");
+		LegacyUiTarget.BlueprintClassPath = Spec.Appearance.UIActorClassPath;
+		LegacyUiTarget.ParentMeshComponentName = TEXT("Mesh");
+		LegacyUiTarget.MainAnimInstancePath = Spec.Appearance.MainUIAnimBlueprintPath;
+		Plan.PresentationTargets.Add(MoveTemp(LegacyUiTarget));
+	}
 
 	if (Plan.PlayerAppearanceAssetPath.IsEmpty())
 	{
@@ -125,9 +177,20 @@ FNteAppearanceAssemblyPlan BuildAppearanceAssemblyPlanFromSpec(const FNteCharact
 	{
 		Plan.Errors.Add(TEXT("MainMeshPath is required for FashionMeshData."));
 	}
-	if (Plan.UIActorClassPath.IsEmpty())
+	for (const FNteNPCAppearanceTargetPlan& Target : Plan.NPCAppearanceTargets)
 	{
-		Plan.Warnings.Add(TEXT("UIActorClassPath is empty; runtime MeshAsset can be planned, but PlayerUIShow preview sync cannot be planned."));
+		if (Target.AssetPath.IsEmpty())
+		{
+			Plan.Errors.Add(TEXT("NPC appearance target has an empty AssetPath."));
+		}
+		if (Target.MainAnimInstancePath.IsEmpty())
+		{
+			Plan.Errors.Add(FString::Printf(TEXT("NPC appearance target '%s' has no main AnimInstancePath."), *Target.AssetPath));
+		}
+	}
+	if (Plan.PresentationTargets.IsEmpty())
+	{
+		Plan.Warnings.Add(TEXT("No presentation targets are configured; only the runtime MeshAsset can be written."));
 	}
 
 	for (const FNteCharacterAttachedMeshSpec& AttachedMesh : Spec.AttachedMeshes)
@@ -145,13 +208,10 @@ FNteAppearanceAssemblyPlan BuildAppearanceAssemblyPlanFromSpec(const FNteCharact
 		{
 			Plan.Warnings.Add(FString::Printf(TEXT("Attached mesh '%s' has no AnimInstancePath; it will rely on component defaults unless an asset writer rejects it."), *AttachedPlan.Id));
 		}
-		if (AttachedPlan.SocketName.IsEmpty())
+		AttachedPlan.SocketName.TrimStartAndEndInline();
+		if (AttachedPlan.SocketName.IsEmpty() || FName(*AttachedPlan.SocketName).IsNone())
 		{
-			Plan.Warnings.Add(FString::Printf(TEXT("Attached mesh '%s' has no SocketName."), *AttachedPlan.Id));
-		}
-		if (AttachedPlan.bSyncToUIShow && Plan.UIActorClassPath.IsEmpty())
-		{
-			Plan.Warnings.Add(FString::Printf(TEXT("Attached mesh '%s' requests UIShow sync but UIActorClassPath is empty."), *AttachedPlan.Id));
+			Plan.Errors.Add(FString::Printf(TEXT("Attached mesh '%s' has no valid SocketName; native ArrayFashionAttachedMeshData entries require an explicit mount bone or socket, and NAME_None is not valid."), *AttachedPlan.Id));
 		}
 		Plan.AttachedMeshes.Add(MoveTemp(AttachedPlan));
 	}
@@ -163,7 +223,30 @@ TSharedRef<FJsonObject> AppearanceAssemblyPlanToJson(const FNteAppearanceAssembl
 {
 	TSharedRef<FJsonObject> Object = MakeShared<FJsonObject>();
 	AddStringIfNotEmpty(Object, TEXT("PlayerAppearanceAssetPath"), Plan.PlayerAppearanceAssetPath);
-	AddStringIfNotEmpty(Object, TEXT("UIActorClassPath"), Plan.UIActorClassPath);
+	TArray<TSharedPtr<FJsonValue>> NPCAppearanceTargets;
+	for (const FNteNPCAppearanceTargetPlan& Target : Plan.NPCAppearanceTargets)
+	{
+		NPCAppearanceTargets.Add(MakeShared<FJsonValueObject>(NPCAppearanceTargetPlanToJson(Target)));
+	}
+	Object->SetArrayField(TEXT("NPCAppearanceTargets"), NPCAppearanceTargets);
+	TArray<TSharedPtr<FJsonValue>> PresentationTargets;
+	for (const FNteAppearancePresentationTargetPlan& Target : Plan.PresentationTargets)
+	{
+		PresentationTargets.Add(MakeShared<FJsonValueObject>(PresentationTargetPlanToJson(Target)));
+	}
+	Object->SetArrayField(TEXT("PresentationTargets"), PresentationTargets);
+	if (Plan.CapsuleHalfHeight.IsSet())
+	{
+		Object->SetNumberField(TEXT("CapsuleHalfHeight"), Plan.CapsuleHalfHeight.GetValue());
+	}
+	if (Plan.CapsuleRadius.IsSet())
+	{
+		Object->SetNumberField(TEXT("CapsuleRadius"), Plan.CapsuleRadius.GetValue());
+	}
+	if (Plan.RelativeLocation.IsSet())
+	{
+		Object->SetObjectField(TEXT("RelativeLocation"), VectorToJson(Plan.RelativeLocation.GetValue()));
+	}
 	Object->SetObjectField(TEXT("MainMesh"), MeshDataPlanToJson(Plan.MainMesh));
 
 	TArray<TSharedPtr<FJsonValue>> AttachedMeshes;

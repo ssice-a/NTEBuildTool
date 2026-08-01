@@ -365,7 +365,9 @@ void UpsertKawaiiPresets(
 				InOutResult.Warnings.Add(FString::Printf(TEXT("Kawaii preset '%s' already exists and replace-existing is disabled; imported preset was skipped."), *Preset.Id));
 				continue;
 			}
-			Spec.KawaiiPresets[ExistingIndex] = Preset;
+			FNteCharacterKawaiiPresetSpec Replacement = Preset;
+			Replacement.BoneRemaps = Spec.KawaiiPresets[ExistingIndex].BoneRemaps;
+			Spec.KawaiiPresets[ExistingIndex] = MoveTemp(Replacement);
 			++InOutResult.ReplacedPresetCount;
 		}
 		else

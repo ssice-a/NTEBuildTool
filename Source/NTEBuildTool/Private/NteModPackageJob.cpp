@@ -8,6 +8,7 @@
 #include "NteEditorAssetUtils.h"
 #include "NteJsonFileUtils.h"
 #include "NteModPackagePlan.h"
+#include "NtePakmodProject.h"
 
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "AssetRegistry/IAssetRegistry.h"
@@ -250,6 +251,19 @@ bool ValidateHTGameStubCookPrerequisites(const FNteModPackageJob& Job, FString& 
 
 	return true;
 }
+
+bool DoesProjectPackageExist(const FNteModPackageJob& Job, const FString& PackageName)
+{
+	if (!PackageName.StartsWith(TEXT("/Game/")))
+	{
+		return false;
+	}
+
+	const FString RelativeContentPath = PackageName.RightChop(FCString::Strlen(TEXT("/Game/")));
+	const FString ContentFilename = FPaths::Combine(Job.ProjectRoot, TEXT("Content"), RelativeContentPath);
+	return FPaths::FileExists(ContentFilename + TEXT(".uasset"))
+		|| FPaths::FileExists(ContentFilename + TEXT(".umap"));
+}
 }
 
 FString SanitizeModPackageName(FString ModName)
@@ -439,6 +453,32 @@ bool CreateModPackageJobFromCharacterModSpec(
 	return CreateModPackageJobFromSelection(Options, OutResult, OutError);
 }
 
+bool CreateModPackageJobFromManifest(
+	const NTEBuildTool::Project::FNtePakmodProject& Project,
+	const FNtePackagePlan& Plan,
+	FNteModPackageJobCreateResult& OutResult,
+	FString& OutError)
+{
+	FNteModPackageJobCreateOptions Options;
+	Options.JobFilename = Project.PackageManifest.JobFilename;
+	Options.ModsDir = Project.PackageManifest.ModsDirOverride;
+	Options.ModName = Project.PackageManifest.ModName;
+	Options.GameMountName = Project.PackageManifest.GameMountNameOverride;
+	Options.Packages = GetIncludedPackageNames(Plan);
+	Options.bCollectContentBrowserSelection = false;
+	Options.bUnversioned = Project.PackageManifest.bUnversioned;
+	Options.bRequiresHTGameStub = Project.PackageManifest.bRequiresHTGameStub;
+	for (const FString& Exclusion : Project.PackageManifest.ExplicitExclusions)
+	{
+		const FString PackageName = NTEBuildTool::Project::NormalizePakmodPackagePath(Exclusion);
+		if (PackageName.StartsWith(TEXT("/Game/")))
+		{
+			Options.NeverPackPackagePrefixes.AddUnique(PackageName);
+		}
+	}
+	return CreateModPackageJobFromSelection(Options, OutResult, OutError);
+}
+
 bool ValidatePackageJob(const FNteModPackageJob& Job, FString& OutError)
 {
 	if (Job.ProjectRoot.IsEmpty() || !FPaths::DirectoryExists(Job.ProjectRoot))
@@ -490,6 +530,13 @@ bool ValidatePackageJob(const FNteModPackageJob& Job, FString& OutError)
 				OutError = FString::Printf(TEXT("Refusing to pack %s because it matches forbidden prefix %s."), *PackageName, *Prefix);
 				return false;
 			}
+		}
+		if (!DoesProjectPackageExist(Job, PackageName))
+		{
+			OutError = FString::Printf(
+				TEXT("Package asset is missing from the mirror project Content directory: %s. Generate/save it before creating or launching the package job."),
+				*PackageName);
+			return false;
 		}
 	}
 

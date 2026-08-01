@@ -655,6 +655,26 @@ void AddOverrideReportEntry(TArray<TSharedPtr<FJsonValue>>& Overrides, const FSt
 }
 }
 
+bool AssignExistingMaterialToMeshSlot(
+	const FString& MaterialPath,
+	const FString& MeshPath,
+	const int32 SlotIndex,
+	UObject*& OutMesh,
+	FString& OutError)
+{
+	UMaterialInterface* Material = Cast<UMaterialInterface>(LoadAnyAssetByPath(MaterialPath));
+	if (!Material)
+	{
+		OutError = FString::Printf(TEXT("Could not load existing material: %s"), *MaterialPath);
+		return false;
+	}
+	if (!AssignMaterialToMeshSlot(MeshPath, SlotIndex, *Material, OutMesh, OutError))
+	{
+		return false;
+	}
+	return SaveAssetPackage(*OutMesh, OutError);
+}
+
 FString DeriveParentMaterialPathFromFModelJson(const FString& SourceMaterialJson)
 {
 	FString Normalized = SourceMaterialJson;

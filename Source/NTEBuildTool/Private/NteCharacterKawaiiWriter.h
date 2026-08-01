@@ -46,7 +46,20 @@ struct FNteCharacterKawaiiWriteResult
 	bool HasErrors() const { return !Errors.IsEmpty(); }
 };
 
+struct FNteCharacterKawaiiAssetPreflightResult
+{
+	TArray<FString> CheckedAnimBlueprints;
+	TArray<FString> Errors;
+	TArray<FString> Warnings;
+
+	bool HasErrors() const { return !Errors.IsEmpty(); }
+};
+
 FNteCharacterKawaiiSchemaProbeResult ProbeNteKawaiiSchemaCompatibility();
+FNteCharacterKawaiiAssetPreflightResult ValidateCharacterKawaiiAssetsForPackage(const FNteCharacterKawaiiPlan& Plan);
+FNteCharacterKawaiiWriteResult WriteAttachedMeshCopyPoseAnimBlueprint(
+	const FString& RuntimeAnimBlueprintPath,
+	const FString& TargetMeshPath);
 FNteCharacterKawaiiWriteResult WriteCharacterKawaiiAssets(const FNteCharacterKawaiiPlan& Plan);
 TSharedRef<FJsonObject> CharacterKawaiiSchemaProbeToJson(const FNteCharacterKawaiiSchemaProbeResult& Result);
 TSharedRef<FJsonObject> CharacterKawaiiWriteResultToJson(const FNteCharacterKawaiiWriteResult& Result);

@@ -48,6 +48,7 @@ FNteCharacterMaterialOperationWriteResult MakeOperationWriteResultShell(const FN
 	Result.Id = Operation.Id;
 	Result.TargetMeshPath = Operation.TargetMeshPath;
 	Result.SlotIndex = Operation.SlotIndex;
+	Result.ExistingMaterialPath = Operation.ExistingMaterialPath;
 	Result.SourceMaterialJson = Operation.SourceMaterialJson;
 	Result.ParentMaterialPath = Operation.ParentMaterialPath;
 	Result.OutputMaterialPath = Operation.OutputMaterialPath;
@@ -82,6 +83,7 @@ TSharedRef<FJsonObject> OperationWriteResultToJson(const FNteCharacterMaterialOp
 	AddStringIfNotEmpty(Object, TEXT("Id"), Result.Id);
 	AddStringIfNotEmpty(Object, TEXT("TargetMeshPath"), Result.TargetMeshPath);
 	Object->SetNumberField(TEXT("SlotIndex"), Result.SlotIndex);
+	AddStringIfNotEmpty(Object, TEXT("ExistingMaterialPath"), Result.ExistingMaterialPath);
 	AddStringIfNotEmpty(Object, TEXT("SourceMaterialJson"), Result.SourceMaterialJson);
 	AddStringIfNotEmpty(Object, TEXT("ParentMaterialPath"), Result.ParentMaterialPath);
 	AddStringIfNotEmpty(Object, TEXT("OutputMaterialPath"), Result.OutputMaterialPath);
@@ -127,6 +129,28 @@ FNteCharacterMaterialWriteResult WriteCharacterMaterials(const FNteCharacterMate
 		{
 			Result.Errors.Append(OperationResult.Errors);
 			Result.Warnings.Append(OperationResult.Warnings);
+			Result.Operations.Add(MoveTemp(OperationResult));
+			continue;
+		}
+
+		if (!Operation.ExistingMaterialPath.IsEmpty())
+		{
+			UObject* TargetMesh = nullptr;
+			FString Error;
+			if (!NTEBuildTool::Material::AssignExistingMaterialToMeshSlot(
+				Operation.ExistingMaterialPath,
+				Operation.TargetMeshPath,
+				Operation.SlotIndex,
+				TargetMesh,
+				Error))
+			{
+				AddError(Result, OperationResult, FString::Printf(TEXT("Material operation '%s' failed: %s"), *Operation.Id, *Error));
+			}
+			else
+			{
+				OperationResult.bApplied = true;
+				OperationResult.AssignedMaterialPath = Operation.ExistingMaterialPath;
+			}
 			Result.Operations.Add(MoveTemp(OperationResult));
 			continue;
 		}

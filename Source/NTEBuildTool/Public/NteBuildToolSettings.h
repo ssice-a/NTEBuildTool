@@ -27,6 +27,12 @@ public:
 	UPROPERTY(config, EditAnywhere, Category="Source", meta=(DisplayName="FModel Export Root"))
 	FDirectoryPath FModelExportRoot;
 
+	UPROPERTY(config, VisibleAnywhere, Category="Pakmod Project", meta=(DisplayName="Last Pakmod Project"))
+	FFilePath LastPakmodProject;
+
+	UPROPERTY(config, VisibleAnywhere, Category="Pakmod Project", meta=(DisplayName="Recent Pakmod Projects"))
+	TArray<FFilePath> RecentPakmodProjects;
+
 };
 
 namespace NTEBuildTool::Settings
@@ -35,4 +41,7 @@ const UNteBuildToolSettings* Get();
 FString GetGameMountName();
 FString GetDefaultModsOutputDirectory();
 FString GetFModelExportRoot();
+FString GetLastPakmodProject();
+TArray<FString> GetRecentPakmodProjects();
+void RememberPakmodProject(const FString& Filename);
 }

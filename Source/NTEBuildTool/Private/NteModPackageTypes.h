@@ -62,6 +62,8 @@ struct FNteModPackageJobCreateResult
 
 enum class ENtePackagePlanCandidateKind
 {
+	ManifestReplacementAsset,
+	ManifestAddedAsset,
 	SelectedAsset,
 	SelectedFolderAsset,
 	HardDependency,
@@ -85,5 +87,15 @@ struct FNtePackagePlanCandidate
 struct FNtePackagePlan
 {
 	TArray<FNtePackagePlanCandidate> Candidates;
+};
+
+struct FNtePackageManifestResolution
+{
+	TArray<FString> PackageNames;
+	TMap<FString, FString> ReasonsByPackage;
+	TArray<FString> Errors;
+	TArray<FString> Warnings;
+
+	bool HasErrors() const { return !Errors.IsEmpty(); }
 };
 }

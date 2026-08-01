@@ -2,10 +2,15 @@
 
 #include "NteEditorAssetUtils.h"
 
+#include "HTAttachedMeshAnimInstance.h"
+
 #include "ContentBrowserModule.h"
 #include "Editor.h"
+#include "Engine/Blueprint.h"
+#include "Engine/BlueprintGeneratedClass.h"
 #include "Engine/SkeletalMesh.h"
 #include "IContentBrowserSingleton.h"
+#include "Kismet2/BlueprintEditorUtils.h"
 #include "Materials/MaterialInstanceConstant.h"
 #include "Misc/PackageName.h"
 #include "Subsystems/AssetEditorSubsystem.h"
@@ -92,7 +97,8 @@ FString NormalizeAssetPathForText(FString AssetPath)
 	{
 		const FString PackageName = AssetPath.Left(DotIndex);
 		const FString ObjectName = AssetPath.Mid(DotIndex + 1);
-		if (FPackageName::GetShortName(PackageName) == ObjectName)
+		const bool bFModelExportIndex = !ObjectName.IsEmpty() && ObjectName.IsNumeric();
+		if (FPackageName::GetShortName(PackageName) == ObjectName || bFModelExportIndex)
 		{
 			AssetPath = PackageName;
 		}
@@ -150,7 +156,7 @@ UObject* LoadAnyAssetByPath(const FString& AssetPath)
 		return nullptr;
 	}
 
-	return StaticLoadObject(UObject::StaticClass(), nullptr, *ToObjectPath(AssetPath));
+	return StaticLoadObject(UObject::StaticClass(), nullptr, *ToObjectPath(NormalizeAssetPathForText(AssetPath)));
 }
 
 bool OpenAssetEditorByPath(const FString& AssetPath, FString& OutError)
@@ -180,6 +186,45 @@ bool OpenAssetEditorByPath(const FString& AssetPath, FString& OutError)
 		OutError = FString::Printf(TEXT("Could not open editor for asset: %s"), *AssetPath);
 		return false;
 	}
+	return true;
+}
+
+UClass* GetAttachedMeshAnimInstanceParentClass()
+{
+	return UHTAttachedMeshAnimInstance::StaticClass();
+}
+
+bool EnsureBlueprintParentClass(
+	UBlueprint& Blueprint,
+	UClass& ExpectedParentClass,
+	bool& OutChanged,
+	FString& OutError)
+{
+	OutChanged = false;
+	OutError.Reset();
+	if (Blueprint.ParentClass && Blueprint.ParentClass->IsChildOf(&ExpectedParentClass))
+	{
+		return true;
+	}
+
+	Blueprint.Modify();
+	Blueprint.ParentClass = &ExpectedParentClass;
+	if (UBlueprintGeneratedClass* GeneratedClass = Cast<UBlueprintGeneratedClass>(Blueprint.GeneratedClass))
+	{
+		GeneratedClass->PrepareToConformSparseClassData(ExpectedParentClass.GetSparseClassDataStruct());
+	}
+	FBlueprintEditorUtils::RefreshAllNodes(&Blueprint);
+	FBlueprintEditorUtils::MarkBlueprintAsStructurallyModified(&Blueprint);
+	if (!Blueprint.ParentClass || !Blueprint.ParentClass->IsChildOf(&ExpectedParentClass))
+	{
+		OutError = FString::Printf(
+			TEXT("Could not reparent Blueprint %s to %s."),
+			*Blueprint.GetPathName(),
+			*ExpectedParentClass.GetPathName());
+		return false;
+	}
+
+	OutChanged = true;
 	return true;
 }
 }

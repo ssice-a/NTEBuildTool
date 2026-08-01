@@ -12,7 +12,8 @@ public class HTGame : ModuleRules
 		{
 			"Core",
 			"CoreUObject",
-			"Engine"
+			"Engine",
+			"GameplayTags"
 		});
 	}
 }

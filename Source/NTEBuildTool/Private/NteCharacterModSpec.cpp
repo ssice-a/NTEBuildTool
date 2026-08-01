@@ -2,6 +2,8 @@
 
 #include "NteCharacterModSpec.h"
 
+#include "NteCharacterRuntimeActionPlan.h"
+
 #include "NteJsonFileUtils.h"
 
 #include "Dom/JsonValue.h"
@@ -184,12 +186,75 @@ void ReadObjectArrayField(const FJsonObject& Object, const TCHAR* FieldName, TFu
 	}
 }
 
+TSharedRef<FJsonObject> PresentationTargetToJson(const FNteCharacterPresentationTargetSpec& Target)
+{
+	TSharedRef<FJsonObject> Object = MakeShared<FJsonObject>();
+	SetStringIfNotEmpty(Object, TEXT("Id"), Target.Id);
+	SetStringIfNotEmpty(Object, TEXT("BlueprintClassPath"), Target.BlueprintClassPath);
+	SetStringIfNotEmpty(Object, TEXT("ParentMeshComponentName"), Target.ParentMeshComponentName);
+	SetStringIfNotEmpty(Object, TEXT("MainAnimBlueprintPath"), Target.MainAnimBlueprintPath);
+	Object->SetBoolField(TEXT("ConfigureMainMesh"), Target.bConfigureMainMesh);
+	return Object;
+}
+
+FNteCharacterPresentationTargetSpec PresentationTargetFromJson(const FJsonObject& Object)
+{
+	FNteCharacterPresentationTargetSpec Target;
+	Target.Id = GetStringField(Object, TEXT("Id"));
+	Target.BlueprintClassPath = GetStringField(Object, TEXT("BlueprintClassPath"));
+	Target.ParentMeshComponentName = GetStringField(Object, TEXT("ParentMeshComponentName"));
+	Target.MainAnimBlueprintPath = GetStringField(Object, TEXT("MainAnimBlueprintPath"));
+	Target.bConfigureMainMesh = GetBoolField(Object, TEXT("ConfigureMainMesh"), true);
+	return Target;
+}
+
+TSharedRef<FJsonObject> NPCAppearanceTargetToJson(const FNteCharacterNPCAppearanceTargetSpec& Target)
+{
+	TSharedRef<FJsonObject> Object = MakeShared<FJsonObject>();
+	SetStringIfNotEmpty(Object, TEXT("AssetPath"), Target.AssetPath);
+	SetStringIfNotEmpty(Object, TEXT("MainAnimBlueprintPath"), Target.MainAnimBlueprintPath);
+	return Object;
+}
+
+FNteCharacterNPCAppearanceTargetSpec NPCAppearanceTargetFromJson(const FJsonObject& Object)
+{
+	FNteCharacterNPCAppearanceTargetSpec Target;
+	Target.AssetPath = GetStringField(Object, TEXT("AssetPath"));
+	Target.MainAnimBlueprintPath = GetStringField(Object, TEXT("MainAnimBlueprintPath"));
+	return Target;
+}
+
 TSharedRef<FJsonObject> AppearanceToJson(const FNteCharacterAppearanceTarget& Appearance)
 {
 	TSharedRef<FJsonObject> Object = MakeShared<FJsonObject>();
 	SetStringIfNotEmpty(Object, TEXT("AppearanceRowName"), Appearance.AppearanceRowName);
 	SetStringIfNotEmpty(Object, TEXT("PlayerAppearanceAssetPath"), Appearance.PlayerAppearanceAssetPath);
+	TArray<TSharedPtr<FJsonValue>> NPCAppearanceTargets;
+	for (const FNteCharacterNPCAppearanceTargetSpec& Target : Appearance.NPCAppearanceTargets)
+	{
+		NPCAppearanceTargets.Add(MakeShared<FJsonValueObject>(NPCAppearanceTargetToJson(Target)));
+	}
+	Object->SetArrayField(TEXT("NPCAppearanceTargets"), NPCAppearanceTargets);
 	SetStringIfNotEmpty(Object, TEXT("UIActorClassPath"), Appearance.UIActorClassPath);
+	SetStringIfNotEmpty(Object, TEXT("MainUIAnimBlueprintPath"), Appearance.MainUIAnimBlueprintPath);
+	TArray<TSharedPtr<FJsonValue>> PresentationTargets;
+	for (const FNteCharacterPresentationTargetSpec& Target : Appearance.PresentationTargets)
+	{
+		PresentationTargets.Add(MakeShared<FJsonValueObject>(PresentationTargetToJson(Target)));
+	}
+	Object->SetArrayField(TEXT("PresentationTargets"), PresentationTargets);
+	if (Appearance.CapsuleHalfHeight.IsSet())
+	{
+		Object->SetNumberField(TEXT("CapsuleHalfHeight"), Appearance.CapsuleHalfHeight.GetValue());
+	}
+	if (Appearance.CapsuleRadius.IsSet())
+	{
+		Object->SetNumberField(TEXT("CapsuleRadius"), Appearance.CapsuleRadius.GetValue());
+	}
+	if (Appearance.RelativeLocation.IsSet())
+	{
+		Object->SetObjectField(TEXT("RelativeLocation"), VectorToJson(Appearance.RelativeLocation.GetValue()));
+	}
 	return Object;
 }
 
@@ -198,7 +263,29 @@ FNteCharacterAppearanceTarget AppearanceFromJson(const FJsonObject& Object)
 	FNteCharacterAppearanceTarget Appearance;
 	Appearance.AppearanceRowName = GetStringField(Object, TEXT("AppearanceRowName"));
 	Appearance.PlayerAppearanceAssetPath = GetStringField(Object, TEXT("PlayerAppearanceAssetPath"));
+	ReadObjectArrayField(Object, TEXT("NPCAppearanceTargets"), [&Appearance](const FJsonObject& Child)
+	{
+		Appearance.NPCAppearanceTargets.Add(NPCAppearanceTargetFromJson(Child));
+	});
 	Appearance.UIActorClassPath = GetStringField(Object, TEXT("UIActorClassPath"));
+	Appearance.MainUIAnimBlueprintPath = GetStringField(Object, TEXT("MainUIAnimBlueprintPath"));
+	ReadObjectArrayField(Object, TEXT("PresentationTargets"), [&Appearance](const FJsonObject& Child)
+	{
+		Appearance.PresentationTargets.Add(PresentationTargetFromJson(Child));
+	});
+	double NumberValue = 0.0;
+	if (Object.TryGetNumberField(TEXT("CapsuleHalfHeight"), NumberValue))
+	{
+		Appearance.CapsuleHalfHeight = static_cast<float>(NumberValue);
+	}
+	if (Object.TryGetNumberField(TEXT("CapsuleRadius"), NumberValue))
+	{
+		Appearance.CapsuleRadius = static_cast<float>(NumberValue);
+	}
+	ReadObjectField(Object, TEXT("RelativeLocation"), [&Appearance](const FJsonObject& Child)
+	{
+		Appearance.RelativeLocation = VectorFromJson(Child, FVector::ZeroVector);
+	});
 	return Appearance;
 }
 
@@ -213,7 +300,9 @@ TSharedRef<FJsonObject> AttachedMeshToJson(const FNteCharacterAttachedMeshSpec& 
 	SetStringIfNotEmpty(Object, TEXT("UIAnimBlueprintPath"), AttachedMesh.UIAnimBlueprintPath);
 	SetStringIfNotEmpty(Object, TEXT("RuntimeAnimBlueprintPath"), AttachedMesh.RuntimeAnimBlueprintPath);
 	SetStringIfNotEmpty(Object, TEXT("SocketName"), AttachedMesh.SocketName);
+	SetStringIfNotEmpty(Object, TEXT("PresentationSocketName"), AttachedMesh.PresentationSocketName);
 	Object->SetArrayField(TEXT("MeshComponentOwnedTags"), Json::StringArrayToJsonValues(AttachedMesh.MeshComponentOwnedTags));
+	Object->SetArrayField(TEXT("PresentationTargetIds"), Json::StringArrayToJsonValues(AttachedMesh.PresentationTargetIds));
 	Object->SetObjectField(TEXT("RelativeLocation"), VectorToJson(AttachedMesh.RelativeLocation));
 	Object->SetObjectField(TEXT("RelativeRotation"), RotatorToJson(AttachedMesh.RelativeRotation));
 	Object->SetObjectField(TEXT("RelativeScale"), VectorToJson(AttachedMesh.RelativeScale));
@@ -234,7 +323,9 @@ FNteCharacterAttachedMeshSpec AttachedMeshFromJson(const FJsonObject& Object)
 	AttachedMesh.UIAnimBlueprintPath = GetStringField(Object, TEXT("UIAnimBlueprintPath"));
 	AttachedMesh.RuntimeAnimBlueprintPath = GetStringField(Object, TEXT("RuntimeAnimBlueprintPath"));
 	AttachedMesh.SocketName = GetStringField(Object, TEXT("SocketName"));
+	AttachedMesh.PresentationSocketName = GetStringField(Object, TEXT("PresentationSocketName"));
 	AttachedMesh.MeshComponentOwnedTags = GetStringArrayField(Object, TEXT("MeshComponentOwnedTags"));
+	AttachedMesh.PresentationTargetIds = GetStringArrayField(Object, TEXT("PresentationTargetIds"));
 	ReadObjectField(Object, TEXT("RelativeLocation"), [&AttachedMesh](const FJsonObject& Child)
 	{
 		AttachedMesh.RelativeLocation = VectorFromJson(Child, FVector::ZeroVector);
@@ -283,6 +374,7 @@ TSharedRef<FJsonObject> MaterialOperationToJson(const FNteCharacterMaterialOpera
 	SetStringIfNotEmpty(Object, TEXT("TargetMeshId"), Operation.TargetMeshId);
 	Object->SetNumberField(TEXT("SlotIndex"), Operation.SlotIndex);
 	SetStringIfNotEmpty(Object, TEXT("SlotName"), Operation.SlotName);
+	SetStringIfNotEmpty(Object, TEXT("ExistingMaterialPath"), Operation.ExistingMaterialPath);
 	SetStringIfNotEmpty(Object, TEXT("SourceMaterialJson"), Operation.SourceMaterialJson);
 	SetStringIfNotEmpty(Object, TEXT("ParentMaterialPath"), Operation.ParentMaterialPath);
 	SetStringIfNotEmpty(Object, TEXT("OutputMaterialPath"), Operation.OutputMaterialPath);
@@ -298,6 +390,7 @@ FNteCharacterMaterialOperationSpec MaterialOperationFromJson(const FJsonObject& 
 	Operation.TargetMeshId = GetStringField(Object, TEXT("TargetMeshId"));
 	Operation.SlotIndex = GetIntField(Object, TEXT("SlotIndex"));
 	Operation.SlotName = GetStringField(Object, TEXT("SlotName"));
+	Operation.ExistingMaterialPath = GetStringField(Object, TEXT("ExistingMaterialPath"));
 	Operation.SourceMaterialJson = GetStringField(Object, TEXT("SourceMaterialJson"));
 	Operation.ParentMaterialPath = GetStringField(Object, TEXT("ParentMaterialPath"));
 	Operation.OutputMaterialPath = GetStringField(Object, TEXT("OutputMaterialPath"));
@@ -365,11 +458,16 @@ TSharedRef<FJsonObject> RuntimeUiToJson(const FNteCharacterRuntimeUiSpec& Runtim
 	SetStringIfNotEmpty(Object, TEXT("ToggleUiHotkey"), RuntimeUi.ToggleUiHotkey);
 	SetStringIfNotEmpty(Object, TEXT("Title"), RuntimeUi.Title);
 	Object->SetBoolField(TEXT("DefaultVisible"), RuntimeUi.bDefaultVisible);
+	SetStringIfNotEmpty(Object, TEXT("StyleProfileId"), RuntimeUi.StyleProfileId);
 	SetStringIfNotEmpty(Object, TEXT("FontPath"), RuntimeUi.FontPath);
 	SetStringIfNotEmpty(Object, TEXT("BodyFontTypeface"), RuntimeUi.BodyFontTypeface);
 	SetStringIfNotEmpty(Object, TEXT("TitleFontTypeface"), RuntimeUi.TitleFontTypeface);
 	Object->SetNumberField(TEXT("BodyFontSize"), RuntimeUi.BodyFontSize);
 	Object->SetNumberField(TEXT("TitleFontSize"), RuntimeUi.TitleFontSize);
+	SetStringIfNotEmpty(Object, TEXT("ButtonNormalTexturePath"), RuntimeUi.ButtonNormalTexturePath);
+	SetStringIfNotEmpty(Object, TEXT("ButtonHoveredTexturePath"), RuntimeUi.ButtonHoveredTexturePath);
+	SetStringIfNotEmpty(Object, TEXT("ButtonPressedTexturePath"), RuntimeUi.ButtonPressedTexturePath);
+	SetStringIfNotEmpty(Object, TEXT("ButtonDisabledTexturePath"), RuntimeUi.ButtonDisabledTexturePath);
 	return Object;
 }
 
@@ -380,6 +478,11 @@ FNteCharacterRuntimeUiSpec RuntimeUiFromJson(const FJsonObject& Object)
 	RuntimeUi.ToggleUiHotkey = GetStringField(Object, TEXT("ToggleUiHotkey"));
 	RuntimeUi.Title = GetStringField(Object, TEXT("Title"));
 	RuntimeUi.bDefaultVisible = GetBoolField(Object, TEXT("DefaultVisible"), false);
+	const FString StyleProfileId = GetStringField(Object, TEXT("StyleProfileId"));
+	if (!StyleProfileId.IsEmpty())
+	{
+		RuntimeUi.StyleProfileId = StyleProfileId;
+	}
 	const FString FontPath = GetStringField(Object, TEXT("FontPath"));
 	if (!FontPath.IsEmpty())
 	{
@@ -397,6 +500,26 @@ FNteCharacterRuntimeUiSpec RuntimeUiFromJson(const FJsonObject& Object)
 	}
 	RuntimeUi.BodyFontSize = FMath::Max(1, static_cast<int32>(GetFloatField(Object, TEXT("BodyFontSize"), RuntimeUi.BodyFontSize)));
 	RuntimeUi.TitleFontSize = FMath::Max(1, static_cast<int32>(GetFloatField(Object, TEXT("TitleFontSize"), RuntimeUi.TitleFontSize)));
+	const FString ButtonNormalTexturePath = GetStringField(Object, TEXT("ButtonNormalTexturePath"));
+	if (!ButtonNormalTexturePath.IsEmpty())
+	{
+		RuntimeUi.ButtonNormalTexturePath = ButtonNormalTexturePath;
+	}
+	const FString ButtonHoveredTexturePath = GetStringField(Object, TEXT("ButtonHoveredTexturePath"));
+	if (!ButtonHoveredTexturePath.IsEmpty())
+	{
+		RuntimeUi.ButtonHoveredTexturePath = ButtonHoveredTexturePath;
+	}
+	const FString ButtonPressedTexturePath = GetStringField(Object, TEXT("ButtonPressedTexturePath"));
+	if (!ButtonPressedTexturePath.IsEmpty())
+	{
+		RuntimeUi.ButtonPressedTexturePath = ButtonPressedTexturePath;
+	}
+	const FString ButtonDisabledTexturePath = GetStringField(Object, TEXT("ButtonDisabledTexturePath"));
+	if (!ButtonDisabledTexturePath.IsEmpty())
+	{
+		RuntimeUi.ButtonDisabledTexturePath = ButtonDisabledTexturePath;
+	}
 	return RuntimeUi;
 }
 
@@ -424,6 +547,32 @@ TArray<TSharedPtr<FJsonValue>> KawaiiAdditionalRootBonesToJsonValues(const TArra
 	for (const FNteCharacterKawaiiAdditionalRootBoneSpec& RootBone : RootBones)
 	{
 		Values.Add(MakeShared<FJsonValueObject>(KawaiiAdditionalRootBoneToJson(RootBone)));
+	}
+	return Values;
+}
+
+TSharedRef<FJsonObject> KawaiiBoneRemapToJson(const FNteCharacterKawaiiBoneRemapSpec& Remap)
+{
+	TSharedRef<FJsonObject> Object = MakeShared<FJsonObject>();
+	SetStringIfNotEmpty(Object, TEXT("SourceBone"), Remap.SourceBone);
+	SetStringIfNotEmpty(Object, TEXT("TargetBone"), Remap.TargetBone);
+	return Object;
+}
+
+FNteCharacterKawaiiBoneRemapSpec KawaiiBoneRemapFromJson(const FJsonObject& Object)
+{
+	FNteCharacterKawaiiBoneRemapSpec Remap;
+	Remap.SourceBone = GetStringField(Object, TEXT("SourceBone"));
+	Remap.TargetBone = GetStringField(Object, TEXT("TargetBone"));
+	return Remap;
+}
+
+TArray<TSharedPtr<FJsonValue>> KawaiiBoneRemapsToJsonValues(const TArray<FNteCharacterKawaiiBoneRemapSpec>& Remaps)
+{
+	TArray<TSharedPtr<FJsonValue>> Values;
+	for (const FNteCharacterKawaiiBoneRemapSpec& Remap : Remaps)
+	{
+		Values.Add(MakeShared<FJsonValueObject>(KawaiiBoneRemapToJson(Remap)));
 	}
 	return Values;
 }
@@ -560,6 +709,7 @@ TSharedRef<FJsonObject> KawaiiPresetToJson(const FNteCharacterKawaiiPresetSpec& 
 	SetStringIfNotEmpty(Object, TEXT("ReferencedPresetId"), Preset.ReferencedPresetId);
 	SetStringIfNotEmpty(Object, TEXT("TemplateKind"), Preset.TemplateKind);
 	SetStringIfNotEmpty(Object, TEXT("SchemaStatus"), Preset.SchemaStatus);
+	Object->SetArrayField(TEXT("BoneRemaps"), KawaiiBoneRemapsToJsonValues(Preset.BoneRemaps));
 	SetStringIfNotEmpty(Object, TEXT("RootBone"), Preset.RootBone);
 	Object->SetArrayField(TEXT("ExcludeBones"), Json::StringArrayToJsonValues(Preset.ExcludeBones));
 	Object->SetArrayField(TEXT("AdditionalRootBones"), KawaiiAdditionalRootBonesToJsonValues(Preset.AdditionalRootBones));
@@ -623,6 +773,10 @@ FNteCharacterKawaiiPresetSpec KawaiiPresetFromJson(const FJsonObject& Object)
 	Preset.ReferencedPresetId = GetStringField(Object, TEXT("ReferencedPresetId"));
 	Preset.TemplateKind = GetStringField(Object, TEXT("TemplateKind"));
 	Preset.SchemaStatus = GetStringField(Object, TEXT("SchemaStatus"));
+	ReadObjectArrayField(Object, TEXT("BoneRemaps"), [&Preset](const FJsonObject& Child)
+	{
+		Preset.BoneRemaps.Add(KawaiiBoneRemapFromJson(Child));
+	});
 	Preset.RootBone = GetStringField(Object, TEXT("RootBone"));
 	Preset.ExcludeBones = GetStringArrayField(Object, TEXT("ExcludeBones"));
 	ReadObjectArrayField(Object, TEXT("AdditionalRootBones"), [&Preset](const FJsonObject& Child)
@@ -696,6 +850,15 @@ TSharedRef<FJsonObject> PackageSpecToJson(const FNteCharacterPackageSpec& Packag
 	SetStringIfNotEmpty(Object, TEXT("ModName"), Package.ModName);
 	SetStringIfNotEmpty(Object, TEXT("ModsDir"), Package.ModsDir);
 	SetStringIfNotEmpty(Object, TEXT("JobFilename"), Package.JobFilename);
+	TArray<TSharedPtr<FJsonValue>> Assets;
+	for (const FNteCharacterPackageAssetSpec& Asset : Package.Assets)
+	{
+		TSharedRef<FJsonObject> AssetObject = MakeShared<FJsonObject>();
+		SetStringIfNotEmpty(AssetObject, TEXT("AssetPath"), Asset.AssetPath);
+		AssetObject->SetStringField(TEXT("Intent"), PackageAssetIntentToString(Asset.Intent));
+		Assets.Add(MakeShared<FJsonValueObject>(AssetObject));
+	}
+	Object->SetArrayField(TEXT("Assets"), Assets);
 	Object->SetBoolField(TEXT("BuildAfterCreate"), Package.bBuildAfterCreate);
 	return Object;
 }
@@ -706,6 +869,13 @@ FNteCharacterPackageSpec PackageSpecFromJson(const FJsonObject& Object)
 	Package.ModName = GetStringField(Object, TEXT("ModName"));
 	Package.ModsDir = GetStringField(Object, TEXT("ModsDir"));
 	Package.JobFilename = GetStringField(Object, TEXT("JobFilename"));
+	ReadObjectArrayField(Object, TEXT("Assets"), [&Package](const FJsonObject& Child)
+	{
+		FNteCharacterPackageAssetSpec Asset;
+		Asset.AssetPath = GetStringField(Child, TEXT("AssetPath"));
+		Asset.Intent = PackageAssetIntentFromString(GetStringField(Child, TEXT("Intent")));
+		Package.Assets.Add(MoveTemp(Asset));
+	});
 	Package.bBuildAfterCreate = GetBoolField(Object, TEXT("BuildAfterCreate"), false);
 	return Package;
 }
@@ -779,16 +949,6 @@ bool IsSupportedKawaiiSourceKind(const FString& SourceKind)
 		|| SourceKind == TEXT("ImportedJson")
 		|| SourceKind == TEXT("ReferencedPreset")
 		|| SourceKind == TEXT("Template");
-}
-
-bool IsSupportedRuntimeActionType(const FString& ActionType)
-{
-	return ActionType == TEXT("MaterialSlotVisibility")
-		|| ActionType == TEXT("AttachedMeshVisibility")
-		|| ActionType == TEXT("MaterialSwap")
-		|| ActionType == TEXT("ScalarParameter")
-		|| ActionType == TEXT("VectorParameter")
-		|| ActionType == TEXT("MorphTarget");
 }
 
 FString NormalizeRuntimeHotkey(FString Hotkey)
@@ -935,6 +1095,52 @@ void AddPackageSeed(TArray<FString>& Seeds, const FString& Path)
 }
 }
 
+FString PackageAssetIntentToString(const ENteCharacterPackageAssetIntent Intent)
+{
+	switch (Intent)
+	{
+	case ENteCharacterPackageAssetIntent::ExternalReference:
+		return TEXT("ExternalReference");
+	case ENteCharacterPackageAssetIntent::GeneratedAsset:
+		return TEXT("GeneratedAsset");
+	case ENteCharacterPackageAssetIntent::ReplacementAsset:
+		return TEXT("ReplacementAsset");
+	case ENteCharacterPackageAssetIntent::Invalid:
+	default:
+		return TEXT("Invalid");
+	}
+}
+
+ENteCharacterPackageAssetIntent PackageAssetIntentFromString(const FString& Intent)
+{
+	if (Intent.Equals(TEXT("ExternalReference"), ESearchCase::IgnoreCase))
+	{
+		return ENteCharacterPackageAssetIntent::ExternalReference;
+	}
+	if (Intent.Equals(TEXT("GeneratedAsset"), ESearchCase::IgnoreCase))
+	{
+		return ENteCharacterPackageAssetIntent::GeneratedAsset;
+	}
+	if (Intent.Equals(TEXT("ReplacementAsset"), ESearchCase::IgnoreCase))
+	{
+		return ENteCharacterPackageAssetIntent::ReplacementAsset;
+	}
+	return ENteCharacterPackageAssetIntent::Invalid;
+}
+
+TOptional<ENteCharacterPackageAssetIntent> FindPackageAssetIntent(const FNteCharacterModSpec& Spec, const FString& AssetPath)
+{
+	const FString PackagePath = NormalizeSpecPackagePath(AssetPath);
+	for (const FNteCharacterPackageAssetSpec& Asset : Spec.Package.Assets)
+	{
+		if (NormalizeSpecPackagePath(Asset.AssetPath).Equals(PackagePath, ESearchCase::IgnoreCase))
+		{
+			return Asset.Intent;
+		}
+	}
+	return {};
+}
+
 TSharedRef<FJsonObject> CharacterModSpecToJson(const FNteCharacterModSpec& Spec)
 {
 	TSharedRef<FJsonObject> Object = MakeShared<FJsonObject>();
@@ -944,6 +1150,7 @@ TSharedRef<FJsonObject> CharacterModSpecToJson(const FNteCharacterModSpec& Spec)
 	Object->SetObjectField(TEXT("Appearance"), AppearanceToJson(Spec.Appearance));
 	SetStringIfNotEmpty(Object, TEXT("MainMeshPath"), Spec.MainMeshPath);
 	SetStringIfNotEmpty(Object, TEXT("MainAnimBlueprintPath"), Spec.MainAnimBlueprintPath);
+	SetStringIfNotEmpty(Object, TEXT("MainPostProcessAnimBlueprintPath"), Spec.MainPostProcessAnimBlueprintPath);
 	Object->SetArrayField(TEXT("AttachedMeshes"), ObjectArrayToJsonValues<FNteCharacterAttachedMeshSpec>(Spec.AttachedMeshes, AttachedMeshToJson));
 	Object->SetArrayField(TEXT("MaterialOperations"), ObjectArrayToJsonValues<FNteCharacterMaterialOperationSpec>(Spec.MaterialOperations, MaterialOperationToJson));
 	Object->SetArrayField(TEXT("RuntimeActions"), ObjectArrayToJsonValues<FNteCharacterRuntimeActionSpec>(Spec.RuntimeActions, RuntimeActionToJson));
@@ -973,8 +1180,18 @@ bool CharacterModSpecFromJson(const FJsonObject& Object, FNteCharacterModSpec& O
 	{
 		OutSpec.Appearance = AppearanceFromJson(Child);
 	});
+	if (OutSpec.Appearance.PresentationTargets.IsEmpty() && !OutSpec.Appearance.UIActorClassPath.IsEmpty())
+	{
+		FNteCharacterPresentationTargetSpec LegacyUiTarget;
+		LegacyUiTarget.Id = TEXT("ui");
+		LegacyUiTarget.BlueprintClassPath = OutSpec.Appearance.UIActorClassPath;
+		LegacyUiTarget.ParentMeshComponentName = TEXT("Mesh");
+		LegacyUiTarget.MainAnimBlueprintPath = OutSpec.Appearance.MainUIAnimBlueprintPath;
+		OutSpec.Appearance.PresentationTargets.Add(MoveTemp(LegacyUiTarget));
+	}
 	OutSpec.MainMeshPath = GetStringField(Object, TEXT("MainMeshPath"));
 	OutSpec.MainAnimBlueprintPath = GetStringField(Object, TEXT("MainAnimBlueprintPath"));
+	OutSpec.MainPostProcessAnimBlueprintPath = GetStringField(Object, TEXT("MainPostProcessAnimBlueprintPath"));
 
 	ReadObjectArrayField(Object, TEXT("AttachedMeshes"), [&OutSpec](const FJsonObject& Child)
 	{
@@ -1031,9 +1248,46 @@ FNteCharacterModSpecValidationResult ValidateCharacterModSpec(const FNteCharacte
 	{
 		Result.Warnings.Add(TEXT("PlayerAppearanceAssetPath is empty; appearance assembly cannot update MeshAsset yet."));
 	}
-	if (Spec.Appearance.UIActorClassPath.IsEmpty())
+	TArray<FString> NPCAppearanceAssetPaths;
+	for (const FNteCharacterNPCAppearanceTargetSpec& Target : Spec.Appearance.NPCAppearanceTargets)
 	{
-		Result.Warnings.Add(TEXT("UIActorClassPath is empty; UI preview sync cannot update PlayerUIShow yet."));
+		NPCAppearanceAssetPaths.Add(Target.AssetPath);
+		if (Target.AssetPath.IsEmpty())
+		{
+			Result.Errors.Add(TEXT("NPC appearance target is missing AssetPath."));
+		}
+		if (Target.MainAnimBlueprintPath.IsEmpty())
+		{
+			Result.Errors.Add(FString::Printf(TEXT("NPC appearance target '%s' is missing MainAnimBlueprintPath."), *Target.AssetPath));
+		}
+	}
+	AddDuplicateIdErrors(TEXT("NPC appearance target"), NPCAppearanceAssetPaths, Result);
+	if (Spec.Appearance.PresentationTargets.IsEmpty() && Spec.Appearance.UIActorClassPath.IsEmpty())
+	{
+		Result.Warnings.Add(TEXT("Appearance.PresentationTargets is empty; no UI or world Blueprint components will be synchronized."));
+	}
+	TArray<FString> PresentationTargetIds;
+	for (const FNteCharacterPresentationTargetSpec& Target : Spec.Appearance.PresentationTargets)
+	{
+		PresentationTargetIds.Add(Target.Id);
+		if (Target.Id.IsEmpty())
+		{
+			Result.Errors.Add(TEXT("Presentation target is missing Id."));
+		}
+		if (Target.BlueprintClassPath.IsEmpty())
+		{
+			Result.Errors.Add(FString::Printf(TEXT("Presentation target '%s' is missing BlueprintClassPath."), *Target.Id));
+		}
+		if (Target.ParentMeshComponentName.IsEmpty())
+		{
+			Result.Errors.Add(FString::Printf(TEXT("Presentation target '%s' is missing ParentMeshComponentName."), *Target.Id));
+		}
+	}
+	AddDuplicateIdErrors(TEXT("presentation target"), PresentationTargetIds, Result);
+	TSet<FString> PresentationTargetIdSet(PresentationTargetIds);
+	if (Spec.Appearance.PresentationTargets.IsEmpty() && !Spec.Appearance.UIActorClassPath.IsEmpty())
+	{
+		PresentationTargetIdSet.Add(TEXT("ui"));
 	}
 
 	TArray<FString> AttachedMeshIds;
@@ -1050,11 +1304,24 @@ FNteCharacterModSpecValidationResult ValidateCharacterModSpec(const FNteCharacte
 		}
 		if (AttachedMesh.SocketName.IsEmpty())
 		{
-			Result.Warnings.Add(FString::Printf(TEXT("Attached mesh '%s' has no SocketName; it cannot be mounted precisely."), *AttachedMesh.Id));
+			Result.Errors.Add(FString::Printf(TEXT("Attached mesh '%s' has no SocketName; native ArrayFashionAttachedMeshData entries require an explicit mount socket."), *AttachedMesh.Id));
 		}
 		if (AttachedMesh.bEnableRuntimeActions && AttachedMesh.RuntimeAnimBlueprintPath.IsEmpty())
 		{
 			Result.Warnings.Add(FString::Printf(TEXT("Attached mesh '%s' enables runtime actions but has no RuntimeAnimBlueprintPath."), *AttachedMesh.Id));
+		}
+		TSet<FString> SeenPresentationTargetIds;
+		for (const FString& TargetId : AttachedMesh.PresentationTargetIds)
+		{
+			if (!PresentationTargetIdSet.Contains(TargetId))
+			{
+				Result.Errors.Add(FString::Printf(TEXT("Attached mesh '%s' references unknown presentation target '%s'."), *AttachedMesh.Id, *TargetId));
+			}
+			if (SeenPresentationTargetIds.Contains(TargetId))
+			{
+				Result.Errors.Add(FString::Printf(TEXT("Attached mesh '%s' lists presentation target '%s' more than once."), *AttachedMesh.Id, *TargetId));
+			}
+			SeenPresentationTargetIds.Add(TargetId);
 		}
 	}
 	AddDuplicateIdErrors(TEXT("attached mesh"), AttachedMeshIds, Result);
@@ -1075,9 +1342,17 @@ FNteCharacterModSpecValidationResult ValidateCharacterModSpec(const FNteCharacte
 		{
 			Result.Errors.Add(FString::Printf(TEXT("Material operation '%s' is missing SlotIndex."), *Operation.Id));
 		}
-		if (Operation.OutputMaterialPath.IsEmpty())
+		if (Operation.ExistingMaterialPath.IsEmpty() && Operation.SourceMaterialJson.IsEmpty() && Operation.ParentMaterialPath.IsEmpty())
+		{
+			Result.Errors.Add(FString::Printf(TEXT("Material operation '%s' needs ExistingMaterialPath, SourceMaterialJson, or ParentMaterialPath."), *Operation.Id));
+		}
+		if (Operation.ExistingMaterialPath.IsEmpty() && Operation.OutputMaterialPath.IsEmpty())
 		{
 			Result.Warnings.Add(FString::Printf(TEXT("Material operation '%s' has no OutputMaterialPath."), *Operation.Id));
+		}
+		if (!Operation.ExistingMaterialPath.IsEmpty() && (!Operation.SourceTextureOverrides.IsEmpty() || !Operation.OutputMaterialPath.IsEmpty()))
+		{
+			Result.Errors.Add(FString::Printf(TEXT("Material operation '%s' cannot combine ExistingMaterialPath with generated-material output or texture overrides."), *Operation.Id));
 		}
 	}
 	AddDuplicateIdErrors(TEXT("material operation"), MaterialOperationIds, Result);
@@ -1124,10 +1399,11 @@ FNteCharacterModSpecValidationResult ValidateCharacterModSpec(const FNteCharacte
 		{
 			Result.Errors.Add(FString::Printf(TEXT("Runtime action '%s' uses unknown HostMeshId '%s'."), *Action.Id, *Action.HostMeshId));
 		}
-		if (!IsSupportedRuntimeActionType(Action.ActionType))
+		const ENteCharacterRuntimeActionType RuntimeActionType = RuntimeActionTypeFromString(Action.ActionType);
+		if (!IsSupportedRuntimeActionType(RuntimeActionType))
 		{
 			Result.Errors.Add(FString::Printf(
-				TEXT("Runtime action '%s' uses unsupported ActionType '%s'. Supported values: MaterialSlotVisibility, AttachedMeshVisibility, MaterialSwap, ScalarParameter, VectorParameter, MorphTarget."),
+				TEXT("Runtime action '%s' uses unsupported ActionType '%s'. Supported values: MaterialSlotVisibility, AttachedMeshVisibility."),
 				*Action.Id,
 				*Action.ActionType));
 		}
@@ -1161,29 +1437,15 @@ FNteCharacterModSpecValidationResult ValidateCharacterModSpec(const FNteCharacte
 			}
 		}
 
-		if ((Action.ActionType == TEXT("MaterialSlotVisibility") || Action.ActionType == TEXT("MaterialSwap")) && Action.MaterialSlots.IsEmpty())
+		if (RuntimeActionType == ENteCharacterRuntimeActionType::MaterialSlotVisibility && Action.MaterialSlots.IsEmpty())
 		{
 			Result.Errors.Add(FString::Printf(TEXT("Runtime action '%s' has no MaterialSlots."), *Action.Id));
-		}
-		if (Action.ActionType == TEXT("MaterialSwap") && Action.MaterialPath.IsEmpty())
-		{
-			Result.Errors.Add(FString::Printf(TEXT("Runtime action '%s' is MaterialSwap but has no MaterialPath."), *Action.Id));
-		}
-		if ((Action.ActionType == TEXT("ScalarParameter") || Action.ActionType == TEXT("VectorParameter")) && Action.ParameterName.IsEmpty())
-		{
-			Result.Errors.Add(FString::Printf(TEXT("Runtime action '%s' requires ParameterName."), *Action.Id));
-		}
-		if (Action.ActionType == TEXT("MorphTarget") && Action.MorphTargetName.IsEmpty())
-		{
-			Result.Errors.Add(FString::Printf(TEXT("Runtime action '%s' is MorphTarget but has no MorphTargetName."), *Action.Id));
 		}
 		const FString EffectiveHostMeshId = Action.HostMeshId.IsEmpty() ? TEXT("main") : Action.HostMeshId;
 		const bool bTargetIsAttachedMesh = !IsMainMeshId(Action.TargetMeshId);
 		const bool bHostDiffersFromTarget = !EffectiveHostMeshId.Equals(Action.TargetMeshId, ESearchCase::IgnoreCase)
 			&& !(IsMainMeshId(EffectiveHostMeshId) && IsMainMeshId(Action.TargetMeshId));
-		const bool bGeneratedActionNeedsComponentLookup =
-			Action.ActionType == TEXT("AttachedMeshVisibility")
-			|| Action.ActionType == TEXT("MaterialSlotVisibility");
+		const bool bGeneratedActionNeedsComponentLookup = IsSupportedRuntimeActionType(RuntimeActionType);
 		if (bTargetIsAttachedMesh && bHostDiffersFromTarget && bGeneratedActionNeedsComponentLookup)
 		{
 			const FNteCharacterAttachedMeshSpec* AttachedMesh = FindAttachedMeshById(Spec, Action.TargetMeshId);
@@ -1196,7 +1458,7 @@ FNteCharacterModSpecValidationResult ValidateCharacterModSpec(const FNteCharacte
 					*EffectiveHostMeshId));
 			}
 		}
-		if (Action.ActionType == TEXT("AttachedMeshVisibility"))
+		if (RuntimeActionType == ENteCharacterRuntimeActionType::AttachedMeshVisibility)
 		{
 			const FNteCharacterAttachedMeshSpec* AttachedMesh = FindAttachedMeshById(Spec, Action.TargetMeshId);
 			if (!AttachedMesh)
@@ -1253,6 +1515,26 @@ FNteCharacterModSpecValidationResult ValidateCharacterModSpec(const FNteCharacte
 		{
 			Result.Warnings.Add(FString::Printf(TEXT("Kawaii preset '%s' has no RootBone."), *Preset.Id));
 		}
+		TSet<FString> RemappedSourceBones;
+		TSet<FString> RemappedTargetBones;
+		for (const FNteCharacterKawaiiBoneRemapSpec& Remap : Preset.BoneRemaps)
+		{
+			if (Remap.SourceBone.IsEmpty() || Remap.TargetBone.IsEmpty())
+			{
+				Result.Errors.Add(FString::Printf(TEXT("Kawaii preset '%s' has a BoneRemaps entry with an empty SourceBone or TargetBone."), *Preset.Id));
+				continue;
+			}
+			if (RemappedSourceBones.Contains(Remap.SourceBone))
+			{
+				Result.Errors.Add(FString::Printf(TEXT("Kawaii preset '%s' maps source bone '%s' more than once."), *Preset.Id, *Remap.SourceBone));
+			}
+			if (RemappedTargetBones.Contains(Remap.TargetBone))
+			{
+				Result.Errors.Add(FString::Printf(TEXT("Kawaii preset '%s' maps more than one source bone to target bone '%s'."), *Preset.Id, *Remap.TargetBone));
+			}
+			RemappedSourceBones.Add(Remap.SourceBone);
+			RemappedTargetBones.Add(Remap.TargetBone);
+		}
 		for (const FNteCharacterKawaiiAdditionalRootBoneSpec& AdditionalRootBone : Preset.AdditionalRootBones)
 		{
 			if (AdditionalRootBone.RootBone.IsEmpty())
@@ -1285,51 +1567,78 @@ FNteCharacterModSpecValidationResult ValidateCharacterModSpec(const FNteCharacte
 	}
 	AddDuplicateIdErrors(TEXT("Kawaii preset"), KawaiiPresetIds, Result);
 
+	TMap<FString, ENteCharacterPackageAssetIntent> PackageAssetIntents;
+	for (const FNteCharacterPackageAssetSpec& Asset : Spec.Package.Assets)
+	{
+		const FString PackagePath = NormalizeSpecPackagePath(Asset.AssetPath);
+		if (!PackagePath.StartsWith(TEXT("/Game/")) || PackagePath.Contains(TEXT(".")))
+		{
+			Result.Errors.Add(FString::Printf(TEXT("Package asset has an invalid /Game package path: %s"), *Asset.AssetPath));
+			continue;
+		}
+		if (Asset.Intent == ENteCharacterPackageAssetIntent::Invalid)
+		{
+			Result.Errors.Add(FString::Printf(TEXT("Package asset '%s' has an invalid Intent."), *Asset.AssetPath));
+			continue;
+		}
+		if (const ENteCharacterPackageAssetIntent* ExistingIntent = PackageAssetIntents.Find(PackagePath))
+		{
+			if (*ExistingIntent != Asset.Intent)
+			{
+				Result.Errors.Add(FString::Printf(TEXT("Package asset '%s' has conflicting intents."), *PackagePath));
+			}
+			else
+			{
+				Result.Warnings.Add(FString::Printf(TEXT("Package asset '%s' is listed more than once."), *PackagePath));
+			}
+		}
+		else
+		{
+			PackageAssetIntents.Add(PackagePath, Asset.Intent);
+		}
+	}
+
 	return Result;
 }
 
 TArray<FString> CollectCharacterModSpecPackageSeeds(const FNteCharacterModSpec& Spec)
 {
 	TArray<FString> Seeds;
-	AddPackageSeed(Seeds, Spec.Appearance.PlayerAppearanceAssetPath);
-	AddPackageSeed(Seeds, Spec.Appearance.UIActorClassPath);
-	AddPackageSeed(Seeds, Spec.MainMeshPath);
-	AddPackageSeed(Seeds, Spec.MainAnimBlueprintPath);
+	const auto AddOwnedAsset = [&Spec, &Seeds](const FString& AssetPath)
+	{
+		const TOptional<ENteCharacterPackageAssetIntent> Intent = FindPackageAssetIntent(Spec, AssetPath);
+		if (!Intent.IsSet() || Intent.GetValue() != ENteCharacterPackageAssetIntent::ExternalReference)
+		{
+			AddPackageSeed(Seeds, AssetPath);
+		}
+	};
+
+	AddOwnedAsset(Spec.Appearance.PlayerAppearanceAssetPath);
+	for (const FNteCharacterNPCAppearanceTargetSpec& Target : Spec.Appearance.NPCAppearanceTargets)
+	{
+		AddOwnedAsset(Target.AssetPath);
+	}
+	for (const FNteCharacterPresentationTargetSpec& Target : Spec.Appearance.PresentationTargets)
+	{
+		AddOwnedAsset(Target.BlueprintClassPath);
+	}
+	if (Spec.Appearance.PresentationTargets.IsEmpty())
+	{
+		AddOwnedAsset(Spec.Appearance.UIActorClassPath);
+	}
+	AddOwnedAsset(Spec.MainMeshPath);
 
 	for (const FNteCharacterAttachedMeshSpec& AttachedMesh : Spec.AttachedMeshes)
 	{
-		AddPackageSeed(Seeds, AttachedMesh.MeshPath);
-		AddPackageSeed(Seeds, AttachedMesh.AnimBlueprintPath);
-		AddPackageSeed(Seeds, AttachedMesh.MobileAnimBlueprintPath);
-		AddPackageSeed(Seeds, AttachedMesh.UIAnimBlueprintPath);
-		AddPackageSeed(Seeds, AttachedMesh.RuntimeAnimBlueprintPath);
+		AddOwnedAsset(AttachedMesh.MeshPath);
 	}
 
-	for (const FNteCharacterMaterialOperationSpec& Operation : Spec.MaterialOperations)
+	for (const FNteCharacterPackageAssetSpec& Asset : Spec.Package.Assets)
 	{
-		AddPackageSeed(Seeds, Operation.OutputMaterialPath);
-		for (const TPair<FString, FString>& Pair : Operation.SourceTextureOverrides)
+		if (Asset.Intent == ENteCharacterPackageAssetIntent::GeneratedAsset
+			|| Asset.Intent == ENteCharacterPackageAssetIntent::ReplacementAsset)
 		{
-			AddPackageSeed(Seeds, Pair.Value);
-		}
-	}
-
-	for (const FNteCharacterRuntimeActionSpec& Action : Spec.RuntimeActions)
-	{
-		AddPackageSeed(Seeds, Action.MaterialPath);
-	}
-
-	for (const FNteCharacterKawaiiPresetSpec& Preset : Spec.KawaiiPresets)
-	{
-		AddPackageSeed(Seeds, Preset.RuntimeAnimBlueprintPath);
-		AddPackageSeed(Seeds, Preset.LimitsDataAssetPath);
-		AddPackageSeed(Seeds, Preset.PhysicsAssetForLimitsPath);
-		AddPackageSeed(Seeds, Preset.OutputLimitsDataAssetPath);
-		AddPackageSeed(Seeds, Preset.BoneConstraintsDataAssetPath);
-		AddPackageSeed(Seeds, Preset.OutputBoneConstraintsDataAssetPath);
-		for (const FNteCharacterKawaiiCurveSpec& Curve : Preset.Curves)
-		{
-			AddPackageSeed(Seeds, Curve.OutputCurvePath);
+			AddPackageSeed(Seeds, Asset.AssetPath);
 		}
 	}
 

@@ -1,5 +1,7 @@
 # Kawaii AnimLayer JSON Parsing
 
+> Historical/current-implementation reference for CharacterModSpec commandlets. The target package-first workflow is defined in `docs/post-process-kawaii-workflow.md` and `docs/pakmod-project-refactor.md`; in that workflow Apply and Build are separate, and Build never requires Apply in the same invocation.
+
 FModel exports animation-layer blueprints as a JSON array of Unreal exports. KawaiiPhysics node settings are not top-level objects. They live on the class default object:
 
 ```text

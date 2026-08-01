@@ -1,5 +1,7 @@
 # Character asset authoring chain
 
+> Architecture note (2026-08-01): this document remains the detailed cross-asset evidence and authoring reference. The persistent package model is now `NTE.PakmodProject`, and its package-first/separation rules are defined in `docs/adr/0002-package-first-pakmod-project.md` and `docs/pakmod-project-refactor.md`. The Nanally and attached-mesh checkpoints below are historical evidence, not universal core validation rules.
+
 本文记录完整角色替换工作流中“哪些 asset 要改、怎么改、原生 UE 没有对应类怎么办、NTE 魔改 Kawaii 怎么处理、最后 Cook 会产出什么”。它是面向实现和 UI 设计的执行文档，不是调查笔记。
 
 核心原则：
@@ -10,6 +12,32 @@
 - 新增资产必须被替换资产引用，或者显式进入 Package Plan；纯新增但没有引用链的资产不能指望游戏自动加载。
 - `CharacterModSpec` 是单一事实来源。UI 修改 spec，模块从 spec 生成材质、外观装配、运行时蓝图、Kawaii preset 和 package job。
 - Kawaii 不能分成“JSON 导入模式”和“手动创建模式”两套产物。导入源游戏 JSON、引用其他预设、用户从零创建骨骼链，都必须落到同一个 `NteKawaiiPreset` 模型，并经过同一个 Apply/Cook 路径。
+
+## Nanally 两 FBX 修复基线
+
+Nanally 当前不是“主 FBX 保留完整原服装、附加 FBX 只含全新附件”的普通拆分。实际作者结构是：
+
+- `原版服装修改.fbx` 是主 SkeletalMesh，但若干部件已从这里拆出，因此它缺少原版 `player_010_nanally_skin.psk` 中的若干材质槽。
+- `额外物理骨骼.fbx` 同时承载被拆出的部件和新增物理骨骼网格。额外骨骼由其他服装骨架合并而来；发生重名后，相关顶点权重已经重映射到带 `.001` 后缀的新骨骼。
+- 主 FBX 没有出现的原版材质槽仍必须保留为占位槽。槽位必须按原版 PSK 的完整材质顺序和原索引补回，不能追加到材质数组末尾，否则 LOD Section 的 `MaterialIndex` 会错位。
+- 除明确要求替换贴图的材质外，其余槽位应继续引用游戏原有材质资产。
+- 顶点色曾存在导入通道风险，现已用原版 PSK 对 `RGBA`、`RBGA`、`BGRA`、`GBRA` 四种排列计分。主 FBX 的原始 RGBA 在 9273 个可匹配位置中有 9262 个颜色兼容，G/B 交换只有 2089 个；附加 FBX 分别是 2371/2373 与 160/2373。结论是不存在全局 G/B 交换，禁止批量换通道；只需继续定位主 FBX 的 11 个和附加 FBX 的 2 个局部不兼容位置。报告见 `.scratch/nanally-vertex-color-comparison.json`。
+
+原版 PSK 的材质槽 10 是第二个 `MI_player_010_female_cloth_b`，包含 2090 个三角面；额外 FBX 的 `MI_player_010_female_cloth_b_glass` 也恰好包含 2090 个三角面。这个几何数量对照证明眼镜部件来自原槽 10。主 FBX 应在索引 10 补一个空的原材质槽，使后续 `MI_player_010_female_hair_b` 和 `MI_player_010_nanally_fashion1_cloth_a` 回到原索引 11、12。
+
+2026-07-30 对当前两个 FBX 进行独立 Skeleton 导入后发现，主 FBX 的 Armature 对象名 `player_010_nanally_skin` 被 UE Legacy FBX importer 当成了一根额外根骨。正式主 SkeletalMesh 的 ReferenceSkeleton 因此是 247 根，层级开头为 `player_010_nanally_skin -> root -> Bip001`；附加 SkeletalMesh 是预期的 272 根，以 `root` 为唯一根骨。两者真正共享的 246 根骨骼名称、声明顺序和参考姿势完全一致，附加网格独有的 26 根是预期的裙子/飘带物理骨骼。主网格多出的伪根骨会使它与官方 `player_010_nanally_skin_Skeleton` / `Player010_Nanally_*AnimBP` 不兼容，并对应运行时 AnimClass 存在但 AnimInstance 无法创建的 T Pose。
+
+因此导入/打包前必须检查：主替换网格的唯一根骨是 `root`，不能把 Armature 对象节点导成骨骼；附加网格允许拥有额外物理骨骼，但所有共享骨骼必须保持名称、顺序、父级和参考姿势一致。Blender 导出时应让 Armature 对象使用 UE importer 可剥离的 `Armature`/`armature` 名称，同时保留真正骨骼 `root`。两个当前 FBX 都还触发了 UE 的 invalid BindPose 重建警告；本次重建后共享参考姿势一致，但后续导出仍应修正 BindPose，避免依赖导入器自动修复。
+
+1213/1214 已纠正此前把 UI 预览和大世界视为同一条“组件创建链”的判断。两者可以共用同一个主 SkeletalMesh，但附加组件来源不同：UI 预览由 `PlayerUIShow_*` 的 SCS 子组件创建，大世界由 `HTPlayerAppearance.ArrayFashionAttachedMeshData` 交给角色装配逻辑创建。1214 已证明纯 pak 的 UI SCS 路线可以加载附加 SkeletalMesh；大世界 Appearance 路线仍需看到使用 world AnimBP 的实际组件后才能判定成功。
+
+诊断顺序：
+
+1. 从源游戏 `MeshAsset_*`、attached SkeletalMesh、Skeleton、AnimBP 和 Kawaii 节点建立一组完整原生样本。
+2. 对照 `ArrayFashionAttachedMeshData` 的 mesh、AnimInstance、MobileAnimInstance、SocketName、transform 和 tags。
+3. 对照主/附加 Skeleton 的骨骼层级、根变换、挂点、物理链命名和权重目标。
+4. 对照 attached AnimBP 的输入姿势来源、Kawaii RootBone/limits/constraints/PhysicsAsset 引用。
+5. 每个诊断包只改变一个变量，并以实际游戏中附加 Mesh 是否显示作为最终反馈信号。
 
 ## Kawaii 单一作者模型
 
@@ -138,7 +166,7 @@ Kawaii package preview
 | `PhysicsAsset` | 可选但推荐 | UE PhAT 编辑；或由重建模块从源 JSON/导入数据生成 | cooked `.uasset` | 常规碰撞和预览用；Kawaii 的阻尼/刚性/曲线不在 PhysicsAsset 里 |
 | 材质实例 `MaterialInstanceConstant` | 常见 | 从 FModel 材质 JSON 解析参数；UI 选择源贴图替换组；生成/更新 MI | cooked `.uasset` | 与现有材质模块一致：源材质 JSON -> 参数归一化 -> 源贴图使用组 -> MI |
 | 贴图 | 常见 | UE 导入或复用已有游戏贴图路径 | cooked `.uasset/.ubulk` | 必须被 MI 参数引用或显式打包 |
-| 主/附加 `AnimBP` | 常见 | NTEBuildTool 生成或用户打开 UE 调整 | cooked `.uasset` | 附加 mesh 的 AnimGraph 应包含 CopyPose/父姿势继承、Kawaii、OutputPose |
+| 主/附加 `AnimBP` | 常见 | NTEBuildTool 生成或用户打开 UE 调整 | cooked `.uasset` | 源游戏附加 mesh 通常使用自己的 SequencePlayer/BlendSpace 姿势源，再经过 Kawaii 和 OutputPose；CopyPose 只是一种待验证策略，不是原生默认结论 |
 | Kawaii `LimitsDataAsset` | 可选但推荐 | 通过 Kawaii 节点导出，或插件 UI 生成；在 Kawaii 可视化编辑模式中调碰撞体 | cooked `.uasset` | 比把所有碰撞体内联在 AnimBP 节点上更利于复用和 UI 管理 |
 | Kawaii `BoneConstraintsDataAsset` | 可选 | 通过 Kawaii 节点导出，或插件 UI 生成；可手动骨骼对/正则批量生成 | cooked `.uasset` | 裙摆、多链约束、保持骨骼间距离时使用 |
 | 曲线 `CurveFloat` | 可选 | UE 曲线编辑器或内联 `RuntimeFloatCurve` | cooked `.uasset` 或内联到 AnimBP | 用于按骨骼链长度比例缩放 Damping/Stiffness/Radius/LimitAngle |
@@ -169,12 +197,12 @@ Main SkeletalMesh
 Attached SkeletalMesh
   -> Attached Skeleton contains tail/hair/accessory physics bones
   -> Attached Runtime AnimBP
-     -> CopyPose / parent-pose inheritance
+     -> source-game sequence/blendspace, or another explicitly verified pose source
      -> Kawaii node(s)
      -> OutputPose
 ```
 
-原游戏中 `004_lacrimosa_fashion4` 的 tail/eardrop/ribbon 资源证明了后一种路线：附加 mesh 拥有自己的 attached AnimBP，AnimBP 父类为 `HTAttachedMeshAnimInstance`，AnimGraph 中包含 `AnimGraphNode_KawaiiPhysics`。`lacrimosa_fashion4_tail_skin_new_Skeleton` 里的 `bone_tail_00` 到 `bone_tail_12` 是典型物理骨骼链。
+原游戏中 `004_lacrimosa_fashion4` 的 tail/eardrop/ribbon 资源证明了后一种路线：附加 mesh 拥有自己的 attached AnimBP，AnimBP 父类为 `HTAttachedMeshAnimInstance`，AnimGraph 中包含 `AnimGraphNode_KawaiiPhysics`。已检查的 `oneiroi075_swimsuit_ribbon_AB`、`lacrimosa_fashion4_tail_AB`、`nanally_fashion3_hair_AB`、`player_004_lacrimosa_nighty_hair_AB` 和 `shinku076_swimsuit_ribbon_AB` 使用自身 SequencePlayer/BlendSpace 姿势源，而不是 CopyPose。`lacrimosa_fashion4_tail_skin_new_Skeleton` 里的 `bone_tail_00` 到 `bone_tail_12` 是典型物理骨骼链。
 
 ## Kawaii 参数到底复制什么
 
@@ -481,3 +509,284 @@ The asset responsibilities are:
 | `CharacterModSpec.KawaiiPresets` | no | Workspace form | yes | source model |
 
 `Apply` can overwrite generated Kawaii assets because it replays the spec. Opening the generated assets is non-destructive. `Sync` must be run after native editing if those edits should survive the next apply/package run.
+
+## Nanally 1213/1214 attached-component checkpoint
+
+The test package contains two distinct native attachment descriptions:
+
+```text
+UI preview:
+DT_AppearanceData[Fashion_1010_0].UIActorClass
+  -> PlayerUIShow_010_C
+  -> SCS child HTSkeletalMeshComponentBudgeted
+  -> native parent Mesh, socket Bip001-Pelvis
+  -> SM_NTE_Nanally_ExtraPhysics
+  -> ABP_NTE_extra_physics_CopyPoseProbe_C
+
+World candidate:
+MeshAsset_Player010.ArrayFashionAttachedMeshData[0]
+  -> SM_NTE_Nanally_ExtraPhysics
+  -> socket Bip001-Pelvis
+  -> ABP_NTE_extra_physics_Kawaii_C (desktop and mobile)
+  -> CopyPoseFromMesh(bUseAttachedParent=true)
+  -> Kawaii x2
+```
+
+Final 1213 is the first package that created a confirmed runtime attached component. The runtime
+component used `ABP_NTE_extra_physics_CopyPoseProbe_C`, so it is specifically attributed to the UI
+SCS path. The default source `PlayerUIShow_010` contains only the native main `Mesh`; Appearance-only
+probes could never create an extra component in that UI actor. Final 1213 added one
+`HTSkeletalMeshComponentBudgeted` template and one SCS node, parented to the native `Mesh` property.
+
+The mirror parent schema is part of the serialization contract. Modeling
+`BP_UIShowSimpleCharacterBase` as `ACharacter` caused UE to serialize `CharacterMesh0`,
+`CollisionCylinder`, and `CharMoveComp`. The accepted 1213 form models the native
+`HTUIShowSimpleCharacter` Actor schema, produces the official seven exports plus exactly one
+component template and one SCS node, and uses `ParentComponentOrVariableName=Mesh` with
+`bIsParentComponentNative=true`.
+
+UE4SS only enumerated this existing component. A direct 1214 launch without UE4SS still loads the
+extra mesh, proving that the component is created by the pure-pak UI Blueprint path. Conversely,
+calling `LoadAsset` on `MeshAsset_Player010` and reading its attached array does not prove the world
+assembler consumed it. World success requires observing a world component that uses
+`ABP_NTE_extra_physics_Kawaii_C`; the UI component uses `CopyPoseProbe` and cannot serve as that
+signal.
+
+1214 differs from 1213 by excluding exactly these two shared source-game packages:
+
+```text
+/Game/Characters/Player/010_nanally/animation/Player010_Nanally_AnimBP
+/Game/Characters/Player/010_nanally/animation/Player010_Nanally_UIAnimBP
+```
+
+Their reconstructed 1213 copies caused base 010 and the shared night presentation to T Pose. With
+the packages absent in 1214, the official containers win again and animation is restored while the
+attached UI component remains. Source-game AnimBPs are therefore external references by default;
+only generated mod AnimBPs or intentionally edited source AnimBPs belong in the Package Job.
+
+For a main FBX that moved the original index-10 glass geometry to the attached FBX, preserve the original main material table as 13 slots. Insert the duplicate `MI_player_010_female_cloth_b` at index 10 and store LOD0's effective material map as `[1,2,3,4,5,6,7,8,9,11,12]`. This preserves the no-geometry slots at indices 0 and 10 without shifting rendered hair/fashion sections.
+
+The current 1214 static evidence is
+`.scratch/character-mod-workspace/010_nanally-full-chain-anim-filter-1214.container.json` plus the
+cooked exports beside it. `ContainerWinnerReporter` verifies 31 selected assets resolve to 1214,
+while both shared original AnimBPs resolve to official containers. The historical
+`.scratch/validate_nanally_game_test_final.ps1` gate predates the UI/world split and must not be used
+as the sole 1214 acceptance test.
+
+## Appearance schema bridge defaults
+
+`HTGame` mirror classes are serialization bridges, not authoritative gameplay CDOs.
+For target-specific Appearance values such as capsule size and mesh-relative location,
+`CharacterModSpec.Appearance` should carry explicit source-game values. Mirror CDO
+defaults must remain neutral so UE cooking does not elide a value that the target game
+would restore from a different native CDO default.
+
+Every generated mod AnimBP path explicitly stored in `CharacterModSpec` must also be an explicit
+package seed. This includes generated main, main UI, attached desktop/mobile/UI, and attached runtime
+AnimBP paths. Package planning runs before writers update asset dependencies, so dependency discovery
+alone cannot safely include a newly generated Blueprint. Existing source-game AnimBPs are different:
+they remain references to official containers and must be excluded unless the mod explicitly intends
+to replace them.
+
+## Nanally 1215/1216 world attachment and material checkpoint
+
+The world runtime path is now proved independently of the UI path. Probe 1215 replaces
+`BP_NPC_011_WA008` and adds `NTE_Attach_extra_physics` as an SCS child of native
+`CharacterMesh0`. A post-restart UE4SS sample at `2026-07-29 20:37:39` observed both the main
+component and the new attached component on the big-world actor. The attached component used
+`SM_NTE_Nanally_ExtraPhysics`, `ABP_NTE_extra_physics_Kawaii_C`, identity relative transform, and
+was visible. The generated Kawaii AnimBP distinguishes this world component from the UI component.
+
+The official main mesh has 13 material slots and official index 5 is
+`MI_player_010_eyelash`. The edited main FBX has no geometry for original indices 0 and 10, so its
+11 LOD0 sections correctly map to `[1,2,3,4,5,6,7,8,9,11,12]`. Probe 1215 incorrectly referenced
+`MI_player_010_female_cloth_b` at index 5, which rendered the eyelash faces with a clothing
+material.
+
+The Mirror Project did not contain `MI_player_010_eyelash`, so 1216 creates an editor-only
+official-path Material Proxy, assigns it to main-mesh slot 5, and excludes that proxy package from
+the IoStore response. At runtime the cooked import resolves to the game's original material.
+CUE4Parse verifies that 1216 keeps all 13 entries, preserves the 11-section map, imports the
+official eyelash at index 5, excludes the proxy, and wins all 31 selected packages at read order
+`121703`. Both shared source AnimBPs still resolve to official containers.
+
+For edited meshes with removed source sections, validation must compare both the full indexed
+material-object table and each LOD section's effective material index against the original asset.
+
+The 2026-07-30 latest Nanally refresh also proved that material-array restoration and section
+remapping are separate writes. UE 5.6 Python can read LOD section slots but cannot write them. After
+reimporting the main FBX and restoring its 13-entry material table, run
+`NteSkeletalMeshSectionMaterial` in a fresh UE commandlet process with slots
+`1,2,3,4,5,6,7,8,9,11,12`. Do not report the reimport complete from the Python process alone.
+Comparing only imported slot names is insufficient.
+
+## Config-driven presentation targets and package intent
+
+The attachment writer no longer has a PlayerUIShow-only branch. `CharacterModSpec.Appearance.PresentationTargets`
+declares every Blueprint that must receive generated attached components. Each target supplies an explicit
+`BlueprintClassPath` and `ParentMeshComponentName`; the writer fails if that exact skeletal mesh component does
+not exist. It does not guess `Mesh`, `CharacterMesh0`, or the first skeletal mesh component.
+
+Nanally configures only the UI presentation target. Big-world attachment remains native Appearance data:
+
+```text
+world main -> original BP_NPC_011_WA008 from the game
+world attachment -> MeshAsset_Player010.ArrayFashionAttachedMeshData
+ui main/attachment -> PlayerUIShow_010 -> Mesh / NTE_Attach_extra_physics
+```
+
+The targets can reference the same SkeletalMesh package without sharing a component instance or the same
+initialization path. `ConfigureMainMesh=false` only tells the writer not to author the target's main
+`SkeletalMesh`/`AnimClass`; it does not clear values written by an earlier apply. The Nanally 0730
+override-free UI probe was diagnostic only and runtime evidence rejected it: the preview selected another
+character and entered T Pose. The release asset must mirror the official `PlayerUIShow_010` main `Mesh`
+bindings (`player_010_nanally_skin` plus `Player010_Nanally_UIAnimBP_C`) and preserve the official
+`DefaultCharacterID=1010` and character-info montage while retaining the one generated attached SCS node.
+Changing a target back from `ConfigureMainMesh=false` to `true` is not complete until `ApplyAppearance`
+runs again. Editing only the spec or patching the generated-class CDO can look correct in the editor while
+the next cook still omits the child Blueprint's main-mesh overrides.
+
+`AttachedMeshes[].PresentationTargetIds` can restrict a mesh to selected targets. An empty list means all
+configured targets, with legacy `SyncToUIShow=false` still excluding the migrated `ui` target. Legacy
+`UIActorClassPath` JSON is accepted only as a migration source for `ui/Mesh`.
+
+`CharacterModSpec.Package.Assets` records one of three package intents:
+
+```text
+ExternalReference  # load from official game containers; never seed the mod package
+GeneratedAsset     # produced by a plugin writer and included in the package
+ReplacementAsset   # intentionally shadows an existing /Game package
+```
+
+Source-game main/UI AnimBPs are reference-only by default. Generated Kawaii Runtime AnimBPs and their
+Limits/Constraints/Curve assets remain generated package seeds. Package preflight checks that the generated
+AnimBP exists, has exactly one `CopyPoseFromMesh` with `bUseAttachedParent=true`, has the expected number of
+Kawaii nodes, and is the AnimInstance selected by its attached-mesh plan.
+
+The Nanally 13-slot/11-section repair is an FBX-specific indexed-material contract. It is documented as
+diagnostic evidence and is deliberately not represented as a generic CharacterModSpec material-slot rewrite.
+
+## Nanally durable package baseline
+
+The current Nanally attachment release contract is recorded in `docs/nanally-package-baseline.md`
+and `Resources/Validation/NanallyPackageBaseline.json`. The default validator deliberately checks
+only the active attachment chain, external ownership, container selection, and deployment hashes.
+Historical FBX hashes, topology, material experiments, UI defaults, and runtime-action defaults are
+diagnostic evidence; they are not universal release gates.
+
+## 2026-07-31 big-world runtime ownership correction
+
+The first 0731 package added an attached array to
+`DA_Appearance_011_RideAlong`, but a UE4SS sample disproved the assumption that the active
+`BP_NPC_011_WA008_C` actor consumes it. The runtime actor is a `BP_NPC_011_C` child with a direct
+`CharacterMesh0`; it is not an `HTPlayerNPCCharacter`, exposes no
+`HTPlayerNPCAppearanceComponent`, and owned no extra mesh component.
+
+This also explains the historical differential. The 1215 package that visibly created the world
+component contained a generated SCS child on `BP_NPC_011_WA008`; removing that presentation target
+removed the component. The corrected ownership chain is:
+
+```text
+BP_NPC_011_WA008_C
+  -> native CharacterMesh0
+  -> SCS child NTE_Attach_extra_physics
+```
+
+The writer configures the world main component with the modified Nanally mesh and the official
+`NPC_011_AnimBP_C`, then adds exactly one child at `root` using the extra mesh and generated Kawaii
+AnimBP. The early `Player010_Nanally_AnimBP_C` world assignment was wrong and caused T Pose.
+`DA_Appearance_011_RideAlong` is not packaged for this mod.
+
+## 2026-07-31 runtime attachment boundary
+
+Static package validation is necessary but cannot prove that the world assembler rendered an attached
+mesh. The UE4SS probe is the acceptance boundary for this distinction. In the 2026-07-30 samples,
+`MeshAsset_Player010` loaded as `UHTPlayerAppearance`, reported one attached entry, and the transient
+world `ChildActor...BPCharacterActor_C` owned an `HTSkeletalMeshComponentBudgeted` named
+`NTE_Attach_extra_physics`. That component used the mod SkeletalMesh and
+`ABP_NTE_extra_physics_Kawaii_C`, was parented to the world main `Mesh`, and had an active Kawaii
+AnimInstance. The old probe did not record visibility, render-pass, socket, or relative-transform state,
+so those samples prove component creation, not visible pixels.
+
+The next runtime sample must classify the attached component by owner path and record
+`IsVisible`, `bHiddenInGame`, `IsVisibleInScene`, `WasRecentlyRendered`, render-pass flags, socket, and
+relative transform. Interpret the result in this order:
+
+1. No `NTE_Attach_extra_physics` under the world `ChildActor`: the active appearance source/assembler is
+   not consuming the replacement asset; inspect the NPC appearance selection data before changing any
+   Blueprint.
+2. Component exists but is hidden or not rendered: repair only component visibility/render state or the
+   owning appearance tuple; do not replace the world Blueprint.
+3. Component is visible/rendered but geometry is absent or displaced: inspect the attached mesh reference
+   skeleton, root/socket transform, and AnimBP pose output; do not change the registration path.
+
+The probe intentionally runs before repackaging. A new pak is justified only after one of these runtime
+branches identifies a single field-level change and the static validator still passes.
+
+## Nanally 0730 replacement-versus-attachment differential
+
+The main replacement and the attached physics mesh have different animation entry points. The main
+mesh uses the official Nanally AnimBP directly. The attached mesh is a separate component with its
+own extended Skeleton; its generated AnimBP copies matching parent-pose bones and then evaluates the
+additional Kawaii chains. The two Skeleton assets do not need identical bone counts. The attached
+Skeleton may add physics bones, provided all shared bones keep compatible names, parents, declaration
+order, and reference transforms.
+
+The latest main FBX was compared with the official `player_010_nanally_skin.psk`: both contain 246
+bones, with no missing/extra names, parent mismatch, or declaration-order mismatch. The main mesh not
+containing the attached skirt's extra physics bones is therefore not a T-pose cause.
+
+The 2026-07-30 formal-asset check found a separate import error: the main FBX Armature object was
+named `player_010_nanally_skin`, so the legacy UE importer retained that object node as bone 0 and
+produced `player_010_nanally_skin -> root -> Bip001` (247 bones). The attached FBX Armature object was
+named `armature`, so its real root remained `root` (272 bones including the 26 intended physics
+bones). The 247-bone main mesh could not instantiate the official Nanally AnimBP and caused the T
+Pose. The formal main mesh was repaired in place by removing only the pseudo-root; the source FBXs,
+attached mesh, geometry, morphs, materials, section map, and real-bone poses were preserved. The
+release contract is now 246 main bones with `root` at index 0. The external main Skeleton and official
+AnimBPs remain excluded from the mod package.
+
+Independent FBX imports showed identical transforms for all 246 shared bones. The already-imported
+formal UE assets contain a small pre-existing local-pose delta on a few shared face/foot bones (maximum
+`0.004260314` on `Bon_uplip_M`). The root repair preserved that exact delta; it did not introduce or
+attempt to normalize it. Future exports should name the Blender Armature object `Armature` or
+`armature` and include a valid bind pose, avoiding both the pseudo-root and importer bind-pose rebuild.
+
+The accepted 1215/1216 exports and the 0730 exports have byte-identical Appearance data, generated
+Kawaii AnimBP JSON, and attached Skeleton JSON. The 31-package set is also unchanged. The meaningful
+presentation differences were that the 0730 SCS nodes lost the cooked `AttachToName=root` tag, and the
+world target stopped explicitly writing its main mesh and official world AnimBP. `SocketName` configures
+the native Appearance entry; `PresentationSocketName` independently configures generated SCS nodes. The
+Nanally spec sets both to `root`, but a fresh UE 5.6 cook was observed stripping the SCS tag even though
+editor inspection still reported `root`; this tag is therefore not accepted as a T-pose explanation by
+itself. Both UI and world main AnimInstances must be inspected at runtime independently.
+
+The final 2026-07-31 runtime sample rejected the intermediate Appearance-only release. The world
+presentation target and `BP_NPC_011_WA008` ReplacementAsset intent are required for this actor. The
+replacement must remain narrow: configure only `CharacterMesh0` with the official NPC AnimBP and add
+one generated child. UI independently retains one generated child. Container validation must prove
+both Blueprints contain their attachment nodes while the official player AnimBPs remain external.
+
+Reimport is also a validated source transition, not merely a filename operation. A skeletal FBX must contain
+an Armature, a skinned mesh, non-empty bone weights, the intended root, and the expected bone count before it
+can replace an existing SkeletalMesh. The Nanally D814 source export failed those checks, so the release uses
+the audited D596 scene-derived copy without modifying the user's source file. Package validation pins both
+main and attached source hashes, cooked topology, reference-skeleton counts, material order, and the
+CopyPose/Kawaii node contract.
+
+## 2026-07-31 Nanally merged-mesh Post Process transition
+
+The current Nanally authoring path supersedes the two-component attachment path above. The main clothing
+geometry and additional physics-bone geometry are authored in one FBX and imported as one SkeletalMesh with
+one extended Skeleton. Kawaii runs in the main mesh `PostProcessAnimBlueprint`, using
+`PostProcessInputPose`; it does not use `CopyPoseFromMesh` or an attached-parent lookup.
+
+This removes the need to register an extra component independently in player, NPC, and UI presentation
+assets. Official gameplay/UI/NPC AnimBPs remain external and continue to produce the base pose. The generated
+Post Process AnimBP is bound once on the replacement SkeletalMesh and therefore follows every consumer of
+that mesh.
+
+Material import is name-driven for this asset. The FBX currently has 20 effective sections and slots. UE
+normalizes `MI_player_010_female_cloth_b_body.001` to
+`MI_player_010_female_cloth_b_body_001`; the material plan binds that name to the generated body instance.
+No missing or deleted slot is restored, appended, or used to shift later material indices.

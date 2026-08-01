@@ -17,6 +17,7 @@ struct FNteCharacterMaterialOperationPlanItem
 	FString TargetMeshPath;
 	int32 SlotIndex = INDEX_NONE;
 	FString SlotName;
+	FString ExistingMaterialPath;
 	FString SourceMaterialJson;
 	FString ParentMaterialPath;
 	FString OutputMaterialPath;

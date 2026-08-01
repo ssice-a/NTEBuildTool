@@ -2,20 +2,20 @@
 
 NTE Build Tool is an Unreal Engine 5.6 editor plugin for building pak-only character mods from editable mirror-project assets.
 
-The plugin is organized around four workflows:
+The plugin is organized around one persistent Pakmod Project workflow with optional authoring recipes:
 
-- Player/NPC PhysicsAsset import from the FModel game library.
-- Player/NPC MaterialInstance creation from the FModel game library or recipe JSON.
-- Runtime Actions for hotkey-driven material-slot and attached-mesh visibility.
-- Cook and IoStore package job creation.
+- Classify game references, user-imported assets, and tool-generated assets independently from package intent.
+- Configure optional Material, Runtime, PhysicsAsset, and Kawaii/Post Process recipes.
+- Explicitly apply, synchronize, or detach recipe-owned outputs without coupling those operations to packaging.
+- Build Cook and IoStore jobs exclusively from the Package Manifest and the current on-disk UE assets.
 
 The common editor entry point is:
 
 ```text
-Tools > NTE Build Tool > Open Character Mod Workspace
+Tools > NTE Build Tool > Open Pakmod Project
 ```
 
-Select a `SkeletalMesh` in the Content Browser first. The workspace shows the selected mesh, its material slots, project settings, and shortcuts into the material, toggle, and package workflows.
+Create or open a `.pakmod.json` project. The editor persists project identity, source and asset references, lightweight recipes, and the Package Manifest. It does not persist scans, diagnostics, cook intermediates, or Blueprint node layout.
 
 ## Settings
 
@@ -77,6 +77,14 @@ Generated runtime asset names have defaults, so users normally only configure la
 Use `Build Mod Package` to create an editable Package Plan from selected Content Browser assets or folders. The Package Plan is a convenience preview, not an automatic decision: the user chooses the final package list before the Package Job JSON is written and built.
 
 `Build Mod Package From Job JSON` remains the repeatable automation path.
+
+For a distributable plugin build, use:
+
+```powershell
+& .\Resources\Scripts\BuildNtePlugin.ps1 -StrictIncludes
+```
+
+The wrapper always writes outside the plugin repository. Do not point Unreal Automation Tool's `BuildPlugin -Package` argument at this repository or one of its subdirectories: UAT creates a temporary HostProject by copying the plugin, so an output directory inside the plugin can recursively copy `.scratch`, `.git`, and earlier HostProjects.
 
 ## Requirements
 

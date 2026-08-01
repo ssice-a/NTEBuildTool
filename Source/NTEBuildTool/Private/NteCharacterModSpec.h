@@ -7,11 +7,33 @@
 
 namespace NTEBuildTool::Character
 {
+struct FNteCharacterPresentationTargetSpec
+{
+	FString Id;
+	FString BlueprintClassPath;
+	FString ParentMeshComponentName;
+	FString MainAnimBlueprintPath;
+	bool bConfigureMainMesh = true;
+};
+
+struct FNteCharacterNPCAppearanceTargetSpec
+{
+	FString AssetPath;
+	FString MainAnimBlueprintPath;
+};
+
 struct FNteCharacterAppearanceTarget
 {
 	FString AppearanceRowName;
 	FString PlayerAppearanceAssetPath;
+	TArray<FNteCharacterNPCAppearanceTargetSpec> NPCAppearanceTargets;
+	TArray<FNteCharacterPresentationTargetSpec> PresentationTargets;
+	// Legacy JSON compatibility. New specs should use PresentationTargets.
 	FString UIActorClassPath;
+	FString MainUIAnimBlueprintPath;
+	TOptional<float> CapsuleHalfHeight;
+	TOptional<float> CapsuleRadius;
+	TOptional<FVector> RelativeLocation;
 };
 
 struct FNteCharacterAttachedMeshSpec
@@ -24,7 +46,9 @@ struct FNteCharacterAttachedMeshSpec
 	FString UIAnimBlueprintPath;
 	FString RuntimeAnimBlueprintPath;
 	FString SocketName;
+	FString PresentationSocketName;
 	TArray<FString> MeshComponentOwnedTags;
+	TArray<FString> PresentationTargetIds;
 	FVector RelativeLocation = FVector::ZeroVector;
 	FRotator RelativeRotation = FRotator::ZeroRotator;
 	FVector RelativeScale = FVector::OneVector;
@@ -39,6 +63,7 @@ struct FNteCharacterMaterialOperationSpec
 	FString TargetMeshId;
 	int32 SlotIndex = INDEX_NONE;
 	FString SlotName;
+	FString ExistingMaterialPath;
 	FString SourceMaterialJson;
 	FString ParentMaterialPath;
 	FString OutputMaterialPath;
@@ -71,11 +96,16 @@ struct FNteCharacterRuntimeUiSpec
 	FString ToggleUiHotkey;
 	FString Title;
 	bool bDefaultVisible = false;
-	FString FontPath = TEXT("/Game/Resources/UI/Fonts/Font_All");
+	FString StyleProfileId = TEXT("NTE.Common.DarkButton");
+	FString FontPath;
 	FString BodyFontTypeface = TEXT("Light");
 	FString TitleFontTypeface = TEXT("Heavy");
 	int32 BodyFontSize = 20;
 	int32 TitleFontSize = 24;
+	FString ButtonNormalTexturePath;
+	FString ButtonHoveredTexturePath;
+	FString ButtonPressedTexturePath;
+	FString ButtonDisabledTexturePath;
 };
 
 struct FNteCharacterKawaiiAdditionalRootBoneSpec
@@ -83,6 +113,12 @@ struct FNteCharacterKawaiiAdditionalRootBoneSpec
 	FString RootBone;
 	TArray<FString> OverrideExcludeBones;
 	bool bUseOverrideExcludeBones = false;
+};
+
+struct FNteCharacterKawaiiBoneRemapSpec
+{
+	FString SourceBone;
+	FString TargetBone;
 };
 
 struct FNteCharacterKawaiiPhysicsSettingsSpec
@@ -135,6 +171,7 @@ struct FNteCharacterKawaiiPresetSpec
 	FString ReferencedPresetId;
 	FString TemplateKind;
 	FString SchemaStatus;
+	TArray<FNteCharacterKawaiiBoneRemapSpec> BoneRemaps;
 	FString RootBone;
 	TArray<FString> ExcludeBones;
 	TArray<FNteCharacterKawaiiAdditionalRootBoneSpec> AdditionalRootBones;
@@ -183,11 +220,26 @@ struct FNteCharacterKawaiiPresetSpec
 	TArray<FString> UnsupportedSourceFields;
 };
 
+enum class ENteCharacterPackageAssetIntent : uint8
+{
+	ExternalReference,
+	GeneratedAsset,
+	ReplacementAsset,
+	Invalid
+};
+
+struct FNteCharacterPackageAssetSpec
+{
+	FString AssetPath;
+	ENteCharacterPackageAssetIntent Intent = ENteCharacterPackageAssetIntent::ExternalReference;
+};
+
 struct FNteCharacterPackageSpec
 {
 	FString ModName;
 	FString ModsDir;
 	FString JobFilename;
+	TArray<FNteCharacterPackageAssetSpec> Assets;
 	bool bBuildAfterCreate = false;
 };
 
@@ -199,6 +251,7 @@ struct FNteCharacterModSpec
 	FNteCharacterAppearanceTarget Appearance;
 	FString MainMeshPath;
 	FString MainAnimBlueprintPath;
+	FString MainPostProcessAnimBlueprintPath;
 	TArray<FNteCharacterAttachedMeshSpec> AttachedMeshes;
 	TArray<FNteCharacterMaterialOperationSpec> MaterialOperations;
 	TArray<FNteCharacterRuntimeActionSpec> RuntimeActions;
@@ -222,4 +275,7 @@ bool LoadCharacterModSpecFromJsonFile(const FString& Filename, FNteCharacterModS
 bool SaveCharacterModSpecToJsonFile(const FNteCharacterModSpec& Spec, const FString& Filename, FString& OutError);
 FNteCharacterModSpecValidationResult ValidateCharacterModSpec(const FNteCharacterModSpec& Spec);
 TArray<FString> CollectCharacterModSpecPackageSeeds(const FNteCharacterModSpec& Spec);
+FString PackageAssetIntentToString(ENteCharacterPackageAssetIntent Intent);
+ENteCharacterPackageAssetIntent PackageAssetIntentFromString(const FString& Intent);
+TOptional<ENteCharacterPackageAssetIntent> FindPackageAssetIntent(const FNteCharacterModSpec& Spec, const FString& AssetPath);
 }

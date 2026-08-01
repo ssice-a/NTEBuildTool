@@ -4,7 +4,6 @@
 
 #include "NteEditorAssetUtils.h"
 
-#include "AssetRegistry/AssetRegistryModule.h"
 #include "Blueprint/WidgetTree.h"
 #include "Components/Button.h"
 #include "Components/CanvasPanel.h"
@@ -15,10 +14,8 @@
 #include "Components/VerticalBoxSlot.h"
 #include "Components/Widget.h"
 #include "Engine/Font.h"
+#include "Engine/Texture2D.h"
 #include "Kismet2/BlueprintEditorUtils.h"
-#include "Misc/PackageName.h"
-#include "UObject/Package.h"
-#include "UObject/SavePackage.h"
 #include "WidgetBlueprint.h"
 
 namespace NTEBuildTool::Character
@@ -47,83 +44,70 @@ FString SanitizeWidgetNameSuffix(const FString& RawValue)
 	return Result.IsEmpty() ? TEXT("Action") : Result;
 }
 
-UFont* LoadOrCreateSourceGameFontProxy(
+template <typename AssetType>
+AssetType* LoadSourceGameAsset(
+	const FString& AssetPath,
+	const TCHAR* AssetLabel,
+	FNteCharacterRuntimeActionAssetWriteResult& AssetResult)
+{
+	if (!AssetPath.StartsWith(TEXT("/Game/")) || AssetPath.Contains(TEXT(".")))
+	{
+		AddPresentationError(AssetResult, FString::Printf(
+			TEXT("Runtime UI %s must be a /Game package path: %s"),
+			AssetLabel,
+			*AssetPath));
+		return nullptr;
+	}
+
+	if (AssetType* Asset = NTEBuildTool::Editor::LoadAssetByPath<AssetType>(AssetPath))
+	{
+		AssetResult.Actions.Add(FString::Printf(TEXT("uses source-game %s %s"), AssetLabel, *AssetPath));
+		return Asset;
+	}
+
+	AddPresentationError(AssetResult, FString::Printf(
+		TEXT("Runtime UI %s could not be loaded from the mirror project: %s"),
+		AssetLabel,
+		*AssetPath));
+	return nullptr;
+}
+
+UFont* LoadSourceGameFont(
 	const FString& FontPath,
 	FNteCharacterRuntimeActionAssetWriteResult& AssetResult)
 {
-	if (!FontPath.StartsWith(TEXT("/Game/")) || FontPath.Contains(TEXT(".")))
+	return LoadSourceGameAsset<UFont>(FontPath, TEXT("font"), AssetResult);
+}
+
+FSlateBrush MakeRuntimeButtonBrush(UTexture2D& Texture)
+{
+	FSlateBrush Brush;
+	Brush.SetResourceObject(&Texture);
+	Brush.DrawAs = ESlateBrushDrawType::Box;
+	Brush.Margin = FMargin(0.5f, 0.0f, 0.5f, 0.0f);
+	Brush.ImageSize = FVector2D(Texture.GetSurfaceWidth(), Texture.GetSurfaceHeight());
+	return Brush;
+}
+
+bool LoadRuntimeButtonStyle(
+	const FNteCharacterRuntimeUiPlan& RuntimeUi,
+	FButtonStyle& OutStyle,
+	FNteCharacterRuntimeActionAssetWriteResult& AssetResult)
+{
+	UTexture2D* NormalTexture = LoadSourceGameAsset<UTexture2D>(RuntimeUi.ButtonNormalTexturePath, TEXT("button normal texture"), AssetResult);
+	UTexture2D* HoveredTexture = LoadSourceGameAsset<UTexture2D>(RuntimeUi.ButtonHoveredTexturePath, TEXT("button hovered texture"), AssetResult);
+	UTexture2D* PressedTexture = LoadSourceGameAsset<UTexture2D>(RuntimeUi.ButtonPressedTexturePath, TEXT("button pressed texture"), AssetResult);
+	UTexture2D* DisabledTexture = LoadSourceGameAsset<UTexture2D>(RuntimeUi.ButtonDisabledTexturePath, TEXT("button disabled texture"), AssetResult);
+	if (!NormalTexture || !HoveredTexture || !PressedTexture || !DisabledTexture)
 	{
-		AddPresentationError(AssetResult, FString::Printf(
-			TEXT("Runtime UI FontPath must be a /Game package path: %s"),
-			*FontPath));
-		return nullptr;
+		return false;
 	}
 
-	if (UFont* ExistingFont = NTEBuildTool::Editor::LoadAssetByPath<UFont>(FontPath))
-	{
-		AssetResult.Actions.Add(FString::Printf(TEXT("uses source-game font %s"), *FontPath));
-		return ExistingFont;
-	}
-
-	FString ExistingPackageFilename;
-	if (FPackageName::DoesPackageExist(FontPath, &ExistingPackageFilename))
-	{
-		AddPresentationError(AssetResult, FString::Printf(
-			TEXT("Runtime UI font package exists but its UFont could not be loaded: %s (%s)"),
-			*FontPath,
-			*ExistingPackageFilename));
-		return nullptr;
-	}
-
-	UPackage* Package = FindPackage(nullptr, *FontPath);
-	if (!Package)
-	{
-		Package = CreatePackage(*FontPath);
-	}
-	if (!Package)
-	{
-		AddPresentationError(AssetResult, FString::Printf(TEXT("Could not create source-game font proxy package: %s"), *FontPath));
-		return nullptr;
-	}
-
-	const FName FontName(*FPackageName::GetShortName(FontPath));
-	if (UObject* ExistingObject = FindObject<UObject>(Package, *FontName.ToString()))
-	{
-		if (UFont* ExistingFont = Cast<UFont>(ExistingObject))
-		{
-			return ExistingFont;
-		}
-		AddPresentationError(AssetResult, FString::Printf(
-			TEXT("Source-game font proxy path is occupied by %s: %s"),
-			*ExistingObject->GetClass()->GetPathName(),
-			*FontPath));
-		return nullptr;
-	}
-
-	UFont* FontProxy = NewObject<UFont>(Package, FontName, RF_Public | RF_Standalone | RF_Transactional);
-	if (!FontProxy)
-	{
-		AddPresentationError(AssetResult, FString::Printf(TEXT("Could not create source-game font proxy: %s"), *FontPath));
-		return nullptr;
-	}
-
-	FontProxy->FontCacheType = EFontCacheType::Runtime;
-	FontProxy->MarkPackageDirty();
-	FAssetRegistryModule::AssetCreated(FontProxy);
-	Package->MarkPackageDirty();
-
-	const FString PackageFilename = FPackageName::LongPackageNameToFilename(FontPath, FPackageName::GetAssetPackageExtension());
-	FSavePackageArgs SaveArgs;
-	SaveArgs.TopLevelFlags = RF_Public | RF_Standalone;
-	SaveArgs.SaveFlags = SAVE_NoError;
-	if (!UPackage::SavePackage(Package, FontProxy, *PackageFilename, SaveArgs))
-	{
-		AddPresentationError(AssetResult, FString::Printf(TEXT("Could not save source-game font proxy: %s"), *PackageFilename));
-		return nullptr;
-	}
-
-	AssetResult.Actions.Add(FString::Printf(TEXT("created editor-only source-game font proxy %s"), *FontPath));
-	return FontProxy;
+	OutStyle.Normal = MakeRuntimeButtonBrush(*NormalTexture);
+	OutStyle.Hovered = MakeRuntimeButtonBrush(*HoveredTexture);
+	OutStyle.Pressed = MakeRuntimeButtonBrush(*PressedTexture);
+	OutStyle.Disabled = MakeRuntimeButtonBrush(*DisabledTexture);
+	return true;
 }
 
 UWidgetTree* EnsureWidgetTree(UWidgetBlueprint& WidgetBlueprint)
@@ -214,8 +198,13 @@ bool RebuildRuntimeActionWidgetPresentation(
 		return false;
 	}
 
-	UFont* RuntimeFont = LoadOrCreateSourceGameFontProxy(Plan.RuntimeUi.FontPath, AssetResult);
+	UFont* RuntimeFont = LoadSourceGameFont(Plan.RuntimeUi.FontPath, AssetResult);
 	if (!RuntimeFont)
+	{
+		return false;
+	}
+	FButtonStyle RuntimeButtonStyle;
+	if (!LoadRuntimeButtonStyle(Plan.RuntimeUi, RuntimeButtonStyle, AssetResult))
 	{
 		return false;
 	}
@@ -318,11 +307,12 @@ bool RebuildRuntimeActionWidgetPresentation(
 		Pair.Label->SetText(FText::FromString(LabelText));
 		Pair.Label->SetFont(FSlateFontInfo(RuntimeFont, static_cast<float>(Plan.RuntimeUi.BodyFontSize), FName(*Plan.RuntimeUi.BodyFontTypeface)));
 		Pair.Label->SetColorAndOpacity(FSlateColor(FLinearColor::White));
+		Pair.Label->SetJustification(ETextJustify::Center);
 PRAGMA_DISABLE_DEPRECATION_WARNINGS
 		Pair.Button->IsFocusable = false;
 PRAGMA_ENABLE_DEPRECATION_WARNINGS
 		Pair.Button->SetColorAndOpacity(FLinearColor::White);
-		Pair.Button->SetBackgroundColor(FLinearColor(0.08f, 0.08f, 0.08f, 0.92f));
+		Pair.Button->SetStyle(RuntimeButtonStyle);
 		DetachWidgetFromParent(*Pair.Label);
 		Pair.Button->SetContent(Pair.Label);
 		DetachWidgetFromParent(*Pair.Button);
@@ -340,7 +330,7 @@ PRAGMA_ENABLE_DEPRECATION_WARNINGS
 		Package->MarkPackageDirty();
 	}
 	AssetResult.bUpdated = true;
-	AssetResult.Actions.Add(FString::Printf(TEXT("rebuilt runtime widget layout with %d action button(s)"), Actions.Num()));
+	AssetResult.Actions.Add(FString::Printf(TEXT("rebuilt runtime widget layout with %d source-game styled action button(s)"), Actions.Num()));
 	return true;
 }
 }

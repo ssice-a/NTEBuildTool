@@ -2,6 +2,7 @@
 
 #include "NteAppearanceAssemblyWriter.h"
 
+#include "HTAttachedMeshAnimInstance.h"
 #include "HTPlayerAppearance.h"
 #include "HTSkeletalMeshComponentBudgeted.h"
 #include "NteAppearanceAssemblyPlan.h"
@@ -21,12 +22,13 @@
 #include "Misc/PackageName.h"
 #include "UObject/Package.h"
 #include "UObject/SavePackage.h"
+#include "UObject/UnrealType.h"
 
 namespace NTEBuildTool::Character
 {
 namespace
 {
-constexpr const TCHAR* GeneratedUIShowComponentPrefix = TEXT("NTE_Attach_");
+constexpr const TCHAR* GeneratedPresentationComponentPrefix = TEXT("NTE_Attach_");
 
 FString NormalizePackagePath(FString Path)
 {
@@ -98,6 +100,116 @@ void AddError(FNteAppearanceAssemblyWriteResult& Result, const FString& Error)
 void AddWarning(FNteAppearanceAssemblyWriteResult& Result, const FString& Warning)
 {
 	Result.Warnings.Add(Warning);
+}
+
+bool ValidateOwnedPropertyOrder(
+	const UStruct& Struct,
+	const TArray<FName>& ExpectedNames,
+	FNteAppearanceAssemblyWriteResult& Result)
+{
+	TArray<FName> ActualNames;
+	for (TFieldIterator<FProperty> PropertyIt(&Struct, EFieldIteratorFlags::ExcludeSuper); PropertyIt; ++PropertyIt)
+	{
+		ActualNames.Add(PropertyIt->GetFName());
+	}
+
+	if (ActualNames == ExpectedNames)
+	{
+		return true;
+	}
+
+	AddError(Result, FString::Printf(
+		TEXT("HTGame schema mismatch for %s. Expected own properties [%s], found [%s]."),
+		*Struct.GetName(),
+		*FString::JoinBy(ExpectedNames, TEXT(", "), [](const FName& Name) { return Name.ToString(); }),
+		*FString::JoinBy(ActualNames, TEXT(", "), [](const FName& Name) { return Name.ToString(); })));
+	return false;
+}
+
+bool ValidateAppearanceSchema(FNteAppearanceAssemblyWriteResult& Result)
+{
+	bool bValid = true;
+	const UClass* AppearanceClass = UHTPlayerAppearance::StaticClass();
+	const UClass* NPCAppearanceClass = UHTPlayerNPCAppearance::StaticClass();
+	if (!AppearanceClass->GetSuperClass() || AppearanceClass->GetSuperClass()->GetFName() != TEXT("HTAppearanceDataAsset"))
+	{
+		AddError(Result, TEXT("HTGame schema mismatch: HTPlayerAppearance must inherit HTAppearanceDataAsset."));
+		bValid = false;
+	}
+
+	bValid &= ValidateOwnedPropertyOrder(*FCharacterMeshData::StaticStruct(),
+		{ TEXT("CharacterMesh"), TEXT("AnimInstance") }, Result);
+	bValid &= ValidateOwnedPropertyOrder(*FAttachedMeshData::StaticStruct(),
+		{
+			TEXT("CharacterMesh"), TEXT("AnimInstance"), TEXT("MobileAnimInstance"), TEXT("SocketName"),
+			TEXT("MeshComponentOwnedTags"), TEXT("RelativeLocation"), TEXT("RelativeRotation"), TEXT("RelativeScale3D")
+		}, Result);
+	bValid &= ValidateOwnedPropertyOrder(*AppearanceClass,
+		{
+			TEXT("FashionMeshData"), TEXT("CapsuleHalfHeight"), TEXT("CapsuleRadius"), TEXT("RelativeLocation"),
+			TEXT("SortTriangles"), TEXT("FPSCameraCapsuleTopOffset"), TEXT("VinesIKFootOffsetAdditive"),
+			TEXT("ArrayFashionAttachedMeshData"), TEXT("ArrayDynamicAttachedMeshData"), TEXT("ChildMeshDataMap"),
+			TEXT("FashionMeshAttachEffects"), TEXT("AppearanceWeapon"), TEXT("UltraSkillSequence"), TEXT("ParticleMap"),
+			TEXT("ForceLoadParticleMap"), TEXT("GameplayTagAudioEventMap"), TEXT("SpawnActorMap"),
+			TEXT("ParticleMapWithParams"), TEXT("SequenceMap")
+		}, Result);
+	if (!NPCAppearanceClass->GetSuperClass() || NPCAppearanceClass->GetSuperClass()->GetFName() != TEXT("HTAppearanceDataAsset"))
+	{
+		AddError(Result, TEXT("HTGame schema mismatch: HTPlayerNPCAppearance must inherit HTAppearanceDataAsset."));
+		bValid = false;
+	}
+	bValid &= ValidateOwnedPropertyOrder(*NPCAppearanceClass,
+		{ TEXT("FashionMeshData"), TEXT("ArrayFashionAttachedMeshData") }, Result);
+	bValid &= ValidateOwnedPropertyOrder(*UHTAttachedMeshAnimInstance::StaticClass(),
+		{
+			TEXT("EnablePhysicsWeight"), TEXT("PhysicsCurveInterpSpeed"), TEXT("bUseParentPhysicsWeight"),
+			TEXT("ParentDepth"), TEXT("bOverrideByCurveWhenUseParentWeight"), TEXT("bPhysicsWeightBlendMontage"),
+			TEXT("SpeedBlendSpeed"), TEXT("MovementReferenceDisplacement"), TEXT("AnimationToPlay"),
+			TEXT("MovementSpeed"), TEXT("bIsSitting"), TEXT("SleepWeight"), TEXT("OwnerCharacter")
+		}, Result);
+
+	const FStructProperty* MainMeshProperty = FindFProperty<FStructProperty>(AppearanceClass, TEXT("FashionMeshData"));
+	if (!MainMeshProperty || MainMeshProperty->Struct != FCharacterMeshData::StaticStruct())
+	{
+		AddError(Result, TEXT("HTGame schema mismatch: FashionMeshData must use CharacterMeshData."));
+		bValid = false;
+	}
+
+	const FArrayProperty* AttachedArray = FindFProperty<FArrayProperty>(AppearanceClass, TEXT("ArrayFashionAttachedMeshData"));
+	const FStructProperty* AttachedInner = AttachedArray ? CastField<FStructProperty>(AttachedArray->Inner) : nullptr;
+	if (!AttachedInner || AttachedInner->Struct != FAttachedMeshData::StaticStruct())
+	{
+		AddError(Result, TEXT("HTGame schema mismatch: ArrayFashionAttachedMeshData must contain AttachedMeshData."));
+		bValid = false;
+	}
+
+	const FStructProperty* NPCMainMeshProperty = FindFProperty<FStructProperty>(NPCAppearanceClass, TEXT("FashionMeshData"));
+	if (!NPCMainMeshProperty || NPCMainMeshProperty->Struct != FCharacterMeshData::StaticStruct())
+	{
+		AddError(Result, TEXT("HTGame schema mismatch: HTPlayerNPCAppearance.FashionMeshData must use CharacterMeshData."));
+		bValid = false;
+	}
+	const FArrayProperty* NPCAttachedArray = FindFProperty<FArrayProperty>(NPCAppearanceClass, TEXT("ArrayFashionAttachedMeshData"));
+	const FStructProperty* NPCAttachedInner = NPCAttachedArray ? CastField<FStructProperty>(NPCAttachedArray->Inner) : nullptr;
+	if (!NPCAttachedInner || NPCAttachedInner->Struct != FAttachedMeshData::StaticStruct())
+	{
+		AddError(Result, TEXT("HTGame schema mismatch: HTPlayerNPCAppearance.ArrayFashionAttachedMeshData must contain AttachedMeshData."));
+		bValid = false;
+	}
+
+	for (const UScriptStruct* MeshStruct : { FCharacterMeshData::StaticStruct(), FAttachedMeshData::StaticStruct() })
+	{
+		const FProperty* AnimProperty = MeshStruct->FindPropertyByName(TEXT("AnimInstance"));
+		if (!AnimProperty || !AnimProperty->IsA<FObjectProperty>() || AnimProperty->IsA<FClassProperty>())
+		{
+			AddError(Result, FString::Printf(
+				TEXT("HTGame schema mismatch: %s.AnimInstance must be ObjectProperty, not ClassProperty."),
+				*MeshStruct->GetName()));
+			bValid = false;
+		}
+	}
+
+	return bValid;
 }
 
 bool SaveAsset(UObject& Asset, FNteAppearanceAssemblyWriteResult& Result)
@@ -240,9 +352,69 @@ UHTPlayerAppearance* LoadOrCreateAppearanceAsset(const FString& PackagePath, FNt
 	return NewAppearance;
 }
 
+UHTPlayerNPCAppearance* LoadOrCreateNPCAppearanceAsset(const FString& PackagePath, FNteAppearanceAssemblyWriteResult& Result)
+{
+	const FString NormalizedPath = NormalizePackagePath(PackagePath);
+	if (!IsValidGamePackagePath(NormalizedPath))
+	{
+		AddError(Result, FString::Printf(TEXT("Invalid NPC Appearance AssetPath: %s"), *PackagePath));
+		return nullptr;
+	}
+
+	const FString ObjectName = FPackageName::GetShortName(NormalizedPath);
+	if (UPackage* ExistingPackage = FindPackage(nullptr, *NormalizedPath))
+	{
+		if (UObject* ExistingAsset = FindObject<UObject>(ExistingPackage, *ObjectName))
+		{
+			UHTPlayerNPCAppearance* ExistingAppearance = Cast<UHTPlayerNPCAppearance>(ExistingAsset);
+			if (!ExistingAppearance)
+			{
+				AddError(Result, FString::Printf(
+					TEXT("Existing asset %s is %s, not HTPlayerNPCAppearance."),
+					*NormalizedPath,
+					*ExistingAsset->GetClass()->GetPathName()));
+			}
+			return ExistingAppearance;
+		}
+	}
+
+	FString ExistingPackageFilename;
+	if (FPackageName::DoesPackageExist(NormalizedPath, &ExistingPackageFilename))
+	{
+		if (UObject* ExistingAsset = StaticLoadObject(UObject::StaticClass(), nullptr, *ToObjectPath(NormalizedPath)))
+		{
+			UHTPlayerNPCAppearance* ExistingAppearance = Cast<UHTPlayerNPCAppearance>(ExistingAsset);
+			if (!ExistingAppearance)
+			{
+				AddError(Result, FString::Printf(
+					TEXT("Existing asset %s is %s, not HTPlayerNPCAppearance."),
+					*NormalizedPath,
+					*ExistingAsset->GetClass()->GetPathName()));
+			}
+			return ExistingAppearance;
+		}
+	}
+
+	UPackage* Package = CreatePackage(*NormalizedPath);
+	if (!Package)
+	{
+		AddError(Result, FString::Printf(TEXT("Could not create package for NPC Appearance AssetPath: %s"), *NormalizedPath));
+		return nullptr;
+	}
+
+	UHTPlayerNPCAppearance* NewAppearance = NewObject<UHTPlayerNPCAppearance>(
+		Package,
+		UHTPlayerNPCAppearance::StaticClass(),
+		*ObjectName,
+		RF_Public | RF_Standalone | RF_Transactional);
+
+	FAssetRegistryModule::AssetCreated(NewAppearance);
+	return NewAppearance;
+}
+
 bool FillMainMeshData(
 	const FNteAppearanceMeshDataPlan& MainMesh,
-	FHTFashionMeshData& OutMeshData,
+	FCharacterMeshData& OutMeshData,
 	FNteAppearanceAssemblyWriteResult& Result)
 {
 	USkeletalMesh* Mesh = LoadSkeletalMesh(MainMesh.CharacterMeshPath, Result, TEXT("Main mesh"));
@@ -259,7 +431,7 @@ bool FillMainMeshData(
 
 bool FillAttachedMeshData(
 	const FNteAppearanceMeshDataPlan& AttachedMesh,
-	FHTFashionAttachedMeshData& OutMeshData,
+	FAttachedMeshData& OutMeshData,
 	FNteAppearanceAssemblyWriteResult& Result)
 {
 	const FString Context = FString::Printf(TEXT("Attached mesh '%s'"), *AttachedMesh.Id);
@@ -297,16 +469,17 @@ void WritePlayerAppearanceAsset(const FNteAppearanceAssemblyPlan& Plan, FNteAppe
 		return;
 	}
 
-	FHTFashionMeshData MainMeshData;
+
+	FCharacterMeshData MainMeshData;
 	if (!FillMainMeshData(Plan.MainMesh, MainMeshData, Result))
 	{
 		return;
 	}
 
-	TArray<FHTFashionAttachedMeshData> AttachedMeshDataList;
+	TArray<FAttachedMeshData> AttachedMeshDataList;
 	for (const FNteAppearanceMeshDataPlan& AttachedMesh : Plan.AttachedMeshes)
 	{
-		FHTFashionAttachedMeshData AttachedMeshData;
+		FAttachedMeshData AttachedMeshData;
 		if (FillAttachedMeshData(AttachedMesh, AttachedMeshData, Result))
 		{
 			AttachedMeshDataList.Add(AttachedMeshData);
@@ -315,57 +488,135 @@ void WritePlayerAppearanceAsset(const FNteAppearanceAssemblyPlan& Plan, FNteAppe
 
 	Appearance->Modify();
 	Appearance->FashionMeshData = MainMeshData;
+	if (Plan.CapsuleHalfHeight.IsSet())
+	{
+		Appearance->CapsuleHalfHeight = Plan.CapsuleHalfHeight.GetValue();
+	}
+	if (Plan.CapsuleRadius.IsSet())
+	{
+		Appearance->CapsuleRadius = Plan.CapsuleRadius.GetValue();
+	}
+	if (Plan.RelativeLocation.IsSet())
+	{
+		Appearance->RelativeLocation = Plan.RelativeLocation.GetValue();
+	}
 	Appearance->ArrayFashionAttachedMeshData = MoveTemp(AttachedMeshDataList);
 	SaveAsset(*Appearance, Result);
 }
 
-USCS_Node* FindMainMeshSCSNode(USimpleConstructionScript& SimpleConstructionScript)
+void WriteNPCAppearanceAssets(const FNteAppearanceAssemblyPlan& Plan, FNteAppearanceAssemblyWriteResult& Result)
 {
-	if (USCS_Node* MeshNode = SimpleConstructionScript.FindSCSNode(TEXT("Mesh")))
+	for (const FNteNPCAppearanceTargetPlan& Target : Plan.NPCAppearanceTargets)
 	{
-		return MeshNode;
+		UHTPlayerNPCAppearance* Appearance = LoadOrCreateNPCAppearanceAsset(Target.AssetPath, Result);
+		if (!Appearance)
+		{
+			continue;
+		}
+
+		FNteAppearanceMeshDataPlan NPCMainMesh = Plan.MainMesh;
+		NPCMainMesh.AnimInstancePath = Target.MainAnimInstancePath;
+		FCharacterMeshData MainMeshData;
+		if (!FillMainMeshData(NPCMainMesh, MainMeshData, Result))
+		{
+			continue;
+		}
+
+		TArray<FAttachedMeshData> AttachedMeshDataList;
+		for (const FNteAppearanceMeshDataPlan& AttachedMesh : Plan.AttachedMeshes)
+		{
+			FAttachedMeshData AttachedMeshData;
+			if (FillAttachedMeshData(AttachedMesh, AttachedMeshData, Result))
+			{
+				AttachedMeshDataList.Add(AttachedMeshData);
+			}
+		}
+
+		Appearance->Modify();
+		Appearance->FashionMeshData = MainMeshData;
+		Appearance->ArrayFashionAttachedMeshData = MoveTemp(AttachedMeshDataList);
+		SaveAsset(*Appearance, Result);
+	}
+}
+
+USkeletalMeshComponent* FindNamedSkeletalMeshComponentTemplate(UBlueprint& Blueprint, const FName ComponentName)
+{
+	if (!Blueprint.GeneratedClass)
+	{
+		return nullptr;
 	}
 
-	for (USCS_Node* Node : SimpleConstructionScript.GetAllNodes())
+	UObject* ClassDefaultObject = Blueprint.GeneratedClass->GetDefaultObject();
+	if (!ClassDefaultObject)
 	{
-		if (Node && Node->ComponentTemplate && Node->ComponentTemplate->IsA<USkeletalMeshComponent>())
+		return nullptr;
+	}
+
+	TArray<UObject*> DefaultSubobjects;
+	ClassDefaultObject->GetDefaultSubobjects(DefaultSubobjects);
+	for (UObject* DefaultSubobject : DefaultSubobjects)
+	{
+		USkeletalMeshComponent* SkeletalMesh = Cast<USkeletalMeshComponent>(DefaultSubobject);
+		if (SkeletalMesh && SkeletalMesh->GetFName() == ComponentName)
 		{
-			return Node;
+			return SkeletalMesh;
 		}
 	}
-
 	return nullptr;
 }
 
-void RemovePreviouslyGeneratedUIShowNodes(USimpleConstructionScript& SimpleConstructionScript)
+bool ShouldSyncAttachedMeshToTarget(
+	const FNteAppearanceMeshDataPlan& AttachedMesh,
+	const FNteAppearancePresentationTargetPlan& Target)
 {
-	TArray<USCS_Node*> NodesToRemove;
-	for (USCS_Node* Node : SimpleConstructionScript.GetAllNodes())
+	if (!AttachedMesh.PresentationTargetIds.IsEmpty())
 	{
-		if (Node && Node->GetVariableName().ToString().StartsWith(GeneratedUIShowComponentPrefix))
-		{
-			NodesToRemove.Add(Node);
-		}
+		return AttachedMesh.PresentationTargetIds.Contains(Target.Id);
 	}
-
-	for (USCS_Node* Node : NodesToRemove)
-	{
-		SimpleConstructionScript.RemoveNode(Node, false);
-	}
-	SimpleConstructionScript.ValidateSceneRootNodes();
+	return !Target.Id.Equals(TEXT("ui"), ESearchCase::IgnoreCase) || AttachedMesh.bSyncToUIShow;
 }
 
-void ConfigureSkeletalMeshComponent(
-	UHTSkeletalMeshComponentBudgeted& Component,
-	const FNteAppearanceMeshDataPlan& AttachedMesh,
+void ConfigureMainPresentationMesh(
+	UBlueprint& Blueprint,
+	USkeletalMeshComponent& Component,
+	const FNteAppearanceMeshDataPlan& MainMesh,
+	const FNteAppearancePresentationTargetPlan& Target,
 	FNteAppearanceAssemblyWriteResult& Result)
 {
-	if (USkeletalMesh* Mesh = LoadSkeletalMesh(AttachedMesh.CharacterMeshPath, Result, FString::Printf(TEXT("UIShow attached mesh '%s'"), *AttachedMesh.Id)))
+	Component.Modify();
+	const FString Context = FString::Printf(TEXT("Presentation target '%s' main mesh"), *Target.Id);
+	if (USkeletalMesh* Mesh = LoadSkeletalMesh(MainMesh.CharacterMeshPath, Result, Context))
+	{
+		Component.SetSkeletalMesh(Mesh);
+	}
+	if (!Target.MainAnimInstancePath.IsEmpty())
+	{
+		if (UClass* AnimClass = LoadAnimClass(Target.MainAnimInstancePath, Result, Context, true))
+		{
+			Component.SetAnimationMode(EAnimationMode::AnimationBlueprint);
+			Component.SetAnimInstanceClass(AnimClass);
+		}
+	}
+	Blueprint.MarkPackageDirty();
+}
+
+void ConfigureAttachedPresentationMesh(
+	UHTSkeletalMeshComponentBudgeted& Component,
+	const FNteAppearanceMeshDataPlan& AttachedMesh,
+	const FNteAppearancePresentationTargetPlan& Target,
+	FNteAppearanceAssemblyWriteResult& Result)
+{
+	const FString Context = FString::Printf(TEXT("Presentation target '%s' attached mesh '%s'"), *Target.Id, *AttachedMesh.Id);
+	if (USkeletalMesh* Mesh = LoadSkeletalMesh(AttachedMesh.CharacterMeshPath, Result, Context))
 	{
 		Component.SetSkeletalMesh(Mesh);
 	}
 
-	if (UClass* AnimClass = LoadAnimClass(AttachedMesh.UIAnimInstancePath.IsEmpty() ? AttachedMesh.AnimInstancePath : AttachedMesh.UIAnimInstancePath, Result, FString::Printf(TEXT("UIShow attached mesh '%s'"), *AttachedMesh.Id), false))
+	const FString AnimInstancePath = Target.Id.Equals(TEXT("ui"), ESearchCase::IgnoreCase)
+		&& !AttachedMesh.UIAnimInstancePath.IsEmpty()
+		? AttachedMesh.UIAnimInstancePath
+		: AttachedMesh.AnimInstancePath;
+	if (UClass* AnimClass = LoadAnimClass(AnimInstancePath, Result, Context, false))
 	{
 		Component.SetAnimationMode(EAnimationMode::AnimationBlueprint);
 		Component.SetAnimInstanceClass(AnimClass);
@@ -384,79 +635,141 @@ void ConfigureSkeletalMeshComponent(
 	}
 }
 
-void SyncPlayerUIShowBlueprint(const FNteAppearanceAssemblyPlan& Plan, FNteAppearanceAssemblyWriteResult& Result)
+void SyncPresentationTargetBlueprint(
+	const FNteAppearanceAssemblyPlan& Plan,
+	const FNteAppearancePresentationTargetPlan& Target,
+	FNteAppearanceAssemblyWriteResult& Result)
 {
-	if (Plan.UIActorClassPath.IsEmpty())
+	const FString BlueprintPackagePath = NormalizePackagePath(Target.BlueprintClassPath);
+	UBlueprint* Blueprint = NTEBuildTool::Editor::LoadAssetByPath<UBlueprint>(BlueprintPackagePath);
+	if (!Blueprint)
 	{
-		AddWarning(Result, TEXT("UIActorClassPath is empty; skipped PlayerUIShow SCS sync."));
+		AddError(Result, FString::Printf(TEXT("Presentation target '%s' Blueprint could not be loaded: %s"), *Target.Id, *Target.BlueprintClassPath));
+		return;
+	}
+	if (!Blueprint->SimpleConstructionScript)
+	{
+		AddError(Result, FString::Printf(TEXT("Presentation target '%s' Blueprint has no SimpleConstructionScript: %s"), *Target.Id, *BlueprintPackagePath));
 		return;
 	}
 
-	const FString UIShowPackagePath = NormalizePackagePath(Plan.UIActorClassPath);
-	UBlueprint* UIShowBlueprint = NTEBuildTool::Editor::LoadAssetByPath<UBlueprint>(UIShowPackagePath);
-	if (!UIShowBlueprint)
-	{
-		AddError(Result, FString::Printf(TEXT("PlayerUIShow Blueprint could not be loaded for SCS sync: %s"), *Plan.UIActorClassPath));
-		return;
-	}
-	if (!UIShowBlueprint->SimpleConstructionScript)
-	{
-		AddError(Result, FString::Printf(TEXT("PlayerUIShow Blueprint has no SimpleConstructionScript: %s"), *UIShowPackagePath));
-		return;
-	}
-
-	UIShowBlueprint->Modify();
-	USimpleConstructionScript* SimpleConstructionScript = UIShowBlueprint->SimpleConstructionScript;
+	Blueprint->Modify();
+	USimpleConstructionScript* SimpleConstructionScript = Blueprint->SimpleConstructionScript;
 	SimpleConstructionScript->Modify();
-
-	USCS_Node* MainMeshNode = FindMainMeshSCSNode(*SimpleConstructionScript);
-	if (!MainMeshNode)
+	const FName ParentComponentName(*Target.ParentMeshComponentName);
+	USCS_Node* ParentNode = SimpleConstructionScript->FindSCSNode(ParentComponentName);
+	USkeletalMeshComponent* ParentComponent = ParentNode
+		? Cast<USkeletalMeshComponent>(ParentNode->ComponentTemplate)
+		: FindNamedSkeletalMeshComponentTemplate(*Blueprint, ParentComponentName);
+	if (!ParentComponent)
 	{
-		AddError(Result, FString::Printf(TEXT("PlayerUIShow Blueprint has no Mesh SCS node to attach generated components: %s"), *UIShowPackagePath));
+		AddError(Result, FString::Printf(
+			TEXT("Presentation target '%s' has no skeletal mesh component named '%s': %s"),
+			*Target.Id,
+			*Target.ParentMeshComponentName,
+			*BlueprintPackagePath));
 		return;
 	}
 
-	RemovePreviouslyGeneratedUIShowNodes(*SimpleConstructionScript);
-
+	if (Target.bConfigureMainMesh)
+	{
+		ConfigureMainPresentationMesh(*Blueprint, *ParentComponent, Plan.MainMesh, Target, Result);
+	}
+	TSet<USCS_Node*> KeptGeneratedNodes;
 	for (const FNteAppearanceMeshDataPlan& AttachedMesh : Plan.AttachedMeshes)
 	{
-		if (!AttachedMesh.bSyncToUIShow)
+		if (!ShouldSyncAttachedMeshToTarget(AttachedMesh, Target))
 		{
 			continue;
 		}
 
-		const FName ComponentName(*FString::Printf(
+		const FString ComponentNameBase = FString::Printf(
 			TEXT("%s%s"),
-			GeneratedUIShowComponentPrefix,
-			*SanitizeObjectName(AttachedMesh.Id)));
-		USCS_Node* AttachedNode = SimpleConstructionScript->CreateNode(
-			UHTSkeletalMeshComponentBudgeted::StaticClass(),
-			ComponentName);
+			GeneratedPresentationComponentPrefix,
+			*SanitizeObjectName(AttachedMesh.Id));
+		USCS_Node* AttachedNode = nullptr;
+		TArray<USCS_Node*> DuplicateNodes;
+		for (USCS_Node* ExistingNode : SimpleConstructionScript->GetAllNodes())
+		{
+			if (!ExistingNode || !ExistingNode->GetVariableName().ToString().StartsWith(ComponentNameBase))
+			{
+				continue;
+			}
+			if (!AttachedNode)
+			{
+				AttachedNode = ExistingNode;
+			}
+			else
+			{
+				DuplicateNodes.Add(ExistingNode);
+			}
+		}
+		for (USCS_Node* DuplicateNode : DuplicateNodes)
+		{
+			SimpleConstructionScript->RemoveNode(DuplicateNode, false);
+		}
+
 		if (!AttachedNode)
 		{
-			AddError(Result, FString::Printf(TEXT("Could not create SCS node for UIShow attached mesh '%s'."), *AttachedMesh.Id));
+			AttachedNode = SimpleConstructionScript->CreateNode(
+				UHTSkeletalMeshComponentBudgeted::StaticClass(),
+				FName(*ComponentNameBase));
+		}
+		if (!AttachedNode)
+		{
+			AddError(Result, FString::Printf(TEXT("Could not create SCS node for presentation target '%s' attached mesh '%s'."), *Target.Id, *AttachedMesh.Id));
 			continue;
 		}
-
-		AttachedNode->SetParent(MainMeshNode);
-		AttachedNode->AttachToName = FName(*AttachedMesh.SocketName);
-		MainMeshNode->AddChildNode(AttachedNode);
-
-		if (UHTSkeletalMeshComponentBudgeted* Component = Cast<UHTSkeletalMeshComponentBudgeted>(AttachedNode->ComponentTemplate))
+		SimpleConstructionScript->RemoveNode(AttachedNode, false);
+		AttachedNode->AttachToName = AttachedMesh.PresentationSocketName.IsEmpty()
+			? NAME_None
+			: FName(*AttachedMesh.PresentationSocketName);
+		if (ParentNode)
 		{
-			ConfigureSkeletalMeshComponent(*Component, AttachedMesh, Result);
+			AttachedNode->SetParent(ParentNode);
+			ParentNode->AddChildNode(AttachedNode);
 		}
 		else
 		{
-			AddError(Result, FString::Printf(TEXT("Generated UIShow component template is not HTSkeletalMeshComponentBudgeted for '%s'."), *AttachedMesh.Id));
+			SimpleConstructionScript->AddNode(AttachedNode);
+			AttachedNode->SetParent(ParentComponent);
 		}
 
-		Result.WrittenUIShowComponents.AddUnique(ComponentName.ToString());
+		if (UHTSkeletalMeshComponentBudgeted* Component = Cast<UHTSkeletalMeshComponentBudgeted>(AttachedNode->ComponentTemplate))
+		{
+			ConfigureAttachedPresentationMesh(*Component, AttachedMesh, Target, Result);
+		}
+		else
+		{
+			AddError(Result, FString::Printf(TEXT("Generated presentation component is not HTSkeletalMeshComponentBudgeted for target '%s' mesh '%s'."), *Target.Id, *AttachedMesh.Id));
+		}
+
+		KeptGeneratedNodes.Add(AttachedNode);
+		Result.WrittenPresentationComponents.AddUnique(FString::Printf(
+			TEXT("%s:%s"),
+			*Target.Id,
+			*AttachedNode->GetVariableName().ToString()));
 	}
 
-	FBlueprintEditorUtils::MarkBlueprintAsStructurallyModified(UIShowBlueprint);
-	FKismetEditorUtilities::CompileBlueprint(UIShowBlueprint, EBlueprintCompileOptions::SkipGarbageCollection);
-	SaveAsset(*UIShowBlueprint, Result);
+	TArray<USCS_Node*> StaleGeneratedNodes;
+	for (USCS_Node* Node : SimpleConstructionScript->GetAllNodes())
+	{
+		if (Node
+			&& Node->GetVariableName().ToString().StartsWith(GeneratedPresentationComponentPrefix)
+			&& !KeptGeneratedNodes.Contains(Node))
+		{
+			StaleGeneratedNodes.Add(Node);
+		}
+	}
+	for (USCS_Node* StaleNode : StaleGeneratedNodes)
+	{
+		SimpleConstructionScript->RemoveNode(StaleNode, false);
+	}
+	SimpleConstructionScript->ValidateSceneRootNodes();
+
+	FBlueprintEditorUtils::MarkBlueprintAsStructurallyModified(Blueprint);
+	FKismetEditorUtilities::CompileBlueprint(Blueprint, EBlueprintCompileOptions::SkipGarbageCollection);
+	SaveAsset(*Blueprint, Result);
 }
 
 void AppendPlanIssues(const FNteAppearanceAssemblyPlan& Plan, FNteAppearanceAssemblyWriteResult& Result)
@@ -482,15 +795,26 @@ FNteAppearanceAssemblyWriteResult WriteAppearanceAssembly(
 	{
 		return Result;
 	}
+	if ((Options.bWritePlayerAppearance || Options.bWriteNPCAppearances) && !ValidateAppearanceSchema(Result))
+	{
+		return Result;
+	}
 
 	if (Options.bWritePlayerAppearance)
 	{
 		WritePlayerAppearanceAsset(Plan, Result);
 	}
-
-	if (Options.bSyncPlayerUIShow)
+	if (Options.bWriteNPCAppearances)
 	{
-		SyncPlayerUIShowBlueprint(Plan, Result);
+		WriteNPCAppearanceAssets(Plan, Result);
+	}
+
+	if (Options.bSyncPresentationTargets)
+	{
+		for (const FNteAppearancePresentationTargetPlan& Target : Plan.PresentationTargets)
+		{
+			SyncPresentationTargetBlueprint(Plan, Target, Result);
+		}
 	}
 
 	return Result;
@@ -500,11 +824,11 @@ TSharedRef<FJsonObject> AppearanceAssemblyWriteResultToJson(const FNteAppearance
 {
 	TSharedRef<FJsonObject> Object = MakeShared<FJsonObject>();
 	Object->SetNumberField(TEXT("SavedPackageCount"), Result.SavedPackages.Num());
-	Object->SetNumberField(TEXT("WrittenUIShowComponentCount"), Result.WrittenUIShowComponents.Num());
+	Object->SetNumberField(TEXT("WrittenPresentationComponentCount"), Result.WrittenPresentationComponents.Num());
 	Object->SetNumberField(TEXT("ErrorCount"), Result.Errors.Num());
 	Object->SetNumberField(TEXT("WarningCount"), Result.Warnings.Num());
 	Object->SetArrayField(TEXT("SavedPackages"), Json::StringArrayToJsonValues(Result.SavedPackages));
-	Object->SetArrayField(TEXT("WrittenUIShowComponents"), Json::StringArrayToJsonValues(Result.WrittenUIShowComponents));
+	Object->SetArrayField(TEXT("WrittenPresentationComponents"), Json::StringArrayToJsonValues(Result.WrittenPresentationComponents));
 	Object->SetArrayField(TEXT("Errors"), Json::StringArrayToJsonValues(Result.Errors));
 	Object->SetArrayField(TEXT("Warnings"), Json::StringArrayToJsonValues(Result.Warnings));
 	return Object;

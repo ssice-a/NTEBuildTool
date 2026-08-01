@@ -22,6 +22,7 @@
 #include "Components/PanelWidget.h"
 #include "Components/SceneComponent.h"
 #include "Components/SkinnedMeshComponent.h"
+#include "Components/SkeletalMeshComponent.h"
 #include "Components/TextBlock.h"
 #include "Components/VerticalBox.h"
 #include "Components/VerticalBoxSlot.h"
@@ -824,7 +825,16 @@ UBlueprint* CreateOrLoadAnimBlueprintForHost(
 	}
 
 	const FString ObjectName = FPackageName::GetShortName(BlueprintPath);
-	auto LoadExistingAnimBlueprint = [&AssetResult, &BlueprintPath, &HostMesh](UObject* ExistingAsset) -> UBlueprint*
+	UClass* ExpectedParentClass = Host.HostKind.Equals(TEXT("AttachedMesh"), ESearchCase::IgnoreCase)
+		? NTEBuildTool::Editor::GetAttachedMeshAnimInstanceParentClass()
+		: UAnimInstance::StaticClass();
+	if (!ExpectedParentClass)
+	{
+		AddError(AssetResult, TEXT("Runtime host AnimBlueprint parent class is unavailable."));
+		return nullptr;
+	}
+
+	auto LoadExistingAnimBlueprint = [&AssetResult, &BlueprintPath, &HostMesh, ExpectedParentClass](UObject* ExistingAsset) -> UBlueprint*
 	{
 		UAnimBlueprint* ExistingBlueprint = Cast<UAnimBlueprint>(ExistingAsset);
 		if (!ExistingBlueprint)
@@ -834,6 +844,23 @@ UBlueprint* CreateOrLoadAnimBlueprintForHost(
 				ExistingAsset ? *ExistingAsset->GetClass()->GetPathName() : TEXT("<null>"),
 				*BlueprintPath));
 			return nullptr;
+		}
+		bool bParentChanged = false;
+		FString ParentError;
+		if (!NTEBuildTool::Editor::EnsureBlueprintParentClass(
+			*ExistingBlueprint,
+			*ExpectedParentClass,
+			bParentChanged,
+			ParentError))
+		{
+			AddError(AssetResult, ParentError);
+			return nullptr;
+		}
+		if (bParentChanged)
+		{
+			AssetResult.Actions.Add(FString::Printf(
+				TEXT("reparented runtime host AnimBlueprint to %s"),
+				*ExpectedParentClass->GetPathName()));
 		}
 		AssetResult.bUpdated = true;
 		AssetResult.Actions.Add(FString::Printf(TEXT("loaded existing AnimBlueprint %s"), *BlueprintPath));
@@ -873,7 +900,7 @@ UBlueprint* CreateOrLoadAnimBlueprintForHost(
 
 	UAnimBlueprintFactory* Factory = NewObject<UAnimBlueprintFactory>();
 	Factory->BlueprintType = BPTYPE_Normal;
-	Factory->ParentClass = UAnimInstance::StaticClass();
+	Factory->ParentClass = ExpectedParentClass;
 	Factory->TargetSkeleton = HostMesh.GetSkeleton();
 	Factory->PreviewSkeletalMesh = &HostMesh;
 	Factory->bTemplate = false;
@@ -962,7 +989,7 @@ void AddPlanVariablesToBlueprint(
 		const FString Prefix = MakeActionVariablePrefix(*Action);
 		EnsureBlueprintVariable(Blueprint, FName(*(Prefix + TEXT("_Id"))), MakeStringPinType(), Action->Id, AssetResult);
 		EnsureBlueprintVariable(Blueprint, FName(*(Prefix + TEXT("_Label"))), MakeStringPinType(), Action->Label, AssetResult);
-		EnsureBlueprintVariable(Blueprint, FName(*(Prefix + TEXT("_Type"))), MakeStringPinType(), Action->ActionType, AssetResult);
+		EnsureBlueprintVariable(Blueprint, FName(*(Prefix + TEXT("_Type"))), MakeStringPinType(), RuntimeActionTypeToString(Action->ActionType), AssetResult);
 		EnsureBlueprintVariable(Blueprint, FName(*(Prefix + TEXT("_TargetMeshId"))), MakeStringPinType(), Action->TargetMeshId, AssetResult);
 		EnsureBlueprintVariable(Blueprint, FName(*(Prefix + TEXT("_MaterialSlots"))), MakeStringPinType(), JoinInts(Action->MaterialSlots), AssetResult);
 		EnsureBlueprintVariable(Blueprint, FName(*(Prefix + TEXT("_Enabled"))), MakeBoolPinType(), Action->bDefaultEnabled ? TEXT("true") : TEXT("false"), AssetResult);
@@ -1206,6 +1233,29 @@ UEdGraphPin* AddToggledSaveGameBoolValue(
 	}
 
 	TryLinkPins(CurrentValuePin, FindPinByName(*NotNode, TEXT("A")));
+	return FindPinByName(*NotNode, TEXT("ReturnValue"));
+}
+
+UEdGraphPin* AddToggledRuntimeBoolValue(
+	UEdGraph& Graph,
+	const FName VariableName,
+	const int32 NodePosX,
+	const int32 NodePosY)
+{
+	UFunction* BoolNotFunction = UKismetMathLibrary::StaticClass()->FindFunctionByName(TEXT("Not_PreBool"));
+	if (!BoolNotFunction)
+	{
+		return nullptr;
+	}
+
+	UK2Node_VariableGet* CurrentValueNode = AddRuntimeVariableGetNode(Graph, VariableName, NodePosX, NodePosY);
+	UK2Node_CallFunction* NotNode = AddRuntimeFunctionCallNode(Graph, BoolNotFunction, NodePosX + 620, NodePosY);
+	if (!CurrentValueNode || !NotNode)
+	{
+		return nullptr;
+	}
+
+	TryLinkPins(FindPinByName(*CurrentValueNode, VariableName), FindPinByName(*NotNode, TEXT("A")));
 	return FindPinByName(*NotNode, TEXT("ReturnValue"));
 }
 
@@ -1626,17 +1676,19 @@ void AddRuntimeUiInitializeNodes(
 	}
 
 	UClass* WidgetClass = LoadRuntimeWidgetGeneratedClass(Plan, AssetResult);
-	UClass* SaveGameClass = LoadRuntimeSaveGameGeneratedClass(Plan, AssetResult);
 	UFunction* GetPlayerControllerFunction = UGameplayStatics::StaticClass()->FindFunctionByName(TEXT("GetPlayerController"));
 	UFunction* CreateWidgetFunction = UWidgetBlueprintLibrary::StaticClass()->FindFunctionByName(TEXT("Create"));
 	UFunction* AddToViewportFunction = UUserWidget::StaticClass()->FindFunctionByName(TEXT("AddToViewport"));
-	if (!WidgetClass || !SaveGameClass || !GetPlayerControllerFunction || !CreateWidgetFunction || !AddToViewportFunction)
+	if (!WidgetClass || !GetPlayerControllerFunction || !CreateWidgetFunction || !AddToViewportFunction)
 	{
 		AddError(AssetResult, TEXT("Runtime UI initialize graph could not resolve required UMG functions."));
 		return;
 	}
 
-	UEdGraphPin* SaveVisibleValuePin = AddRuntimeSaveGameVariableValuePin(Graph, SaveGameClass, TEXT("NTE_RuntimeUi_CurrentVisible"), NodePosX, NodePosY + 180);
+	UK2Node_VariableGet* GetDefaultVisibleNode = AddRuntimeVariableGetNode(Graph, TEXT("NTE_RuntimeUi_DefaultVisible"), NodePosX, NodePosY + 180);
+	UEdGraphPin* DefaultVisibleValuePin = GetDefaultVisibleNode
+		? FindPinByName(*GetDefaultVisibleNode, TEXT("NTE_RuntimeUi_DefaultVisible"))
+		: nullptr;
 	UK2Node_VariableSet* SetCurrentVisibleNode = AddRuntimeVariableSetNode(Graph, TEXT("NTE_RuntimeUi_CurrentVisible"), NodePosX + 620, NodePosY);
 	UK2Node_Self* SelfNode = AddRuntimeK2Node<UK2Node_Self>(Graph, NodePosX + 620, NodePosY + 260);
 	UK2Node_CallFunction* GetPlayerControllerNode = AddRuntimeFunctionCallNode(Graph, GetPlayerControllerFunction, NodePosX + 900, NodePosY + 180);
@@ -1646,14 +1698,14 @@ void AddRuntimeUiInitializeNodes(
 	UK2Node_VariableSet* SetWidgetSaveObjectNode = AddRuntimeExternalVariableSetNode(Graph, RuntimeSaveObjectVariableName, WidgetClass, NodePosX + 2260, NodePosY);
 	UK2Node_CallFunction* AddToViewportNode = AddRuntimeFunctionCallNode(Graph, AddToViewportFunction, NodePosX + 2600, NodePosY);
 	UEdGraphPin* RuntimeSaveObjectPin = AddRuntimeSaveObjectValuePin(Graph, NodePosX + 2260, NodePosY + 220);
-	if (!SaveVisibleValuePin || !SetCurrentVisibleNode || !SelfNode || !GetPlayerControllerNode || !CreateWidgetNode || !CastWidgetNode || !SetWidgetNode || !SetWidgetSaveObjectNode || !AddToViewportNode || !RuntimeSaveObjectPin)
+	if (!DefaultVisibleValuePin || !SetCurrentVisibleNode || !SelfNode || !GetPlayerControllerNode || !CreateWidgetNode || !CastWidgetNode || !SetWidgetNode || !SetWidgetSaveObjectNode || !AddToViewportNode || !RuntimeSaveObjectPin)
 	{
 		AddError(AssetResult, TEXT("Runtime UI initialize graph could not create required nodes."));
 		return;
 	}
 
 	TryLinkPins(ExecIn, FindExecPin(*SetCurrentVisibleNode));
-	TryLinkPins(SaveVisibleValuePin, FindPinByName(*SetCurrentVisibleNode, TEXT("NTE_RuntimeUi_CurrentVisible")));
+	TryLinkPins(DefaultVisibleValuePin, FindPinByName(*SetCurrentVisibleNode, TEXT("NTE_RuntimeUi_CurrentVisible")));
 	TryLinkPins(FindThenPin(*SetCurrentVisibleNode), FindExecPin(*CreateWidgetNode));
 
 	if (UEdGraphPin* PlayerIndexPin = FindPinByName(*GetPlayerControllerNode, TEXT("PlayerIndex")))
@@ -1686,10 +1738,10 @@ void AddRuntimeUiInitializeNodes(
 		Graph,
 		FindThenPin(*AddToViewportNode),
 		CastWidgetNode->GetCastResultPin(),
-		SaveVisibleValuePin,
+		DefaultVisibleValuePin,
 		NodePosX + 2940,
 		NodePosY);
-	AssetResult.Actions.Add(TEXT("generated runtime UI initialize graph"));
+	AssetResult.Actions.Add(TEXT("generated runtime UI initialize graph from default visibility"));
 }
 
 void AddRuntimeUiHotkeyNodes(
@@ -1705,12 +1757,6 @@ void AddRuntimeUiHotkeyNodes(
 		return;
 	}
 
-	UClass* SaveGameClass = LoadRuntimeSaveGameGeneratedClass(Plan, AssetResult);
-	if (!SaveGameClass)
-	{
-		return;
-	}
-
 	FRuntimeHotkey Hotkey;
 	if (!ParseRuntimeHotkey(Plan.RuntimeUi.ToggleUiHotkey, Hotkey))
 	{
@@ -1722,11 +1768,10 @@ void AddRuntimeUiHotkeyNodes(
 
 	UEdGraphPin* HotkeyConditionPin = AddHotkeyCondition(Graph, Hotkey, NodePosX, NodePosY);
 	UK2Node_IfThenElse* BranchNode = AddRuntimeK2Node<UK2Node_IfThenElse>(Graph, NodePosX + 1720, NodePosY);
-	UEdGraphPin* NewVisibleValuePin = AddToggledSaveGameBoolValue(Graph, SaveGameClass, TEXT("NTE_RuntimeUi_CurrentVisible"), NodePosX + 1980, NodePosY + 160);
-	UK2Node_VariableSet* SetSaveVisibleNode = AddRuntimeSaveGameVariableSetNode(Graph, SaveGameClass, TEXT("NTE_RuntimeUi_CurrentVisible"), NewVisibleValuePin, NodePosX + 2660, NodePosY);
-	UK2Node_VariableSet* SetVisibleNode = AddSetRuntimeUiCurrentVisibleNode(Graph, NewVisibleValuePin, NodePosX + 3440, NodePosY);
-	UK2Node_VariableGet* GetWidgetNode = AddRuntimeVariableGetNode(Graph, RuntimeUiWidgetVariableName, NodePosX + 3760, NodePosY + 180);
-	if (!HotkeyConditionPin || !BranchNode || !NewVisibleValuePin || !SetSaveVisibleNode || !SetVisibleNode || !GetWidgetNode)
+	UEdGraphPin* NewVisibleValuePin = AddToggledRuntimeBoolValue(Graph, TEXT("NTE_RuntimeUi_CurrentVisible"), NodePosX + 1980, NodePosY + 160);
+	UK2Node_VariableSet* SetVisibleNode = AddSetRuntimeUiCurrentVisibleNode(Graph, NewVisibleValuePin, NodePosX + 2660, NodePosY);
+	UK2Node_VariableGet* GetWidgetNode = AddRuntimeVariableGetNode(Graph, RuntimeUiWidgetVariableName, NodePosX + 2980, NodePosY + 180);
+	if (!HotkeyConditionPin || !BranchNode || !NewVisibleValuePin || !SetVisibleNode || !GetWidgetNode)
 	{
 		AddError(AssetResult, TEXT("Runtime UI hotkey graph could not create required nodes."));
 		return;
@@ -1734,18 +1779,16 @@ void AddRuntimeUiHotkeyNodes(
 
 	TryLinkPins(ExecIn, FindExecPin(*BranchNode));
 	TryLinkPins(HotkeyConditionPin, FindPinByName(*BranchNode, TEXT("Condition")));
-	TryLinkPins(FindThenPin(*BranchNode), FindExecPin(*SetSaveVisibleNode));
-	UEdGraphPin* AfterSaveExec = AddRuntimeSaveGameToSlotNodes(Graph, Plan, FindThenPin(*SetSaveVisibleNode), NodePosX + 3180, NodePosY);
-	TryLinkPins(AfterSaveExec, FindExecPin(*SetVisibleNode));
+	TryLinkPins(FindThenPin(*BranchNode), FindExecPin(*SetVisibleNode));
 	AddRuntimeUiSetVisibilityFromBoolNodes(
 		Graph,
 		FindThenPin(*SetVisibleNode),
 		FindPinByName(*GetWidgetNode, RuntimeUiWidgetVariableName),
 		NewVisibleValuePin,
-		NodePosX + 2960,
+		NodePosX + 3300,
 		NodePosY);
 	AssetResult.Actions.Add(FString::Printf(
-		TEXT("generated runtime UI toggle hotkey graph for %s"),
+		TEXT("generated non-persistent runtime UI toggle hotkey graph for %s"),
 		*Plan.RuntimeUi.ToggleUiHotkey));
 }
 
@@ -1753,6 +1796,39 @@ UK2Node_CallFunction* AddOwningComponentCall(UEdGraph& Graph, const int32 NodePo
 {
 	UFunction* GetOwningComponentFunction = UAnimInstance::StaticClass()->FindFunctionByName(TEXT("GetOwningComponent"));
 	return AddRuntimeFunctionCallNode(Graph, GetOwningComponentFunction, NodePosX, NodePosY);
+}
+
+UEdGraphPin* AddMainMeshPresenceGate(
+	UEdGraph& Graph,
+	UEdGraphPin* ExecIn,
+	const bool bOwningComponentIsMainMesh,
+	const int32 NodePosX,
+	const int32 NodePosY)
+{
+	UK2Node_CallFunction* GetOwningComponentNode = AddOwningComponentCall(Graph, NodePosX, NodePosY + 160);
+	UK2Node_DynamicCast* CastMainMeshNode = AddRuntimeDynamicCastNode(Graph, USkeletalMeshComponent::StaticClass(), NodePosX + 660, NodePosY);
+	if (!ExecIn || !GetOwningComponentNode || !CastMainMeshNode)
+	{
+		return nullptr;
+	}
+
+	TryLinkPins(ExecIn, FindExecPin(*CastMainMeshNode));
+	if (bOwningComponentIsMainMesh)
+	{
+		TryLinkPins(FindPinByName(*GetOwningComponentNode, TEXT("ReturnValue")), FindPinByName(*CastMainMeshNode, UEdGraphSchema_K2::PN_ObjectToCast));
+		return CastMainMeshNode->GetValidCastPin();
+	}
+
+	UFunction* GetAttachParentFunction = USceneComponent::StaticClass()->FindFunctionByName(TEXT("GetAttachParent"));
+	UK2Node_CallFunction* GetAttachParentNode = AddRuntimeFunctionCallNode(Graph, GetAttachParentFunction, NodePosX + 320, NodePosY + 120);
+	if (!GetAttachParentFunction || !GetAttachParentNode)
+	{
+		return nullptr;
+	}
+
+	TryLinkPins(FindPinByName(*GetOwningComponentNode, TEXT("ReturnValue")), FindPinByName(*GetAttachParentNode, TEXT("self")));
+	TryLinkPins(FindPinByName(*GetAttachParentNode, TEXT("ReturnValue")), FindPinByName(*CastMainMeshNode, UEdGraphSchema_K2::PN_ObjectToCast));
+	return CastMainMeshNode->GetValidCastPin();
 }
 
 FString GetFirstTargetComponentTag(const FNteCharacterRuntimeActionPlanItem& Action)
@@ -1938,11 +2014,11 @@ UEdGraphPin* AddRuntimeActionApplyNodes(
 	const int32 NodePosX,
 	const int32 NodePosY)
 {
-	if (Action.ActionType.Equals(TEXT("MaterialSlotVisibility"), ESearchCase::IgnoreCase))
+	if (Action.ActionType == ENteCharacterRuntimeActionType::MaterialSlotVisibility)
 	{
 		return AddMaterialSlotVisibilityApplyNodes(Graph, Action, ExecIn, EnabledValuePin, NodePosX, NodePosY);
 	}
-	if (Action.ActionType.Equals(TEXT("AttachedMeshVisibility"), ESearchCase::IgnoreCase))
+	if (Action.ActionType == ENteCharacterRuntimeActionType::AttachedMeshVisibility)
 	{
 		return AddAttachedMeshVisibilityApplyNodes(Graph, Action, ExecIn, EnabledValuePin, NodePosX, NodePosY);
 	}
@@ -2042,7 +2118,7 @@ bool IsApplySupportedAction(const FNteCharacterRuntimeActionPlanItem& Action, FS
 		OutReason = TEXT("OwnerComponentByTags needs TargetComponentTags or target attached mesh MeshComponentOwnedTags");
 		return false;
 	}
-	if (Action.ActionType.Equals(TEXT("MaterialSlotVisibility"), ESearchCase::IgnoreCase))
+	if (Action.ActionType == ENteCharacterRuntimeActionType::MaterialSlotVisibility)
 	{
 		if (Action.MaterialSlots.IsEmpty())
 		{
@@ -2051,12 +2127,12 @@ bool IsApplySupportedAction(const FNteCharacterRuntimeActionPlanItem& Action, FS
 		}
 		return true;
 	}
-	if (Action.ActionType.Equals(TEXT("AttachedMeshVisibility"), ESearchCase::IgnoreCase))
+	if (Action.ActionType == ENteCharacterRuntimeActionType::AttachedMeshVisibility)
 	{
 		return true;
 	}
 
-	OutReason = FString::Printf(TEXT("action type '%s' is not in the generated execution graph slice"), *Action.ActionType);
+	OutReason = FString::Printf(TEXT("unsupported action type '%s'"), *RuntimeActionTypeToString(Action.ActionType));
 	return false;
 }
 
@@ -2073,6 +2149,7 @@ bool IsHotkeySupportedAction(const FNteCharacterRuntimeActionPlanItem& Action, F
 void AddRuntimeExecutionGraphToAnimBlueprint(
 	UBlueprint& Blueprint,
 	const FNteCharacterRuntimeActionPlan& Plan,
+	const FNteCharacterRuntimeActionHostPlan& Host,
 	const TArray<const FNteCharacterRuntimeActionPlanItem*>& Actions,
 	FNteCharacterRuntimeActionAssetWriteResult& AssetResult)
 {
@@ -2159,8 +2236,18 @@ void AddRuntimeExecutionGraphToAnimBlueprint(
 			return;
 		}
 
-		UK2Node_ExecutionSequence* SequenceNode = AddRuntimeK2Node<UK2Node_ExecutionSequence>(*EventGraph, 260, 0);
-		TryLinkPins(FindThenPin(*UpdateEvent), FindExecPin(*SequenceNode));
+		UK2Node_ExecutionSequence* SequenceNode = AddRuntimeK2Node<UK2Node_ExecutionSequence>(*EventGraph, 600, 0);
+		const bool bOwningComponentIsMainMesh = !Host.HostKind.Equals(TEXT("AttachedMesh"), ESearchCase::IgnoreCase);
+		UEdGraphPin* MainMeshReadyExec = AddMainMeshPresenceGate(*EventGraph, FindThenPin(*UpdateEvent), bOwningComponentIsMainMesh, 20, 0);
+		if (!MainMeshReadyExec)
+		{
+			AddError(AssetResult, TEXT("Could not create main-character mesh presence gate for runtime actions."));
+			return;
+		}
+		TryLinkPins(MainMeshReadyExec, FindExecPin(*SequenceNode));
+		AssetResult.Actions.Add(bOwningComponentIsMainMesh
+			? TEXT("gated runtime hotkeys and UI polling on the owning main SkeletalMeshComponent")
+			: TEXT("gated runtime hotkeys and UI polling on an attached parent SkeletalMeshComponent"));
 
 		for (int32 ActionIndex = 0; ActionIndex < HotkeyActions.Num(); ++ActionIndex)
 		{
@@ -2400,7 +2487,7 @@ FNteCharacterRuntimeActionWriteResult WriteCharacterRuntimeActions(const FNteCha
 			AddRuntimeHostVariablesToBlueprint(*HostBlueprint, Plan, HostResult);
 			if (HostPathUseCount.FindRef(Host.AnimBlueprintPath) == 1)
 			{
-				AddRuntimeExecutionGraphToAnimBlueprint(*HostBlueprint, Plan, HostActions, HostResult);
+				AddRuntimeExecutionGraphToAnimBlueprint(*HostBlueprint, Plan, Host, HostActions, HostResult);
 			}
 			else
 			{

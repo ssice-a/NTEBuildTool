@@ -1,5 +1,7 @@
 # Pakmod Tooling Refactor Plan
 
+> Historical implementation plan. ADR-0002 and `docs/pakmod-project-refactor.md` supersede its CharacterModSpec-first architecture. The checkpoints below remain implementation evidence and must not be read as the target package Interface.
+
 ## Purpose
 
 This document records the refactor plan for bringing the experimental `PhyLab` copy of `NTEBuildTool` back into the standalone plugin without carrying over its coupling and UI fragility.

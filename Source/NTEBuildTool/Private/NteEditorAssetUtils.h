@@ -6,6 +6,8 @@
 #include "AssetRegistry/AssetData.h"
 
 class UMaterialInstanceConstant;
+class UBlueprint;
+class UClass;
 class UObject;
 class USkeletalMesh;
 
@@ -27,6 +29,12 @@ FString TryConvertFilenameToGamePackagePath(const FString& Filename);
 FString GetAssetPackagePath(UObject* Asset);
 UObject* LoadAnyAssetByPath(const FString& AssetPath);
 bool OpenAssetEditorByPath(const FString& AssetPath, FString& OutError);
+UClass* GetAttachedMeshAnimInstanceParentClass();
+bool EnsureBlueprintParentClass(
+	UBlueprint& Blueprint,
+	UClass& ExpectedParentClass,
+	bool& OutChanged,
+	FString& OutError);
 
 template <typename AssetType>
 AssetType* LoadAssetByPath(const FString& AssetPath)

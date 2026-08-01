@@ -11,6 +11,37 @@
 
 namespace NTEBuildTool::Character
 {
+ENteCharacterRuntimeActionType RuntimeActionTypeFromString(const FString& Value)
+{
+	if (Value.Equals(TEXT("MaterialSlotVisibility"), ESearchCase::IgnoreCase))
+	{
+		return ENteCharacterRuntimeActionType::MaterialSlotVisibility;
+	}
+	if (Value.Equals(TEXT("AttachedMeshVisibility"), ESearchCase::IgnoreCase))
+	{
+		return ENteCharacterRuntimeActionType::AttachedMeshVisibility;
+	}
+	return ENteCharacterRuntimeActionType::Invalid;
+}
+
+FString RuntimeActionTypeToString(const ENteCharacterRuntimeActionType Value)
+{
+	switch (Value)
+	{
+	case ENteCharacterRuntimeActionType::MaterialSlotVisibility:
+		return TEXT("MaterialSlotVisibility");
+	case ENteCharacterRuntimeActionType::AttachedMeshVisibility:
+		return TEXT("AttachedMeshVisibility");
+	default:
+		return TEXT("Invalid");
+	}
+}
+
+bool IsSupportedRuntimeActionType(const ENteCharacterRuntimeActionType Value)
+{
+	return Value != ENteCharacterRuntimeActionType::Invalid;
+}
+
 namespace
 {
 constexpr const TCHAR* MainMeshId = TEXT("main");
@@ -32,10 +63,9 @@ const FNteCharacterAttachedMeshSpec* FindAttachedMeshById(const FNteCharacterMod
 	return nullptr;
 }
 
-bool IsFirstSliceRuntimeActionType(const FString& ActionType)
+bool IsFirstSliceRuntimeActionType(const ENteCharacterRuntimeActionType ActionType)
 {
-	return ActionType.Equals(TEXT("AttachedMeshVisibility"), ESearchCase::IgnoreCase)
-		|| ActionType.Equals(TEXT("MaterialSlotVisibility"), ESearchCase::IgnoreCase);
+	return IsSupportedRuntimeActionType(ActionType);
 }
 
 FString NormalizeRuntimeRootPath(FString RootPath)
@@ -83,8 +113,11 @@ FString DeriveModRuntimeRootFromAssetPath(FString AssetPath)
 
 FString DeriveRuntimeRootPath(const FNteCharacterModSpec& Spec)
 {
-	const FString MainAnimDirectory = Spec.MainAnimBlueprintPath.Contains(TEXT("/mod/"), ESearchCase::IgnoreCase)
-		? GetAssetDirectory(Spec.MainAnimBlueprintPath)
+	const FString MainRuntimeAnimPath = !Spec.MainPostProcessAnimBlueprintPath.IsEmpty()
+		? Spec.MainPostProcessAnimBlueprintPath
+		: Spec.MainAnimBlueprintPath;
+	const FString MainAnimDirectory = MainRuntimeAnimPath.Contains(TEXT("/mod/"), ESearchCase::IgnoreCase)
+		? GetAssetDirectory(MainRuntimeAnimPath)
 		: FString();
 	if (!MainAnimDirectory.IsEmpty())
 	{
@@ -270,7 +303,7 @@ FNteCharacterRuntimeActionPlanItem BuildActionPlanItem(
 	FNteCharacterRuntimeActionPlanItem Item;
 	Item.Id = Action.Id;
 	Item.Label = Action.Label;
-	Item.ActionType = Action.ActionType;
+	Item.ActionType = RuntimeActionTypeFromString(Action.ActionType);
 	Item.Hotkey = Action.Hotkey;
 	Item.TargetMeshId = IsMainMeshId(Action.TargetMeshId) ? MainMeshId : Action.TargetMeshId;
 	Item.HostMeshId = IsMainMeshId(Action.HostMeshId) ? MainMeshId : Action.HostMeshId;
@@ -283,7 +316,7 @@ FNteCharacterRuntimeActionPlanItem BuildActionPlanItem(
 	Item.MorphTargetName = Action.MorphTargetName;
 	Item.MorphValue = Action.MorphValue;
 	Item.bDefaultEnabled = Action.bDefaultEnabled;
-	Item.bFirstSliceBlueprintSupported = IsFirstSliceRuntimeActionType(Action.ActionType);
+	Item.bFirstSliceBlueprintSupported = IsFirstSliceRuntimeActionType(Item.ActionType);
 
 	if (Item.TargetMeshId == MainMeshId)
 	{
@@ -306,7 +339,9 @@ FNteCharacterRuntimeActionPlanItem BuildActionPlanItem(
 	{
 		Item.HostKind = TEXT("MainAnimBlueprint");
 		Item.HostMeshPath = Spec.MainMeshPath;
-		Item.HostAnimBlueprintPath = Spec.MainAnimBlueprintPath;
+		Item.HostAnimBlueprintPath = !Spec.MainPostProcessAnimBlueprintPath.IsEmpty()
+			? Spec.MainPostProcessAnimBlueprintPath
+			: Spec.MainAnimBlueprintPath;
 		if (Item.HostAnimBlueprintPath.IsEmpty())
 		{
 			Item.Warnings.Add(TEXT("Runtime action host is main mesh, but MainAnimBlueprintPath is empty."));
@@ -337,12 +372,6 @@ FNteCharacterRuntimeActionPlanItem BuildActionPlanItem(
 			*Item.TargetMeshId));
 	}
 
-	if (!Item.bFirstSliceBlueprintSupported)
-	{
-		Item.Warnings.Add(FString::Printf(
-			TEXT("ActionType '%s' is schema-supported but not part of the first runtime Blueprint generation slice."),
-			*Item.ActionType));
-	}
 	return Item;
 }
 
@@ -351,7 +380,7 @@ TSharedRef<FJsonObject> ActionPlanItemToJson(const FNteCharacterRuntimeActionPla
 	const TSharedRef<FJsonObject> Object = MakeShared<FJsonObject>();
 	AddStringIfNotEmpty(Object, TEXT("Id"), Item.Id);
 	AddStringIfNotEmpty(Object, TEXT("Label"), Item.Label);
-	AddStringIfNotEmpty(Object, TEXT("ActionType"), Item.ActionType);
+	AddStringIfNotEmpty(Object, TEXT("ActionType"), RuntimeActionTypeToString(Item.ActionType));
 	AddStringIfNotEmpty(Object, TEXT("Hotkey"), Item.Hotkey);
 	AddStringIfNotEmpty(Object, TEXT("TargetMeshId"), Item.TargetMeshId);
 	AddStringIfNotEmpty(Object, TEXT("TargetKind"), Item.TargetKind);
@@ -396,11 +425,24 @@ FNteCharacterRuntimeUiPlan BuildRuntimeUiPlan(const FNteCharacterModSpec& Spec)
 	RuntimeUi.ToggleUiHotkey = Spec.RuntimeUi.ToggleUiHotkey;
 	RuntimeUi.Title = Spec.RuntimeUi.Title;
 	RuntimeUi.bDefaultVisible = Spec.RuntimeUi.bDefaultVisible;
+	RuntimeUi.StyleProfileId = Spec.RuntimeUi.StyleProfileId;
 	RuntimeUi.FontPath = Spec.RuntimeUi.FontPath;
 	RuntimeUi.BodyFontTypeface = Spec.RuntimeUi.BodyFontTypeface;
 	RuntimeUi.TitleFontTypeface = Spec.RuntimeUi.TitleFontTypeface;
 	RuntimeUi.BodyFontSize = Spec.RuntimeUi.BodyFontSize;
 	RuntimeUi.TitleFontSize = Spec.RuntimeUi.TitleFontSize;
+	RuntimeUi.ButtonNormalTexturePath = Spec.RuntimeUi.ButtonNormalTexturePath;
+	RuntimeUi.ButtonHoveredTexturePath = Spec.RuntimeUi.ButtonHoveredTexturePath;
+	RuntimeUi.ButtonPressedTexturePath = Spec.RuntimeUi.ButtonPressedTexturePath;
+	RuntimeUi.ButtonDisabledTexturePath = Spec.RuntimeUi.ButtonDisabledTexturePath;
+	if (RuntimeUi.StyleProfileId.Equals(TEXT("NTE.Common.DarkButton"), ESearchCase::IgnoreCase))
+	{
+		if (RuntimeUi.FontPath.IsEmpty()) RuntimeUi.FontPath = TEXT("/Game/Resources/UI/Fonts/Font_All");
+		if (RuntimeUi.ButtonNormalTexturePath.IsEmpty()) RuntimeUi.ButtonNormalTexturePath = TEXT("/Game/UI/UI/Common/Butten/UI_YH_Common_Button03_Normal");
+		if (RuntimeUi.ButtonHoveredTexturePath.IsEmpty()) RuntimeUi.ButtonHoveredTexturePath = TEXT("/Game/UI/UI/Common/Butten/UI_YH_Common_Button03_On");
+		if (RuntimeUi.ButtonPressedTexturePath.IsEmpty()) RuntimeUi.ButtonPressedTexturePath = TEXT("/Game/UI/UI/Common/Butten/UI_YH_Common_Button03_Down");
+		if (RuntimeUi.ButtonDisabledTexturePath.IsEmpty()) RuntimeUi.ButtonDisabledTexturePath = TEXT("/Game/UI/UI/Common/Butten/UI_YH_Common_Button_Receive_Disble");
+	}
 	if (RuntimeUi.bEnableUi && Spec.RuntimeActions.IsEmpty())
 	{
 		RuntimeUi.Warnings.Add(TEXT("Runtime UI is enabled but CharacterModSpec.RuntimeActions is empty; the generated UI would have no action buttons."));
@@ -410,6 +452,23 @@ FNteCharacterRuntimeUiPlan BuildRuntimeUiPlan(const FNteCharacterModSpec& Spec)
 		RuntimeUi.Errors.Add(FString::Printf(
 			TEXT("RuntimeUi.FontPath must be a /Game package path: %s"),
 			*RuntimeUi.FontPath));
+	}
+	const TArray<TPair<FString, FString>> ButtonTexturePaths =
+	{
+		{ TEXT("ButtonNormalTexturePath"), RuntimeUi.ButtonNormalTexturePath },
+		{ TEXT("ButtonHoveredTexturePath"), RuntimeUi.ButtonHoveredTexturePath },
+		{ TEXT("ButtonPressedTexturePath"), RuntimeUi.ButtonPressedTexturePath },
+		{ TEXT("ButtonDisabledTexturePath"), RuntimeUi.ButtonDisabledTexturePath }
+	};
+	for (const TPair<FString, FString>& ButtonTexturePath : ButtonTexturePaths)
+	{
+		if (RuntimeUi.bEnableUi && !ButtonTexturePath.Value.StartsWith(TEXT("/Game/")))
+		{
+			RuntimeUi.Errors.Add(FString::Printf(
+				TEXT("RuntimeUi.%s must be a /Game package path: %s"),
+				*ButtonTexturePath.Key,
+				*ButtonTexturePath.Value));
+		}
 	}
 	return RuntimeUi;
 }
@@ -421,11 +480,16 @@ TSharedRef<FJsonObject> RuntimeUiPlanToJson(const FNteCharacterRuntimeUiPlan& Ru
 	AddStringIfNotEmpty(Object, TEXT("ToggleUiHotkey"), RuntimeUi.ToggleUiHotkey);
 	AddStringIfNotEmpty(Object, TEXT("Title"), RuntimeUi.Title);
 	Object->SetBoolField(TEXT("DefaultVisible"), RuntimeUi.bDefaultVisible);
+	AddStringIfNotEmpty(Object, TEXT("StyleProfileId"), RuntimeUi.StyleProfileId);
 	AddStringIfNotEmpty(Object, TEXT("FontPath"), RuntimeUi.FontPath);
 	AddStringIfNotEmpty(Object, TEXT("BodyFontTypeface"), RuntimeUi.BodyFontTypeface);
 	AddStringIfNotEmpty(Object, TEXT("TitleFontTypeface"), RuntimeUi.TitleFontTypeface);
 	Object->SetNumberField(TEXT("BodyFontSize"), RuntimeUi.BodyFontSize);
 	Object->SetNumberField(TEXT("TitleFontSize"), RuntimeUi.TitleFontSize);
+	AddStringIfNotEmpty(Object, TEXT("ButtonNormalTexturePath"), RuntimeUi.ButtonNormalTexturePath);
+	AddStringIfNotEmpty(Object, TEXT("ButtonHoveredTexturePath"), RuntimeUi.ButtonHoveredTexturePath);
+	AddStringIfNotEmpty(Object, TEXT("ButtonPressedTexturePath"), RuntimeUi.ButtonPressedTexturePath);
+	AddStringIfNotEmpty(Object, TEXT("ButtonDisabledTexturePath"), RuntimeUi.ButtonDisabledTexturePath);
 	Object->SetArrayField(TEXT("Errors"), Json::StringArrayToJsonValues(RuntimeUi.Errors));
 	Object->SetArrayField(TEXT("Warnings"), Json::StringArrayToJsonValues(RuntimeUi.Warnings));
 	return Object;

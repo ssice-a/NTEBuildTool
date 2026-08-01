@@ -12,13 +12,14 @@ struct FNteAppearanceAssemblyPlan;
 struct FNteAppearanceAssemblyWriteOptions
 {
 	bool bWritePlayerAppearance = true;
-	bool bSyncPlayerUIShow = true;
+	bool bWriteNPCAppearances = true;
+	bool bSyncPresentationTargets = true;
 };
 
 struct FNteAppearanceAssemblyWriteResult
 {
 	TArray<FString> SavedPackages;
-	TArray<FString> WrittenUIShowComponents;
+	TArray<FString> WrittenPresentationComponents;
 	TArray<FString> Errors;
 	TArray<FString> Warnings;
 

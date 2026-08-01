@@ -15,9 +15,5 @@ public:
 
 private:
 	void RegisterMenus();
-	void OpenCharacterModWorkspace();
-	void ImportPhysicsAssetFromGameLibrary();
-	void CreateModMaterialInstanceFromGameLibrary();
-	void BuildSelectedAssetsModPackage();
-	void BuildModPackageFromJobJson();
+	void OpenPakmodProject();
 };

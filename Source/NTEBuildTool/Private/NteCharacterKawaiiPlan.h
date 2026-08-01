@@ -28,6 +28,12 @@ struct FNteCharacterKawaiiAdditionalRootBonePlanItem
 	bool bUseOverrideExcludeBones = false;
 };
 
+struct FNteCharacterKawaiiBoneRemapPlanItem
+{
+	FString SourceBone;
+	FString TargetBone;
+};
+
 struct FNteCharacterKawaiiPhysicsSettingsPlanItem
 {
 	float Damping = 0.0f;
@@ -62,9 +68,15 @@ struct FNteCharacterKawaiiPresetPlanItem
 	FString Label;
 	FString TargetMeshId;
 	FString TargetKind;
+	FString SourcePoseStrategy;
 	FString TargetMeshPath;
 	bool bTargetMeshLoaded = false;
 	FString TargetSkeletonPath;
+	TArray<FNteCharacterKawaiiBoneRemapPlanItem> BoneRemaps;
+	TArray<FNteCharacterKawaiiBoneRemapPlanItem> AppliedBoneRemaps;
+	TArray<FNteCharacterKawaiiBoneRemapPlanItem> UnusedBoneRemaps;
+	TArray<FString> UnmappedReferencedBones;
+	TArray<FString> MissingMappedTargetBones;
 	TArray<FString> ReferencedBones;
 	TArray<FString> MissingBones;
 	FString SourceKind;

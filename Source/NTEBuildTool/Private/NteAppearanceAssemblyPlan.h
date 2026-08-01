@@ -9,6 +9,21 @@ namespace NTEBuildTool::Character
 {
 struct FNteCharacterModSpec;
 
+struct FNteAppearancePresentationTargetPlan
+{
+	FString Id;
+	FString BlueprintClassPath;
+	FString ParentMeshComponentName;
+	FString MainAnimInstancePath;
+	bool bConfigureMainMesh = true;
+};
+
+struct FNteNPCAppearanceTargetPlan
+{
+	FString AssetPath;
+	FString MainAnimInstancePath;
+};
+
 struct FNteAppearanceMeshDataPlan
 {
 	FString Id;
@@ -18,7 +33,9 @@ struct FNteAppearanceMeshDataPlan
 	FString MobileAnimInstancePath;
 	FString UIAnimInstancePath;
 	FString SocketName;
+	FString PresentationSocketName;
 	TArray<FString> MeshComponentOwnedTags;
+	TArray<FString> PresentationTargetIds;
 	FVector RelativeLocation = FVector::ZeroVector;
 	FRotator RelativeRotation = FRotator::ZeroRotator;
 	FVector RelativeScale3D = FVector::OneVector;
@@ -29,7 +46,11 @@ struct FNteAppearanceMeshDataPlan
 struct FNteAppearanceAssemblyPlan
 {
 	FString PlayerAppearanceAssetPath;
-	FString UIActorClassPath;
+	TArray<FNteNPCAppearanceTargetPlan> NPCAppearanceTargets;
+	TArray<FNteAppearancePresentationTargetPlan> PresentationTargets;
+	TOptional<float> CapsuleHalfHeight;
+	TOptional<float> CapsuleRadius;
+	TOptional<FVector> RelativeLocation;
 	FNteAppearanceMeshDataPlan MainMesh;
 	TArray<FNteAppearanceMeshDataPlan> AttachedMeshes;
 	TArray<FString> Errors;

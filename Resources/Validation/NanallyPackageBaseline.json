@@ -1,0 +1,26 @@
+{
+  "Format": "NTE.NanallyMergedPostProcessBaseline",
+  "Version": 4,
+  "ModName": "zzzzzzz_nanally_merged_postbp_0731_P",
+  "DeploymentDirectory": "F:/Neverness To Everness/Client/WindowsNoEditor/HT/Content/Paks/Mods/Nanallyshuiyi",
+  "PackageCount": 27,
+  "RequiredPackages": [
+    "/Game/Characters/Player/010_nanally/player_010_nanally_skin",
+    "/Game/Characters/Player/010_nanally/player_010_nanally_skin_Skeleton",
+    "/Game/Characters/Player/010_nanally/mod/Kawaii/Anim/ABP_NTE_main_PostProcess",
+    "/Game/Characters/Player/010_nanally/mod/Kawaii/Anim/BP_NTE_CharacterActionSaveGame",
+    "/Game/Characters/Player/010_nanally/mod/Kawaii/Anim/WBP_NTE_CharacterActions"
+  ],
+  "ExternalPackages": [
+    "/Game/Characters/Player/010_nanally/MeshAsset_Player010",
+    "/Game/Blueprints/Character/NPC/NPC_011/WA/BP_NPC_011_WA008",
+    "/Game/Blueprints/Character/PlayerUIShow/PlayerUIShow_010",
+    "/Game/Characters/Player/010_nanally/animation/Player010_Nanally_AnimBP",
+    "/Game/Characters/Player/010_nanally/animation/Player010_Nanally_UIAnimBP",
+    "/Game/Characters/Npc/NPC_011/NPC_011_AnimBP"
+  ],
+  "RemovedPackages": [
+    "/Game/Characters/Player/010_nanally/mod/Meshes/SM_NTE_Nanally_ExtraPhysics",
+    "/Game/Characters/Player/010_nanally/mod/Kawaii/Anim/ABP_NTE_extra_physics_Kawaii"
+  ]
+}

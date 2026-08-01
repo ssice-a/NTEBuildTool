@@ -9,11 +9,22 @@ namespace NTEBuildTool::Character
 {
 struct FNteCharacterModSpec;
 
+enum class ENteCharacterRuntimeActionType
+{
+	Invalid,
+	MaterialSlotVisibility,
+	AttachedMeshVisibility
+};
+
+ENteCharacterRuntimeActionType RuntimeActionTypeFromString(const FString& Value);
+FString RuntimeActionTypeToString(ENteCharacterRuntimeActionType Value);
+bool IsSupportedRuntimeActionType(ENteCharacterRuntimeActionType Value);
+
 struct FNteCharacterRuntimeActionPlanItem
 {
 	FString Id;
 	FString Label;
-	FString ActionType;
+	ENteCharacterRuntimeActionType ActionType = ENteCharacterRuntimeActionType::Invalid;
 	FString Hotkey;
 	FString TargetMeshId;
 	FString TargetKind;
@@ -54,11 +65,16 @@ struct FNteCharacterRuntimeUiPlan
 	FString ToggleUiHotkey;
 	FString Title;
 	bool bDefaultVisible = false;
+	FString StyleProfileId;
 	FString FontPath;
 	FString BodyFontTypeface;
 	FString TitleFontTypeface;
 	int32 BodyFontSize = 20;
 	int32 TitleFontSize = 24;
+	FString ButtonNormalTexturePath;
+	FString ButtonHoveredTexturePath;
+	FString ButtonPressedTexturePath;
+	FString ButtonDisabledTexturePath;
 	TArray<FString> Errors;
 	TArray<FString> Warnings;
 };

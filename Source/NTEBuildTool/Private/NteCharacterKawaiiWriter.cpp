@@ -6,6 +6,8 @@
 #include "NteJsonFileUtils.h"
 
 #include "AnimGraphNode_Base.h"
+#include "AnimGraphNode_LayeredBoneBlend.h"
+#include "AnimGraphNode_LocalRefPose.h"
 #include "Animation/AnimBlueprint.h"
 #include "Animation/AnimBlueprintGeneratedClass.h"
 #include "Animation/AnimInstance.h"
@@ -40,6 +42,9 @@ constexpr const TCHAR* CapsuleLimitStructPath = TEXT("/Script/KawaiiPhysics.Caps
 constexpr const TCHAR* CollisionLimitBaseStructPath = TEXT("/Script/KawaiiPhysics.CollisionLimitBase");
 constexpr const TCHAR* KawaiiAnimGraphNodeClassPath = TEXT("/Script/KawaiiPhysicsEd.AnimGraphNode_KawaiiPhysics");
 constexpr const TCHAR* CopyPoseAnimGraphNodeClassPath = TEXT("/Script/AnimGraph.AnimGraphNode_CopyPoseFromMesh");
+constexpr const TCHAR* LinkedInputPoseAnimGraphNodeClassPath = TEXT("/Script/AnimGraph.AnimGraphNode_LinkedInputPose");
+constexpr const TCHAR* LocalRefPoseAnimGraphNodeClassPath = TEXT("/Script/AnimGraph.AnimGraphNode_LocalRefPose");
+constexpr const TCHAR* LayeredBoneBlendAnimGraphNodeClassPath = TEXT("/Script/AnimGraph.AnimGraphNode_LayeredBoneBlend");
 constexpr const TCHAR* LocalToComponentAnimGraphNodeClassPath = TEXT("/Script/AnimGraph.AnimGraphNode_LocalToComponentSpace");
 constexpr const TCHAR* ComponentToLocalAnimGraphNodeClassPath = TEXT("/Script/AnimGraph.AnimGraphNode_ComponentToLocalSpace");
 constexpr const TCHAR* RootAnimGraphNodeClassPath = TEXT("/Script/AnimGraph.AnimGraphNode_Root");
@@ -773,6 +778,7 @@ bool ApplyAnimBlueprintSkeleton(
 UAnimBlueprint* CreateOrLoadAnimBlueprint(
 	const FString& BlueprintPath,
 	USkeletalMesh& TargetMesh,
+	const bool bUseAttachedMeshParent,
 	FNteCharacterKawaiiAssetWriteResult& AssetResult)
 {
 	const FString NormalizedPath = NormalizePackagePath(BlueprintPath);
@@ -783,7 +789,7 @@ UAnimBlueprint* CreateOrLoadAnimBlueprint(
 	}
 
 	const FString ObjectName = FPackageName::GetShortName(NormalizedPath);
-	auto LoadExistingAnimBlueprint = [&AssetResult, &NormalizedPath, &TargetMesh](UObject* ExistingAsset) -> UAnimBlueprint*
+	auto LoadExistingAnimBlueprint = [&AssetResult, &NormalizedPath, &TargetMesh, bUseAttachedMeshParent](UObject* ExistingAsset) -> UAnimBlueprint*
 	{
 		UAnimBlueprint* ExistingBlueprint = Cast<UAnimBlueprint>(ExistingAsset);
 		if (!ExistingBlueprint)
@@ -793,6 +799,28 @@ UAnimBlueprint* CreateOrLoadAnimBlueprint(
 				ExistingAsset ? *ExistingAsset->GetClass()->GetPathName() : TEXT("<null>"),
 				*NormalizedPath));
 			return nullptr;
+		}
+		UClass* ExpectedParentClass = bUseAttachedMeshParent
+			? NTEBuildTool::Editor::GetAttachedMeshAnimInstanceParentClass()
+			: UAnimInstance::StaticClass();
+		bool bParentChanged = false;
+		FString ParentError;
+		if (!ExpectedParentClass || !NTEBuildTool::Editor::EnsureBlueprintParentClass(
+			*ExistingBlueprint,
+			*ExpectedParentClass,
+			bParentChanged,
+			ParentError))
+		{
+			AddError(AssetResult, ParentError.IsEmpty()
+				? TEXT("Attached mesh AnimBlueprint parent class is unavailable.")
+				: ParentError);
+			return nullptr;
+		}
+		if (bParentChanged)
+		{
+			AssetResult.Actions.Add(FString::Printf(
+				TEXT("reparented attached AnimBlueprint to %s"),
+				*ExpectedParentClass->GetPathName()));
 		}
 		AssetResult.bUpdated = true;
 		AssetResult.Actions.Add(FString::Printf(TEXT("loaded existing AnimBlueprint %s"), *NormalizedPath));
@@ -831,7 +859,14 @@ UAnimBlueprint* CreateOrLoadAnimBlueprint(
 
 	UAnimBlueprintFactory* Factory = NewObject<UAnimBlueprintFactory>();
 	Factory->BlueprintType = BPTYPE_Normal;
-	Factory->ParentClass = UAnimInstance::StaticClass();
+	Factory->ParentClass = bUseAttachedMeshParent
+		? NTEBuildTool::Editor::GetAttachedMeshAnimInstanceParentClass()
+		: UAnimInstance::StaticClass();
+	if (!Factory->ParentClass)
+	{
+		AddError(AssetResult, TEXT("Attached mesh AnimBlueprint parent class is unavailable."));
+		return nullptr;
+	}
 	Factory->TargetSkeleton = TargetMesh.GetSkeleton();
 	Factory->PreviewSkeletalMesh = &TargetMesh;
 	Factory->bTemplate = false;
@@ -953,6 +988,160 @@ bool TryConnectPosePins(UEdGraphPin* FromPin, UEdGraphPin* ToPin, FNteCharacterK
 	}
 	AddError(AssetResult, FString::Printf(TEXT("Could not connect pose pins for %s."), Description));
 	return false;
+}
+
+bool AnyNodeOfClassLinksToClass(const UEdGraph& Graph, const UClass& SourceClass, const UClass& TargetClass)
+{
+	for (const UEdGraphNode* Node : Graph.Nodes)
+	{
+		if (!Node || !Node->IsA(&SourceClass))
+		{
+			continue;
+		}
+		for (const UEdGraphPin* Pin : Node->Pins)
+		{
+			if (!Pin)
+			{
+				continue;
+			}
+			for (const UEdGraphPin* LinkedPin : Pin->LinkedTo)
+			{
+				if (LinkedPin && LinkedPin->GetOwningNode() && LinkedPin->GetOwningNode()->IsA(&TargetClass))
+				{
+					return true;
+				}
+			}
+		}
+	}
+	return false;
+}
+
+UEdGraphPin* FindLocalPoseInputPinAtIndex(UEdGraphNode& Node, const int32 InputIndex)
+{
+	int32 CurrentIndex = 0;
+	for (UEdGraphPin* Pin : Node.Pins)
+	{
+		if (Pin
+			&& Pin->Direction == EGPD_Input
+			&& UAnimationGraphSchema::IsLocalSpacePosePin(Pin->PinType))
+		{
+			if (CurrentIndex++ == InputIndex)
+			{
+				return Pin;
+			}
+		}
+	}
+	return nullptr;
+}
+
+TArray<FName> CollectKawaiiChainRoots(const TArray<const FNteCharacterKawaiiPresetPlanItem*>& Presets)
+{
+	TArray<FName> Roots;
+	for (const FNteCharacterKawaiiPresetPlanItem* Preset : Presets)
+	{
+		if (!Preset)
+		{
+			continue;
+		}
+		if (!Preset->RootBone.IsEmpty())
+		{
+			Roots.AddUnique(FName(*Preset->RootBone));
+		}
+		for (const FNteCharacterKawaiiAdditionalRootBonePlanItem& AdditionalRoot : Preset->AdditionalRootBones)
+		{
+			if (!AdditionalRoot.RootBone.IsEmpty())
+			{
+				Roots.AddUnique(FName(*AdditionalRoot.RootBone));
+			}
+		}
+	}
+	return Roots;
+}
+
+TArray<FName> ResolveReferencePoseBranchRoots(
+	const USkeletalMesh& TargetMesh,
+	const TArray<const FNteCharacterKawaiiPresetPlanItem*>& Presets,
+	FNteCharacterKawaiiAssetWriteResult* AssetResult = nullptr)
+{
+	const FReferenceSkeleton& ReferenceSkeleton = TargetMesh.GetRefSkeleton();
+	TArray<int32> DirectChildCounts;
+	DirectChildCounts.Init(0, ReferenceSkeleton.GetNum());
+	for (int32 BoneIndex = 0; BoneIndex < ReferenceSkeleton.GetNum(); ++BoneIndex)
+	{
+		const int32 ParentIndex = ReferenceSkeleton.GetParentIndex(BoneIndex);
+		if (DirectChildCounts.IsValidIndex(ParentIndex))
+		{
+			++DirectChildCounts[ParentIndex];
+		}
+	}
+
+	TArray<FName> BranchRoots;
+	for (const FName SimulationRoot : CollectKawaiiChainRoots(Presets))
+	{
+		int32 BranchRootIndex = ReferenceSkeleton.FindBoneIndex(SimulationRoot);
+		if (BranchRootIndex == INDEX_NONE)
+		{
+			if (AssetResult)
+			{
+				AddError(*AssetResult, FString::Printf(
+					TEXT("Post Process reference-pose stabilizer could not resolve Kawaii root %s in %s."),
+					*SimulationRoot.ToString(),
+					*TargetMesh.GetPathName()));
+			}
+			continue;
+		}
+
+		for (;;)
+		{
+			const int32 ParentIndex = ReferenceSkeleton.GetParentIndex(BranchRootIndex);
+			if (!DirectChildCounts.IsValidIndex(ParentIndex) || DirectChildCounts[ParentIndex] != 1)
+			{
+				break;
+			}
+			BranchRootIndex = ParentIndex;
+		}
+
+		BranchRoots.AddUnique(ReferenceSkeleton.GetBoneName(BranchRootIndex));
+	}
+	return BranchRoots;
+}
+
+bool ConfigureCustomChainReferencePoseBlend(
+	UAnimGraphNode_Base& GraphNode,
+	const TArray<FName>& BranchRoots,
+	FNteCharacterKawaiiAssetWriteResult& AssetResult)
+{
+	UAnimGraphNode_LayeredBoneBlend* LayeredBlendNode = Cast<UAnimGraphNode_LayeredBoneBlend>(&GraphNode);
+	if (!LayeredBlendNode)
+	{
+		AddError(AssetResult, TEXT("Reference-pose stabilizer is not a LayeredBoneBlend node."));
+		return false;
+	}
+	if (BranchRoots.IsEmpty())
+	{
+		AddError(AssetResult, TEXT("Post Process Kawaii reference-pose stabilizer has no safe branch roots."));
+		return false;
+	}
+
+	FAnimNode_LayeredBoneBlend& RuntimeNode = LayeredBlendNode->Node;
+	RuntimeNode.BlendMode = ELayeredBoneBlendMode::BranchFilter;
+	RuntimeNode.BlendPoses.SetNum(1);
+	RuntimeNode.BlendWeights.SetNum(1);
+	RuntimeNode.BlendWeights[0] = 1.0f;
+	RuntimeNode.LayerSetup.SetNum(1);
+	RuntimeNode.LayerSetup[0].BranchFilters.Reset();
+	for (const FName BranchRoot : BranchRoots)
+	{
+		FBranchFilter& Filter = RuntimeNode.LayerSetup[0].BranchFilters.AddDefaulted_GetRef();
+		Filter.BoneName = BranchRoot;
+		Filter.BlendDepth = 0;
+	}
+	RuntimeNode.InvalidatePerBoneBlendWeights();
+	LayeredBlendNode->ReconstructNode();
+	AssetResult.Actions.Add(FString::Printf(
+		TEXT("stabilized %d topology-safe Kawaii branch root(s) from target-mesh reference pose"),
+		BranchRoots.Num()));
+	return true;
 }
 
 UAnimGraphNode_Base* AddAnimGraphNodeByClass(
@@ -1202,11 +1391,14 @@ void WriteRuntimeAnimBlueprint(
 	}
 
 	const FNteCharacterKawaiiPresetPlanItem& FirstPreset = *Presets[0];
-	if (!FirstPreset.TargetKind.Equals(TEXT("AttachedMesh"), ESearchCase::IgnoreCase))
+	const bool bMainPostProcess = FirstPreset.SourcePoseStrategy.Equals(TEXT("PostProcessInputPose"), ESearchCase::IgnoreCase);
+	const bool bAttachedCopyPose = FirstPreset.SourcePoseStrategy.Equals(TEXT("AttachedParentCopyPose"), ESearchCase::IgnoreCase);
+	if (!bMainPostProcess && !bAttachedCopyPose)
 	{
 		AddError(AssetResult, FString::Printf(
-			TEXT("Kawaii AnimGraph generation currently supports attached mesh targets only. Preset '%s' targets %s; a main-mesh graph needs an explicit source-pose strategy to avoid replacing the game's character animation."),
+			TEXT("Kawaii preset '%s' has unsupported source pose strategy '%s' for target %s."),
 			*FirstPreset.Id,
+			*FirstPreset.SourcePoseStrategy,
 			*FirstPreset.TargetKind));
 		Result.Errors.Append(AssetResult.Errors);
 		Result.Assets.Add(MoveTemp(AssetResult));
@@ -1227,11 +1419,13 @@ void WriteRuntimeAnimBlueprint(
 				*FirstPreset.TargetMeshPath,
 				*Preset->TargetMeshPath));
 		}
-		if (!Preset->TargetKind.Equals(TEXT("AttachedMesh"), ESearchCase::IgnoreCase))
+		if (!Preset->SourcePoseStrategy.Equals(FirstPreset.SourcePoseStrategy, ESearchCase::IgnoreCase))
 		{
 			AddError(AssetResult, FString::Printf(
-				TEXT("Runtime AnimBlueprint path %s mixes attached and non-attached Kawaii targets."),
-				*RuntimeAnimBlueprintPath));
+				TEXT("Runtime AnimBlueprint path %s mixes source pose strategies %s and %s."),
+				*RuntimeAnimBlueprintPath,
+				*FirstPreset.SourcePoseStrategy,
+				*Preset->SourcePoseStrategy));
 		}
 	}
 	if (!AssetResult.Errors.IsEmpty())
@@ -1241,15 +1435,25 @@ void WriteRuntimeAnimBlueprint(
 		return;
 	}
 
-	UClass* CopyPoseClass = LoadObject<UClass>(nullptr, CopyPoseAnimGraphNodeClassPath);
+	UClass* SourcePoseClass = LoadObject<UClass>(
+		nullptr,
+		bMainPostProcess ? LinkedInputPoseAnimGraphNodeClassPath : CopyPoseAnimGraphNodeClassPath);
+	UClass* LocalRefPoseClass = bMainPostProcess ? LoadObject<UClass>(nullptr, LocalRefPoseAnimGraphNodeClassPath) : nullptr;
+	UClass* LayeredBoneBlendClass = bMainPostProcess ? LoadObject<UClass>(nullptr, LayeredBoneBlendAnimGraphNodeClassPath) : nullptr;
 	UClass* LocalToComponentClass = LoadObject<UClass>(nullptr, LocalToComponentAnimGraphNodeClassPath);
 	UClass* KawaiiClass = LoadObject<UClass>(nullptr, KawaiiAnimGraphNodeClassPath);
 	UClass* ComponentToLocalClass = LoadObject<UClass>(nullptr, ComponentToLocalAnimGraphNodeClassPath);
-	if (!CopyPoseClass || !LocalToComponentClass || !KawaiiClass || !ComponentToLocalClass)
+	if (!SourcePoseClass
+		|| (bMainPostProcess && (!LocalRefPoseClass || !LayeredBoneBlendClass))
+		|| !LocalToComponentClass
+		|| !KawaiiClass
+		|| !ComponentToLocalClass)
 	{
 		AddError(AssetResult, FString::Printf(
-			TEXT("Required AnimGraph node classes are missing. CopyPose=%s LocalToComponent=%s Kawaii=%s ComponentToLocal=%s"),
-			CopyPoseClass ? TEXT("ok") : TEXT("missing"),
+			TEXT("Required AnimGraph node classes are missing. SourcePose=%s LocalRefPose=%s LayeredBoneBlend=%s LocalToComponent=%s Kawaii=%s ComponentToLocal=%s"),
+			SourcePoseClass ? TEXT("ok") : TEXT("missing"),
+			!bMainPostProcess || LocalRefPoseClass ? TEXT("ok") : TEXT("missing"),
+			!bMainPostProcess || LayeredBoneBlendClass ? TEXT("ok") : TEXT("missing"),
 			LocalToComponentClass ? TEXT("ok") : TEXT("missing"),
 			KawaiiClass ? TEXT("ok") : TEXT("missing"),
 			ComponentToLocalClass ? TEXT("ok") : TEXT("missing")));
@@ -1259,7 +1463,9 @@ void WriteRuntimeAnimBlueprint(
 	}
 
 	USkeletalMesh* TargetMesh = LoadTargetSkeletalMesh(FirstPreset, AssetResult);
-	UAnimBlueprint* AnimBlueprint = TargetMesh ? CreateOrLoadAnimBlueprint(RuntimeAnimBlueprintPath, *TargetMesh, AssetResult) : nullptr;
+	UAnimBlueprint* AnimBlueprint = TargetMesh
+		? CreateOrLoadAnimBlueprint(RuntimeAnimBlueprintPath, *TargetMesh, bAttachedCopyPose, AssetResult)
+		: nullptr;
 	UEdGraph* AnimGraph = AnimBlueprint ? EnsureAnimGraph(*AnimBlueprint, AssetResult) : nullptr;
 	if (!AnimBlueprint || !AnimGraph)
 	{
@@ -1293,22 +1499,63 @@ void WriteRuntimeAnimBlueprint(
 		RootInputPin->BreakAllPinLinks();
 	}
 
-	UAnimGraphNode_Base* CopyPoseNode = AddAnimGraphNodeByClass(*AnimGraph, CopyPoseClass, -1120, 0, AssetResult, TEXT("CopyPoseFromMesh"));
-	UAnimGraphNode_Base* LocalToComponentNode = AddAnimGraphNodeByClass(*AnimGraph, LocalToComponentClass, -820, 0, AssetResult, TEXT("LocalToComponentSpace"));
+	UAnimGraphNode_Base* SourcePoseNode = AddAnimGraphNodeByClass(
+		*AnimGraph,
+		SourcePoseClass,
+		bMainPostProcess ? -1480 : -1120,
+		0,
+		AssetResult,
+		bMainPostProcess ? TEXT("PostProcessInputPose") : TEXT("CopyPoseFromMesh"));
+	UAnimGraphNode_Base* LocalRefPoseNode = bMainPostProcess
+		? AddAnimGraphNodeByClass(*AnimGraph, LocalRefPoseClass, -1480, 260, AssetResult, TEXT("LocalRefPose"))
+		: nullptr;
+	UAnimGraphNode_Base* LayeredBoneBlendNode = bMainPostProcess
+		? AddAnimGraphNodeByClass(*AnimGraph, LayeredBoneBlendClass, -1120, 0, AssetResult, TEXT("LayeredBoneBlend"))
+		: nullptr;
+	UAnimGraphNode_Base* LocalToComponentNode = AddAnimGraphNodeByClass(*AnimGraph, LocalToComponentClass, bMainPostProcess ? -760 : -820, 0, AssetResult, TEXT("LocalToComponentSpace"));
 	UAnimGraphNode_Base* ComponentToLocalNode = AddAnimGraphNodeByClass(*AnimGraph, ComponentToLocalClass, 180 + Presets.Num() * 280, 0, AssetResult, TEXT("ComponentToLocalSpace"));
-	if (!CopyPoseNode || !LocalToComponentNode || !ComponentToLocalNode)
+	if (!SourcePoseNode
+		|| (bMainPostProcess && (!LocalRefPoseNode || !LayeredBoneBlendNode))
+		|| !LocalToComponentNode
+		|| !ComponentToLocalNode)
 	{
 		Result.Errors.Append(AssetResult.Errors);
 		Result.Assets.Add(MoveTemp(AssetResult));
 		return;
 	}
 
-	ConfigureCopyPoseNode(*CopyPoseNode, AssetResult);
-	TryConnectPosePins(
-		FindPosePin(*CopyPoseNode, EGPD_Output, false),
-		FindPosePin(*LocalToComponentNode, EGPD_Input, false),
-		AssetResult,
-		TEXT("CopyPoseFromMesh -> LocalToComponent"));
+	if (bAttachedCopyPose)
+	{
+		ConfigureCopyPoseNode(*SourcePoseNode, AssetResult);
+	}
+	if (bMainPostProcess)
+	{
+		const TArray<FName> ReferencePoseBranchRoots = ResolveReferencePoseBranchRoots(*TargetMesh, Presets, &AssetResult);
+		ConfigureCustomChainReferencePoseBlend(*LayeredBoneBlendNode, ReferencePoseBranchRoots, AssetResult);
+		TryConnectPosePins(
+			FindPosePin(*SourcePoseNode, EGPD_Output, false),
+			FindLocalPoseInputPinAtIndex(*LayeredBoneBlendNode, 0),
+			AssetResult,
+			TEXT("PostProcessInputPose -> LayeredBoneBlend.BasePose"));
+		TryConnectPosePins(
+			FindPosePin(*LocalRefPoseNode, EGPD_Output, false),
+			FindLocalPoseInputPinAtIndex(*LayeredBoneBlendNode, 1),
+			AssetResult,
+			TEXT("LocalRefPose -> LayeredBoneBlend.BlendPose_0"));
+		TryConnectPosePins(
+			FindPosePin(*LayeredBoneBlendNode, EGPD_Output, false),
+			FindPosePin(*LocalToComponentNode, EGPD_Input, false),
+			AssetResult,
+			TEXT("LayeredBoneBlend -> LocalToComponent"));
+	}
+	else
+	{
+		TryConnectPosePins(
+			FindPosePin(*SourcePoseNode, EGPD_Output, false),
+			FindPosePin(*LocalToComponentNode, EGPD_Input, false),
+			AssetResult,
+			TEXT("CopyPoseFromMesh -> LocalToComponent"));
+	}
 
 	UEdGraphPin* CurrentComponentPoseOut = FindPosePin(*LocalToComponentNode, EGPD_Output, true);
 	for (int32 PresetIndex = 0; PresetIndex < Presets.Num(); ++PresetIndex)
@@ -1353,8 +1600,32 @@ void WriteRuntimeAnimBlueprint(
 
 	if (AssetResult.Errors.IsEmpty())
 	{
-		AssetResult.Actions.Add(FString::Printf(TEXT("rebuilt attached-mesh Kawaii AnimGraph with %d Kawaii node(s)"), Presets.Num()));
-		CompileAndSaveAnimBlueprint(*AnimBlueprint, Result, AssetResult);
+		AssetResult.Actions.Add(bMainPostProcess
+			? FString::Printf(TEXT("rebuilt main-mesh Post Process AnimGraph with reference-pose-stabilized custom chains and %d Kawaii node(s)"), Presets.Num())
+			: FString::Printf(TEXT("rebuilt attached-mesh Kawaii AnimGraph with %d Kawaii node(s)"), Presets.Num()));
+		if (CompileAndSaveAnimBlueprint(*AnimBlueprint, Result, AssetResult) && bMainPostProcess)
+		{
+			FNteCharacterKawaiiAssetWriteResult MeshResult;
+			MeshResult.AssetPath = FirstPreset.TargetMeshPath;
+			MeshResult.AssetKind = TEXT("MainMeshPostProcessBinding");
+			if (!AnimBlueprint->GeneratedClass)
+			{
+				AddError(MeshResult, TEXT("Compiled Post Process AnimBlueprint has no GeneratedClass."));
+			}
+			else
+			{
+				TargetMesh->Modify();
+				TargetMesh->SetPostProcessAnimBlueprint(TSubclassOf<UAnimInstance>(AnimBlueprint->GeneratedClass));
+				MeshResult.bUpdated = true;
+				MeshResult.Actions.Add(FString::Printf(
+					TEXT("set PostProcessAnimBlueprint to %s"),
+					*AnimBlueprint->GeneratedClass->GetPathName()));
+				SaveAsset(*TargetMesh, Result, MeshResult);
+			}
+			Result.Errors.Append(MeshResult.Errors);
+			Result.Warnings.Append(MeshResult.Warnings);
+			Result.Assets.Add(MoveTemp(MeshResult));
+		}
 	}
 
 	Result.Errors.Append(AssetResult.Errors);
@@ -1552,6 +1823,310 @@ FNteCharacterKawaiiSchemaProbeResult ProbeNteKawaiiSchemaCompatibility()
 	return Result;
 }
 
+FNteCharacterKawaiiAssetPreflightResult ValidateCharacterKawaiiAssetsForPackage(const FNteCharacterKawaiiPlan& Plan)
+{
+	FNteCharacterKawaiiAssetPreflightResult Result;
+	TMap<FString, TArray<const FNteCharacterKawaiiPresetPlanItem*>> PresetsByAnimBlueprint;
+	const auto RequireGeneratedAsset = [&Result](const FString& AssetPath, const FString& Description)
+	{
+		if (AssetPath.IsEmpty())
+		{
+			return;
+		}
+		if (!NTEBuildTool::Editor::LoadAssetByPath<UObject>(NormalizePackagePath(AssetPath)))
+		{
+			Result.Errors.Add(FString::Printf(TEXT("Missing generated %s asset: %s"), *Description, *AssetPath));
+		}
+	};
+
+	for (const FNteCharacterKawaiiPresetPlanItem& Preset : Plan.Presets)
+	{
+		if (!Preset.MissingBones.IsEmpty())
+		{
+			Result.Errors.Add(FString::Printf(
+				TEXT("Kawaii preset '%s' references bones missing from target mesh %s: %s"),
+				*Preset.Id,
+				*Preset.TargetMeshPath,
+				*FString::Join(Preset.MissingBones, TEXT(", "))));
+		}
+		if (Preset.RuntimeAnimBlueprintPath.IsEmpty())
+		{
+			Result.Errors.Add(FString::Printf(TEXT("Kawaii preset '%s' has no RuntimeAnimBlueprintPath."), *Preset.Id));
+		}
+		else
+		{
+			PresetsByAnimBlueprint.FindOrAdd(NormalizePackagePath(Preset.RuntimeAnimBlueprintPath)).Add(&Preset);
+		}
+		RequireGeneratedAsset(Preset.OutputLimitsDataAssetPath, FString::Printf(TEXT("limits for preset '%s'"), *Preset.Id));
+		RequireGeneratedAsset(Preset.OutputBoneConstraintsDataAssetPath, FString::Printf(TEXT("bone constraints for preset '%s'"), *Preset.Id));
+		for (const FNteCharacterKawaiiCurvePlanItem& Curve : Preset.Curves)
+		{
+			RequireGeneratedAsset(Curve.OutputCurvePath, FString::Printf(TEXT("curve '%s' for preset '%s'"), *Curve.CurveKind, *Preset.Id));
+		}
+	}
+
+	UClass* CopyPoseClass = LoadObject<UClass>(nullptr, CopyPoseAnimGraphNodeClassPath);
+	UClass* LinkedInputPoseClass = LoadObject<UClass>(nullptr, LinkedInputPoseAnimGraphNodeClassPath);
+	UClass* LocalRefPoseClass = LoadObject<UClass>(nullptr, LocalRefPoseAnimGraphNodeClassPath);
+	UClass* LayeredBoneBlendClass = LoadObject<UClass>(nullptr, LayeredBoneBlendAnimGraphNodeClassPath);
+	UClass* LocalToComponentClass = LoadObject<UClass>(nullptr, LocalToComponentAnimGraphNodeClassPath);
+	UClass* KawaiiClass = LoadObject<UClass>(nullptr, KawaiiAnimGraphNodeClassPath);
+	if (!CopyPoseClass || !LinkedInputPoseClass || !LocalRefPoseClass || !LayeredBoneBlendClass || !LocalToComponentClass || !KawaiiClass)
+	{
+		Result.Errors.Add(TEXT("Kawaii package preflight could not load required source-pose, reference-pose blend, or KawaiiPhysics graph node classes."));
+		return Result;
+	}
+
+	for (const TPair<FString, TArray<const FNteCharacterKawaiiPresetPlanItem*>>& Pair : PresetsByAnimBlueprint)
+	{
+		UAnimBlueprint* AnimBlueprint = NTEBuildTool::Editor::LoadAssetByPath<UAnimBlueprint>(Pair.Key);
+		if (!AnimBlueprint)
+		{
+			Result.Errors.Add(FString::Printf(TEXT("Missing generated Kawaii Runtime AnimBlueprint: %s"), *Pair.Key));
+			continue;
+		}
+		Result.CheckedAnimBlueprints.AddUnique(Pair.Key);
+		if (AnimBlueprint->Status == BS_Error)
+		{
+			Result.Errors.Add(FString::Printf(TEXT("Generated Kawaii Runtime AnimBlueprint has compile errors: %s"), *Pair.Key));
+		}
+
+		UEdGraph* AnimGraph = nullptr;
+		for (UEdGraph* Graph : AnimBlueprint->FunctionGraphs)
+		{
+			if (Graph && Graph->GetFName() == UEdGraphSchema_K2::GN_AnimGraph)
+			{
+				AnimGraph = Graph;
+				break;
+			}
+		}
+		if (!AnimGraph)
+		{
+			Result.Errors.Add(FString::Printf(TEXT("Generated Kawaii Runtime AnimBlueprint has no AnimGraph: %s"), *Pair.Key));
+			continue;
+		}
+
+		int32 CopyPoseCount = 0;
+		int32 LinkedInputPoseCount = 0;
+		int32 LocalRefPoseCount = 0;
+		int32 LayeredBoneBlendCount = 0;
+		int32 KawaiiCount = 0;
+		UAnimGraphNode_LayeredBoneBlend* ReferencePoseBlendNode = nullptr;
+		for (UEdGraphNode* Node : AnimGraph->Nodes)
+		{
+			if (!Node)
+			{
+				continue;
+			}
+			if (Node->IsA(CopyPoseClass))
+			{
+				++CopyPoseCount;
+				void* NodeContainer = nullptr;
+				UScriptStruct* NodeStruct = nullptr;
+				if (!GetAnimNodeStructContainer(*Node, NodeContainer, NodeStruct))
+				{
+					Result.Errors.Add(FString::Printf(TEXT("CopyPoseFromMesh node has no reflected Node struct: %s"), *Pair.Key));
+					continue;
+				}
+				const FBoolProperty* UseAttachedParentProperty = FindFProperty<FBoolProperty>(NodeStruct, TEXT("bUseAttachedParent"));
+				if (!UseAttachedParentProperty || !UseAttachedParentProperty->GetPropertyValue_InContainer(NodeContainer))
+				{
+					Result.Errors.Add(FString::Printf(TEXT("CopyPoseFromMesh.bUseAttachedParent is not true: %s"), *Pair.Key));
+				}
+			}
+			else if (Node->IsA(LinkedInputPoseClass))
+			{
+				++LinkedInputPoseCount;
+			}
+			else if (Node->IsA(LocalRefPoseClass))
+			{
+				++LocalRefPoseCount;
+			}
+			else if (Node->IsA(LayeredBoneBlendClass))
+			{
+				++LayeredBoneBlendCount;
+				ReferencePoseBlendNode = Cast<UAnimGraphNode_LayeredBoneBlend>(Node);
+			}
+			else if (Node->IsA(KawaiiClass))
+			{
+				++KawaiiCount;
+			}
+		}
+
+		const bool bMainPostProcess = Pair.Value[0]->SourcePoseStrategy.Equals(TEXT("PostProcessInputPose"), ESearchCase::IgnoreCase);
+		const int32 ExpectedCopyPoseCount = bMainPostProcess ? 0 : 1;
+		const int32 ExpectedLinkedInputPoseCount = bMainPostProcess ? 1 : 0;
+		const int32 ExpectedReferencePoseNodeCount = bMainPostProcess ? 1 : 0;
+		if (CopyPoseCount != ExpectedCopyPoseCount)
+		{
+			Result.Errors.Add(FString::Printf(TEXT("Expected %d CopyPoseFromMesh node(s) in %s, found %d."), ExpectedCopyPoseCount, *Pair.Key, CopyPoseCount));
+		}
+		if (LinkedInputPoseCount != ExpectedLinkedInputPoseCount)
+		{
+			Result.Errors.Add(FString::Printf(TEXT("Expected %d LinkedInputPose node(s) in %s, found %d."), ExpectedLinkedInputPoseCount, *Pair.Key, LinkedInputPoseCount));
+		}
+		if (LocalRefPoseCount != ExpectedReferencePoseNodeCount)
+		{
+			Result.Errors.Add(FString::Printf(TEXT("Expected %d LocalRefPose node(s) in %s, found %d."), ExpectedReferencePoseNodeCount, *Pair.Key, LocalRefPoseCount));
+		}
+		if (LayeredBoneBlendCount != ExpectedReferencePoseNodeCount)
+		{
+			Result.Errors.Add(FString::Printf(TEXT("Expected %d LayeredBoneBlend node(s) in %s, found %d."), ExpectedReferencePoseNodeCount, *Pair.Key, LayeredBoneBlendCount));
+		}
+		if (KawaiiCount != Pair.Value.Num())
+		{
+			Result.Errors.Add(FString::Printf(
+				TEXT("Expected %d KawaiiPhysics node(s) in %s, found %d."),
+				Pair.Value.Num(),
+				*Pair.Key,
+				KawaiiCount));
+		}
+		if (bMainPostProcess)
+		{
+			if (!AnyNodeOfClassLinksToClass(*AnimGraph, *LinkedInputPoseClass, *LayeredBoneBlendClass)
+				|| !AnyNodeOfClassLinksToClass(*AnimGraph, *LocalRefPoseClass, *LayeredBoneBlendClass)
+				|| !AnyNodeOfClassLinksToClass(*AnimGraph, *LayeredBoneBlendClass, *LocalToComponentClass))
+			{
+				Result.Errors.Add(FString::Printf(
+					TEXT("Post Process reference-pose stabilizer is not fully connected in %s."),
+					*Pair.Key));
+			}
+			USkeletalMesh* MainMesh = NTEBuildTool::Editor::LoadAssetByPath<USkeletalMesh>(Pair.Value[0]->TargetMeshPath);
+			const TArray<FName> ExpectedBranchRoots = MainMesh
+				? ResolveReferencePoseBranchRoots(*MainMesh, Pair.Value)
+				: TArray<FName>();
+			TArray<FName> ActualChainRoots;
+			if (ReferencePoseBlendNode && ReferencePoseBlendNode->Node.LayerSetup.Num() == 1)
+			{
+				for (const FBranchFilter& Filter : ReferencePoseBlendNode->Node.LayerSetup[0].BranchFilters)
+				{
+					if (Filter.BlendDepth != 0)
+					{
+						Result.Errors.Add(FString::Printf(TEXT("Reference-pose branch %s in %s must use BlendDepth=0."), *Filter.BoneName.ToString(), *Pair.Key));
+					}
+					ActualChainRoots.AddUnique(Filter.BoneName);
+				}
+			}
+			if (ActualChainRoots != ExpectedBranchRoots)
+			{
+				Result.Errors.Add(FString::Printf(
+					TEXT("Reference-pose branch roots in %s do not match the topology-safe Kawaii anchors. Expected [%s], found [%s]."),
+					*Pair.Key,
+					*FString::JoinBy(ExpectedBranchRoots, TEXT(", "), [](const FName Name) { return Name.ToString(); }),
+					*FString::JoinBy(ActualChainRoots, TEXT(", "), [](const FName Name) { return Name.ToString(); })));
+			}
+			if (!MainMesh || MainMesh->GetPostProcessAnimBlueprint() != AnimBlueprint->GeneratedClass)
+			{
+				Result.Errors.Add(FString::Printf(
+					TEXT("Main mesh %s is not bound to generated Post Process AnimBlueprint %s."),
+					*Pair.Value[0]->TargetMeshPath,
+					*Pair.Key));
+			}
+		}
+	}
+
+	Result.CheckedAnimBlueprints.Sort();
+	return Result;
+}
+
+FNteCharacterKawaiiWriteResult WriteAttachedMeshCopyPoseAnimBlueprint(
+	const FString& RuntimeAnimBlueprintPath,
+	const FString& TargetMeshPath)
+{
+	FNteCharacterKawaiiWriteResult Result;
+	FNteCharacterKawaiiAssetWriteResult AssetResult;
+	AssetResult.AssetPath = RuntimeAnimBlueprintPath;
+	AssetResult.AssetKind = TEXT("AttachedMeshCopyPoseAnimBlueprint");
+
+	USkeletalMesh* TargetMesh = NTEBuildTool::Editor::LoadAssetByPath<USkeletalMesh>(TargetMeshPath);
+	if (!TargetMesh)
+	{
+		AddError(AssetResult, FString::Printf(TEXT("Attached mesh could not be loaded: %s"), *TargetMeshPath));
+	}
+	else if (!TargetMesh->GetSkeleton())
+	{
+		AddError(AssetResult, FString::Printf(TEXT("Attached mesh has no Skeleton: %s"), *TargetMeshPath));
+	}
+
+	UClass* CopyPoseClass = LoadObject<UClass>(nullptr, CopyPoseAnimGraphNodeClassPath);
+	if (!CopyPoseClass)
+	{
+		AddError(AssetResult, TEXT("CopyPoseFromMesh AnimGraph node class is missing."));
+	}
+
+	UAnimBlueprint* AnimBlueprint = TargetMesh && AssetResult.Errors.IsEmpty()
+		? CreateOrLoadAnimBlueprint(RuntimeAnimBlueprintPath, *TargetMesh, true, AssetResult)
+		: nullptr;
+	UEdGraph* AnimGraph = AnimBlueprint ? EnsureAnimGraph(*AnimBlueprint, AssetResult) : nullptr;
+	if (AnimGraph)
+	{
+		UAnimGraphNode_Base* RootNode = FindAnimGraphRootNode(*AnimGraph);
+		if (!RootNode)
+		{
+			if (const UEdGraphSchema* Schema = AnimGraph->GetSchema())
+			{
+				Schema->CreateDefaultNodesForGraph(*AnimGraph);
+			}
+			RootNode = FindAnimGraphRootNode(*AnimGraph);
+		}
+
+		if (!RootNode)
+		{
+			AddError(AssetResult, TEXT("AnimGraph has no root/output pose node."));
+		}
+		else
+		{
+			TArray<UEdGraphNode*> NodesToRemove;
+			for (UEdGraphNode* Node : AnimGraph->Nodes)
+			{
+				if (Node && Node != RootNode)
+				{
+					NodesToRemove.Add(Node);
+				}
+			}
+			for (UEdGraphNode* Node : NodesToRemove)
+			{
+				FBlueprintEditorUtils::RemoveNode(AnimBlueprint, Node, true);
+			}
+
+			RootNode->NodePosX = 220;
+			RootNode->NodePosY = 0;
+			if (UEdGraphPin* RootInputPin = FindPosePin(*RootNode, EGPD_Input, false))
+			{
+				RootInputPin->BreakAllPinLinks();
+			}
+
+			UAnimGraphNode_Base* CopyPoseNode = AddAnimGraphNodeByClass(
+				*AnimGraph,
+				CopyPoseClass,
+				-120,
+				0,
+				AssetResult,
+				TEXT("CopyPoseFromMesh"));
+			if (CopyPoseNode)
+			{
+				ConfigureCopyPoseNode(*CopyPoseNode, AssetResult);
+				TryConnectPosePins(
+					FindPosePin(*CopyPoseNode, EGPD_Output, false),
+					FindPosePin(*RootNode, EGPD_Input, false),
+					AssetResult,
+					TEXT("CopyPoseFromMesh -> OutputPose"));
+			}
+		}
+	}
+
+	if (AnimBlueprint && AssetResult.Errors.IsEmpty())
+	{
+		AssetResult.Actions.Add(TEXT("rebuilt attached-mesh AnimGraph with CopyPoseFromMesh only"));
+		CompileAndSaveAnimBlueprint(*AnimBlueprint, Result, AssetResult);
+	}
+
+	Result.Errors.Append(AssetResult.Errors);
+	Result.Warnings.Append(AssetResult.Warnings);
+	Result.Assets.Add(MoveTemp(AssetResult));
+	return Result;
+}
+
 FNteCharacterKawaiiWriteResult WriteCharacterKawaiiAssets(const FNteCharacterKawaiiPlan& Plan)
 {
 	FNteCharacterKawaiiWriteResult Result;
@@ -1568,6 +2143,11 @@ FNteCharacterKawaiiWriteResult WriteCharacterKawaiiAssets(const FNteCharacterKaw
 		Result.Errors.Append(Plan.Errors);
 		return Result;
 	}
+	if (!Result.SchemaProbe.bNteCompatible)
+	{
+		Result.Errors.Append(Result.SchemaProbe.Errors);
+		return Result;
+	}
 
 	for (const FNteCharacterKawaiiPresetPlanItem& Preset : Plan.Presets)
 	{
@@ -1575,12 +2155,6 @@ FNteCharacterKawaiiWriteResult WriteCharacterKawaiiAssets(const FNteCharacterKaw
 		{
 			WriteCurveAsset(Curve, Result);
 		}
-	}
-
-	if (!Result.SchemaProbe.bNteCompatible)
-	{
-		Result.Errors.Append(Result.SchemaProbe.Errors);
-		return Result;
 	}
 
 	UClass* LimitsDataAssetClass = LoadObject<UClass>(nullptr, LimitsDataAssetClassPath);

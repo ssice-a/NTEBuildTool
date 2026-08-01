@@ -59,10 +59,16 @@ function Add-CookedFilesForPackage {
     )
 
     $relativeContentPath = Convert-PackageToContentPath $PackageName
-    # IoStore resolves export data for package assets from the cooked package store.
-    # Adding .uexp as a loose response entry makes UnrealPak warn and can produce
-    # containers where the package export serial size no longer matches at load time.
-    $extensions = @(".uasset", ".ubulk", ".uptnl")
+	# IoStore resolves export data for package assets from the cooked package store.
+	# Adding .uexp as a loose response entry makes UnrealPak warn and can produce
+	# containers where the package export serial size no longer matches at load time.
+	$primaryRelative = Convert-ToCookedRelativePath $ProjectName ($relativeContentPath + ".uasset")
+	$primaryPath = Join-Path $CookedRoot $primaryRelative
+	if (-not (Test-Path -LiteralPath $primaryPath)) {
+		throw "Cook did not produce the required primary asset for package '$PackageName': $primaryPath"
+	}
+
+	$extensions = @(".uasset", ".ubulk", ".uptnl")
 
     foreach ($extension in $extensions) {
         $sourceRelative = Convert-ToCookedRelativePath $ProjectName ($relativeContentPath + $extension)
@@ -199,11 +205,6 @@ if ($mode -ne "PackOnly" -and -not $jobSkipCook) {
     }
 }
 
-if ($mode -eq "CookOnly") {
-    Write-Host "CookOnly mode finished."
-    exit 0
-}
-
 $candidateCookRoots = @(
     (Join-Path $cookOutput "Windows"),
     $cookOutput
@@ -219,6 +220,19 @@ foreach ($candidateCookRoot in $candidateCookRoots) {
 
 if ([string]::IsNullOrWhiteSpace($cookPlatformRoot)) {
     throw "Cooked project content directory not found under: $cookOutput"
+}
+
+if ($mode -eq "CookOnly") {
+    foreach ($package in $packages) {
+        $relativeContentPath = Convert-PackageToContentPath $package
+        $primaryRelative = Convert-ToCookedRelativePath $projectName ($relativeContentPath + ".uasset")
+        $primaryPath = Join-Path $cookPlatformRoot $primaryRelative
+        if (-not (Test-Path -LiteralPath $primaryPath)) {
+            throw "CookOnly did not produce the required primary asset for package '$package': $primaryPath"
+        }
+    }
+    Write-Host "CookOnly mode finished."
+    exit 0
 }
 
 $responseLines = [System.Collections.Generic.List[string]]::new()

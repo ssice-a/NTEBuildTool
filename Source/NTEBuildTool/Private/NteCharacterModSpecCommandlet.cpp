@@ -14,6 +14,7 @@
 #include "NteCharacterModSpec.h"
 #include "NteCharacterRuntimeActionPlan.h"
 #include "NteCharacterRuntimeActionWriter.h"
+#include "NteCurveFloatJsonImporter.h"
 #include "NteJsonFileUtils.h"
 #include "NteModPackageJob.h"
 #include "NteModPackagePlan.h"
@@ -42,13 +43,16 @@ TSharedRef<FJsonObject> MakeSpecSummaryObject(const NTEBuildTool::Character::FNt
 	Object->SetStringField(TEXT("WorkspaceName"), Spec.WorkspaceName);
 	Object->SetStringField(TEXT("MainMeshPath"), Spec.MainMeshPath);
 	Object->SetStringField(TEXT("PlayerAppearanceAssetPath"), Spec.Appearance.PlayerAppearanceAssetPath);
+	Object->SetNumberField(TEXT("NPCAppearanceTargetCount"), Spec.Appearance.NPCAppearanceTargets.Num());
 	Object->SetStringField(TEXT("UIActorClassPath"), Spec.Appearance.UIActorClassPath);
+	Object->SetNumberField(TEXT("PresentationTargetCount"), Spec.Appearance.PresentationTargets.Num());
 	Object->SetNumberField(TEXT("AttachedMeshCount"), Spec.AttachedMeshes.Num());
 	Object->SetNumberField(TEXT("MaterialOperationCount"), Spec.MaterialOperations.Num());
 	Object->SetNumberField(TEXT("RuntimeActionCount"), Spec.RuntimeActions.Num());
 	Object->SetNumberField(TEXT("KawaiiPresetCount"), Spec.KawaiiPresets.Num());
 	Object->SetStringField(TEXT("ModName"), Spec.Package.ModName);
 	Object->SetStringField(TEXT("ModsDir"), Spec.Package.ModsDir);
+	Object->SetNumberField(TEXT("PackageAssetIntentCount"), Spec.Package.Assets.Num());
 	return Object;
 }
 
@@ -68,6 +72,16 @@ TSharedRef<FJsonObject> PackagePlanToJson(const NTEBuildTool::Package::FNtePacka
 	Object->SetNumberField(TEXT("CandidateCount"), Plan.Candidates.Num());
 	Object->SetArrayField(TEXT("Candidates"), Candidates);
 	Object->SetArrayField(TEXT("IncludedPackages"), StringArrayToJsonValues(NTEBuildTool::Package::GetIncludedPackageNames(Plan)));
+	return Object;
+}
+
+TSharedRef<FJsonObject> PackagePreflightToJson(const NTEBuildTool::Package::FNteCharacterPackagePreflight& Preflight)
+{
+	const TSharedRef<FJsonObject> Object = MakeShared<FJsonObject>();
+	Object->SetBoolField(TEXT("Ready"), !Preflight.HasErrors());
+	Object->SetArrayField(TEXT("RequiredPackages"), StringArrayToJsonValues(Preflight.RequiredPackages));
+	Object->SetArrayField(TEXT("Errors"), StringArrayToJsonValues(Preflight.Errors));
+	Object->SetArrayField(TEXT("Warnings"), StringArrayToJsonValues(Preflight.Warnings));
 	return Object;
 }
 
@@ -115,6 +129,15 @@ TArray<TSharedPtr<FJsonValue>> KawaiiAssetSyncResultsToJsonValues(const TArray<N
 	}
 	return Values;
 }
+
+TSharedRef<FJsonObject> CurveFloatImportResultToJson(const NTEBuildTool::Character::FNteCurveFloatJsonImportResult& Result)
+{
+	const TSharedRef<FJsonObject> Object = MakeShared<FJsonObject>();
+	Object->SetArrayField(TEXT("SavedPackages"), StringArrayToJsonValues(Result.SavedPackages));
+	Object->SetArrayField(TEXT("Warnings"), StringArrayToJsonValues(Result.Warnings));
+	Object->SetArrayField(TEXT("Errors"), StringArrayToJsonValues(Result.Errors));
+	return Object;
+}
 }
 
 UNteCharacterModSpecCommandlet::UNteCharacterModSpecCommandlet()
@@ -126,7 +149,7 @@ UNteCharacterModSpecCommandlet::UNteCharacterModSpecCommandlet()
 	ShowErrorCount = true;
 	UseCommandletResultAsExitCode = true;
 	HelpDescription = TEXT("Validates an NTE CharacterModSpec JSON and writes a report.");
-	HelpUsage = TEXT("UnrealEditor-Cmd.exe <Project>.uproject -run=NteCharacterModSpec -Spec=<json> [-Output=<json>] [-ImportKawaiiJson=<fmodel anim layer json>] [-KawaiiTargetMeshId=<mesh id>] [-KawaiiPresetPrefix=<prefix>] [-NoReplaceKawaiiPresets] [-SyncKawaiiFromAssets] [-KawaiiPresetId=<id>] [-WriteUpdatedSpec=<json>|-SaveSpec] [-ApplyAppearance] [-ApplyMaterials] [-ApplyRuntimeActions] [-ApplyKawaii] [-WritePackageJob] [-BuildPackage] [-FailOnWarnings]");
+	HelpUsage = TEXT("UnrealEditor-Cmd.exe <Project>.uproject -run=NteCharacterModSpec -Spec=<json> [-ImportCurveJson=<fmodel curve json;...>] [-Output=<json>] [-ImportKawaiiJson=<fmodel anim layer json>] [-KawaiiTargetMeshId=<mesh id>] [-KawaiiPresetPrefix=<prefix>] [-NoReplaceKawaiiPresets] [-SyncKawaiiFromAssets] [-KawaiiPresetId=<id>] [-WriteUpdatedSpec=<json>|-SaveSpec] [-ApplyAppearance] [-ApplyMaterials] [-ApplyRuntimeActions] [-ApplyKawaii] [-WritePackageJob] [-BuildPackage] [-FailOnWarnings]");
 }
 
 int32 UNteCharacterModSpecCommandlet::Main(const FString& Params)
@@ -146,6 +169,16 @@ int32 UNteCharacterModSpecCommandlet::Main(const FString& Params)
 		UE_LOG(LogNTEBuildTool, Error, TEXT("CharacterModSpec could not be read: %s"), *Error);
 		return 2;
 	}
+
+	FString ImportCurveJsonList;
+	const bool bImportCurveJson = FParse::Value(*Params, TEXT("ImportCurveJson="), ImportCurveJsonList);
+	TArray<FString> ImportCurveJsonFiles;
+	if (bImportCurveJson)
+	{
+		ImportCurveJsonList.ParseIntoArray(ImportCurveJsonFiles, TEXT(";"), true);
+	}
+	const NTEBuildTool::Character::FNteCurveFloatJsonImportResult CurveFloatImportResult =
+		NTEBuildTool::Character::ImportCurveFloatAssetsFromFModelJsonFiles(ImportCurveJsonFiles);
 
 	FString ImportKawaiiJson;
 	const bool bImportKawaiiJson = FParse::Value(*Params, TEXT("ImportKawaiiJson="), ImportKawaiiJson);
@@ -242,6 +275,11 @@ int32 UNteCharacterModSpecCommandlet::Main(const FString& Params)
 
 	NTEBuildTool::Character::FNteCharacterModSpecValidationResult Validation =
 		NTEBuildTool::Character::ValidateCharacterModSpec(Spec);
+	if (bImportCurveJson)
+	{
+		Validation.Errors.Append(CurveFloatImportResult.Errors);
+		Validation.Warnings.Append(CurveFloatImportResult.Warnings);
+	}
 	if (bImportKawaiiJson)
 	{
 		Validation.Errors.Append(KawaiiImportResult.Errors);
@@ -264,20 +302,7 @@ int32 UNteCharacterModSpecCommandlet::Main(const FString& Params)
 		NTEBuildTool::Character::BuildCharacterRuntimeActionPlanFromSpec(Spec);
 	const NTEBuildTool::Character::FNteCharacterKawaiiPlan KawaiiPlan =
 		NTEBuildTool::Character::BuildCharacterKawaiiPlanFromSpec(Spec);
-	TArray<FString> PackageSeeds = NTEBuildTool::Character::CollectCharacterModSpecPackageSeeds(Spec);
-	for (const FString& MaterialSeed : NTEBuildTool::Character::CollectCharacterMaterialPlanPackageSeeds(MaterialPlan))
-	{
-		PackageSeeds.AddUnique(MaterialSeed);
-	}
-	for (const FString& RuntimeSeed : NTEBuildTool::Character::CollectCharacterRuntimeActionPlanPackageSeeds(RuntimeActionPlan))
-	{
-		PackageSeeds.AddUnique(RuntimeSeed);
-	}
-	for (const FString& KawaiiSeed : NTEBuildTool::Character::CollectCharacterKawaiiPlanPackageSeeds(KawaiiPlan))
-	{
-		PackageSeeds.AddUnique(KawaiiSeed);
-	}
-	PackageSeeds.Sort();
+	const TArray<FString> PackageSeeds = NTEBuildTool::Package::CollectEffectiveCharacterPackageSeeds(Spec);
 	const bool bApplyAppearance = FParse::Param(*Params, TEXT("ApplyAppearance"));
 	NTEBuildTool::Character::FNteAppearanceAssemblyWriteResult AppearanceWriteResult;
 	if (bApplyAppearance && !Validation.HasErrors())
@@ -308,14 +333,25 @@ int32 UNteCharacterModSpecCommandlet::Main(const FString& Params)
 	const bool bHasPackagePlan = NTEBuildTool::Package::BuildPackagePlanFromCharacterModSpec(Spec, PackagePlan, PackagePlanError);
 	const bool bBuildPackage = FParse::Param(*Params, TEXT("BuildPackage")) || Spec.Package.bBuildAfterCreate;
 	const bool bWritePackageJob = FParse::Param(*Params, TEXT("WritePackageJob")) || bBuildPackage;
+	NTEBuildTool::Package::FNteCharacterPackagePreflight PackagePreflight;
+	if (bWritePackageJob)
+	{
+		PackagePreflight = NTEBuildTool::Package::BuildCharacterModSpecPackagePreflight(Spec);
+	}
 	const bool bHasKawaiiPresets = !KawaiiPlan.Presets.IsEmpty();
 	const bool bKawaiiReadyForPackage = !bHasKawaiiPresets || (bApplyKawaii && !KawaiiWriteResult.HasErrors());
 	FString PackageJobError;
 	NTEBuildTool::Package::FNteModPackageJobCreateResult PackageJobResult;
 	bool bHasPackageJob = false;
-	if (bWritePackageJob && bHasPackagePlan && !Validation.HasErrors() && KawaiiPlan.Errors.IsEmpty() && bKawaiiReadyForPackage)
+	if (bWritePackageJob && bHasPackagePlan && !PackagePreflight.HasErrors() && bKawaiiReadyForPackage)
 	{
 		bHasPackageJob = NTEBuildTool::Package::CreateModPackageJobFromCharacterModSpec(Spec, PackagePlan, PackageJobResult, PackageJobError);
+	}
+	else if (bWritePackageJob && PackagePreflight.HasErrors())
+	{
+		PackageJobError = FString::Printf(
+			TEXT("CharacterModSpec package preflight failed:\n%s"),
+			*FString::Join(PackagePreflight.Errors, TEXT("\n")));
 	}
 	else if (bWritePackageJob && !bKawaiiReadyForPackage)
 	{
@@ -336,7 +372,29 @@ int32 UNteCharacterModSpecCommandlet::Main(const FString& Params)
 	}
 
 	TArray<FString> ReportErrors = Validation.Errors;
-	ReportErrors.Append(KawaiiPlan.Errors);
+	if (bApplyAppearance)
+	{
+		ReportErrors.Append(AppearanceWriteResult.Errors);
+	}
+	if (bApplyMaterials)
+	{
+		ReportErrors.Append(MaterialWriteResult.Errors);
+	}
+	if (bApplyRuntimeActions)
+	{
+		ReportErrors.Append(RuntimeActionWriteResult.Errors);
+	}
+	for (const FString& ErrorItem : KawaiiPlan.Errors)
+	{
+		ReportErrors.AddUnique(ErrorItem);
+	}
+	if (bWritePackageJob)
+	{
+		for (const FString& ErrorItem : PackagePreflight.Errors)
+		{
+			ReportErrors.AddUnique(ErrorItem);
+		}
+	}
 	if (bApplyKawaii)
 	{
 		ReportErrors.Append(KawaiiWriteResult.Errors);
@@ -350,6 +408,18 @@ int32 UNteCharacterModSpecCommandlet::Main(const FString& Params)
 		ReportErrors.Add(PackageBuildError);
 	}
 	TArray<FString> ReportWarnings = Validation.Warnings;
+	if (bApplyAppearance)
+	{
+		ReportWarnings.Append(AppearanceWriteResult.Warnings);
+	}
+	if (bApplyMaterials)
+	{
+		ReportWarnings.Append(MaterialWriteResult.Warnings);
+	}
+	if (bApplyRuntimeActions)
+	{
+		ReportWarnings.Append(RuntimeActionWriteResult.Warnings);
+	}
 	ReportWarnings.Append(KawaiiPlan.Warnings);
 	if (bApplyKawaii)
 	{
@@ -377,6 +447,11 @@ int32 UNteCharacterModSpecCommandlet::Main(const FString& Params)
 	Root->SetObjectField(TEXT("MaterialPlan"), NTEBuildTool::Character::CharacterMaterialPlanToJson(MaterialPlan));
 	Root->SetObjectField(TEXT("RuntimeActionPlan"), NTEBuildTool::Character::CharacterRuntimeActionPlanToJson(RuntimeActionPlan));
 	Root->SetObjectField(TEXT("KawaiiPlan"), NTEBuildTool::Character::CharacterKawaiiPlanToJson(KawaiiPlan));
+	Root->SetBoolField(TEXT("ImportCurveJson"), bImportCurveJson);
+	if (bImportCurveJson)
+	{
+		Root->SetObjectField(TEXT("CurveFloatImportResult"), CurveFloatImportResultToJson(CurveFloatImportResult));
+	}
 	if (bImportKawaiiJson)
 	{
 		Root->SetObjectField(TEXT("KawaiiImportResult"), NTEBuildTool::Character::CharacterKawaiiImportResultToJson(KawaiiImportResult));
@@ -407,6 +482,17 @@ int32 UNteCharacterModSpecCommandlet::Main(const FString& Params)
 	{
 		Root->SetObjectField(TEXT("KawaiiWriteResult"), NTEBuildTool::Character::CharacterKawaiiWriteResultToJson(KawaiiWriteResult));
 	}
+	if (bImportCurveJson)
+	{
+		for (const FString& Warning : CurveFloatImportResult.Warnings)
+		{
+			UE_LOG(LogNTEBuildTool, Warning, TEXT("%s"), *Warning);
+		}
+		for (const FString& ImportError : CurveFloatImportResult.Errors)
+		{
+			UE_LOG(LogNTEBuildTool, Error, TEXT("%s"), *ImportError);
+		}
+	}
 	if (bHasPackagePlan)
 	{
 		Root->SetObjectField(TEXT("PackagePlan"), PackagePlanToJson(PackagePlan));
@@ -414,6 +500,10 @@ int32 UNteCharacterModSpecCommandlet::Main(const FString& Params)
 	else
 	{
 		Root->SetStringField(TEXT("PackagePlanError"), PackagePlanError);
+	}
+	if (bWritePackageJob)
+	{
+		Root->SetObjectField(TEXT("PackagePreflight"), PackagePreflightToJson(PackagePreflight));
 	}
 	Root->SetBoolField(TEXT("WritePackageJob"), bWritePackageJob);
 	if (bWritePackageJob)

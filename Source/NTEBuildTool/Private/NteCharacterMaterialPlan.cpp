@@ -132,6 +132,11 @@ void ResolveDerivedMaterialPaths(
 	FNteCharacterMaterialOperationPlanItem& Item,
 	const FNteCharacterMaterialOperationSpec& Operation)
 {
+	if (!Item.ExistingMaterialPath.IsEmpty())
+	{
+		return;
+	}
+
 	if (Item.ParentMaterialPath.IsEmpty() && !Item.SourceMaterialJson.IsEmpty())
 	{
 		Item.ParentMaterialPath = NTEBuildTool::Material::DeriveParentMaterialPathFromFModelJson(Item.SourceMaterialJson);
@@ -162,6 +167,7 @@ FNteCharacterMaterialOperationPlanItem BuildOperationPlanItem(
 	Item.TargetMeshId = IsMainMeshId(Operation.TargetMeshId) ? MainMeshId : Operation.TargetMeshId;
 	Item.SlotIndex = Operation.SlotIndex;
 	Item.SlotName = Operation.SlotName;
+	Item.ExistingMaterialPath = NTEBuildTool::Editor::NormalizeAssetPathForText(Operation.ExistingMaterialPath);
 	Item.SourceMaterialJson = Operation.SourceMaterialJson;
 	Item.ParentMaterialPath = NTEBuildTool::Editor::NormalizeAssetPathForText(Operation.ParentMaterialPath);
 	Item.OutputMaterialPath = NTEBuildTool::Editor::NormalizeAssetPathForText(Operation.OutputMaterialPath);
@@ -186,11 +192,22 @@ FNteCharacterMaterialOperationPlanItem BuildOperationPlanItem(
 
 	ResolveDerivedMaterialPaths(Item, Operation);
 
-	if (Item.SourceMaterialJson.IsEmpty() && Item.ParentMaterialPath.IsEmpty())
+	if (Item.ExistingMaterialPath.IsEmpty() && Item.SourceMaterialJson.IsEmpty() && Item.ParentMaterialPath.IsEmpty())
 	{
-		Item.Errors.Add(TEXT("Material operation needs SourceMaterialJson or ParentMaterialPath."));
+		Item.Errors.Add(TEXT("Material operation needs ExistingMaterialPath, SourceMaterialJson, or ParentMaterialPath."));
 	}
-	if (Item.OutputMaterialPath.IsEmpty())
+	if (!Item.ExistingMaterialPath.IsEmpty())
+	{
+		if (!IsGamePackageName(Item.ExistingMaterialPath))
+		{
+			Item.Errors.Add(FString::Printf(TEXT("ExistingMaterialPath must be a /Game package path: %s"), *Item.ExistingMaterialPath));
+		}
+		if (!Item.OutputMaterialPath.IsEmpty() || !Item.SourceTextureOverrides.IsEmpty())
+		{
+			Item.Errors.Add(TEXT("ExistingMaterialPath cannot be combined with OutputMaterialPath or SourceTextureOverrides."));
+		}
+	}
+	else if (Item.OutputMaterialPath.IsEmpty())
 	{
 		Item.Errors.Add(TEXT("Material operation has no OutputMaterialPath and one could not be derived."));
 	}
@@ -230,6 +247,7 @@ TSharedRef<FJsonObject> MaterialOperationPlanItemToJson(const FNteCharacterMater
 	AddStringIfNotEmpty(Object, TEXT("TargetMeshPath"), Item.TargetMeshPath);
 	Object->SetNumberField(TEXT("SlotIndex"), Item.SlotIndex);
 	AddStringIfNotEmpty(Object, TEXT("SlotName"), Item.SlotName);
+	AddStringIfNotEmpty(Object, TEXT("ExistingMaterialPath"), Item.ExistingMaterialPath);
 	AddStringIfNotEmpty(Object, TEXT("SourceMaterialJson"), Item.SourceMaterialJson);
 	AddStringIfNotEmpty(Object, TEXT("ParentMaterialPath"), Item.ParentMaterialPath);
 	AddStringIfNotEmpty(Object, TEXT("OutputMaterialPath"), Item.OutputMaterialPath);
@@ -277,10 +295,6 @@ TArray<FString> CollectCharacterMaterialPlanPackageSeeds(const FNteCharacterMate
 	for (const FNteCharacterMaterialOperationPlanItem& Operation : Plan.Operations)
 	{
 		AddPackageSeed(Seeds, Operation.OutputMaterialPath);
-		for (const TPair<FString, FString>& Pair : Operation.SourceTextureOverrides)
-		{
-			AddPackageSeed(Seeds, Pair.Value);
-		}
 	}
 	Seeds.Sort();
 	return Seeds;

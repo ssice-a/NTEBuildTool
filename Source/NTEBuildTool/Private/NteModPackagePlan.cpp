@@ -2,12 +2,16 @@
 
 #include "NteModPackagePlan.h"
 
+#include "NteAppearanceAssemblyPlan.h"
 #include "NteCharacterMaterialPlan.h"
+#include "NteCharacterModSpecMigration.h"
 #include "NteCharacterKawaiiPlan.h"
+#include "NteCharacterKawaiiWriter.h"
 #include "NteCharacterModSpec.h"
 #include "NteCharacterRuntimeActionPlan.h"
 #include "NteCharacterRuntimeActionWriter.h"
 #include "NteEditorAssetUtils.h"
+#include "NtePakmodProject.h"
 
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "AssetRegistry/IAssetRegistry.h"
@@ -27,6 +31,26 @@ void AddUniquePackage(TArray<FString>& Packages, const FString& PackageName)
 	if (PackageName.StartsWith(TEXT("/Game/")) && !PackageName.Contains(TEXT(".")))
 	{
 		Packages.AddUnique(PackageName);
+	}
+}
+
+FString NormalizePackageName(FString AssetPath)
+{
+	AssetPath = NTEBuildTool::Editor::NormalizeAssetPathForText(AssetPath);
+	int32 DotIndex = INDEX_NONE;
+	if (AssetPath.FindLastChar(TEXT('.'), DotIndex))
+	{
+		AssetPath.LeftInline(DotIndex);
+	}
+	return AssetPath;
+}
+
+void AddReferenceOnlyPackage(TSet<FString>& Packages, const FString& AssetPath)
+{
+	const FString PackageName = NormalizePackageName(AssetPath);
+	if (PackageName.StartsWith(TEXT("/Game/")))
+	{
+		Packages.Add(PackageName);
 	}
 }
 
@@ -54,6 +78,14 @@ bool TryFindPackageAssetData(const FString& PackageName, FAssetData& OutAssetDat
 
 	OutAssetData = PackageAssets[0];
 	return true;
+}
+
+void AddPlanErrors(TArray<FString>& Errors, const TCHAR* PlanName, const TArray<FString>& PlanErrors)
+{
+	for (const FString& Error : PlanErrors)
+	{
+		Errors.Add(FString::Printf(TEXT("%s: %s"), PlanName, *Error));
+	}
 }
 
 bool IsLikelyEditorOnlyProxy(const FString& PackageName)
@@ -133,6 +165,8 @@ bool ShouldIncludeByDefault(ENtePackagePlanCandidateKind Kind)
 {
 	switch (Kind)
 	{
+	case ENtePackagePlanCandidateKind::ManifestReplacementAsset:
+	case ENtePackagePlanCandidateKind::ManifestAddedAsset:
 	case ENtePackagePlanCandidateKind::SelectedAsset:
 	case ENtePackagePlanCandidateKind::SelectedFolderAsset:
 	case ENtePackagePlanCandidateKind::GeneratedRuntimeAsset:
@@ -273,6 +307,10 @@ FString PackagePlanCandidateKindToString(const ENtePackagePlanCandidateKind Kind
 {
 	switch (Kind)
 	{
+	case ENtePackagePlanCandidateKind::ManifestReplacementAsset:
+		return TEXT("Replacement");
+	case ENtePackagePlanCandidateKind::ManifestAddedAsset:
+		return TEXT("Added");
 	case ENtePackagePlanCandidateKind::SelectedAsset:
 		return TEXT("Selected");
 	case ENtePackagePlanCandidateKind::SelectedFolderAsset:
@@ -306,13 +344,133 @@ bool BuildPackagePlanFromPackages(const TArray<FString>& SeedPackages, FNtePacka
 	return BuildPackagePlanFromPackagesInternal(SeedPackages, TEXT("selected by user"), OutPlan, OutError);
 }
 
+FNtePackageManifestResolution ResolvePackageManifest(const NTEBuildTool::Project::FNtePakmodProject& Project)
+{
+	FNtePackageManifestResolution Result;
+	TSet<FString> SeenPackageNames;
+	TSet<FString> ExcludedPackages;
+	for (const FString& Exclusion : Project.PackageManifest.ExplicitExclusions)
+	{
+		const FString PackageName = NTEBuildTool::Project::NormalizePakmodPackagePath(Exclusion);
+		if (PackageName.StartsWith(TEXT("/Game/")))
+		{
+			ExcludedPackages.Add(PackageName.ToLower());
+		}
+		else
+		{
+			Result.Warnings.Add(FString::Printf(TEXT("Ignored invalid explicit exclusion: %s"), *Exclusion));
+		}
+	}
+
+	for (const FString& AssetId : Project.PackageManifest.AssetIds)
+	{
+		const NTEBuildTool::Project::FNteAssetReference* Asset = NTEBuildTool::Project::FindAssetById(Project, AssetId);
+		if (!Asset)
+		{
+			Result.Errors.Add(FString::Printf(TEXT("PackageManifest references missing asset '%s'."), *AssetId));
+			continue;
+		}
+		if (Asset->Intent == NTEBuildTool::Project::ENteAssetIntent::ExternalReference)
+		{
+			Result.Errors.Add(FString::Printf(TEXT("PackageManifest cannot package ExternalReference asset '%s'."), *AssetId));
+			continue;
+		}
+		const FString PackageName = NTEBuildTool::Project::NormalizePakmodPackagePath(Asset->PackagePath);
+		if (!PackageName.StartsWith(TEXT("/Game/")))
+		{
+			Result.Errors.Add(FString::Printf(TEXT("Asset '%s' has invalid package path '%s'."), *AssetId, *Asset->PackagePath));
+			continue;
+		}
+		if (ExcludedPackages.Contains(PackageName.ToLower()))
+		{
+			Result.Warnings.Add(FString::Printf(TEXT("PackageManifest explicitly excludes asset '%s' (%s)."), *AssetId, *PackageName));
+			continue;
+		}
+		const FString Key = PackageName.ToLower();
+		if (SeenPackageNames.Contains(Key))
+		{
+			continue;
+		}
+		SeenPackageNames.Add(Key);
+		Result.PackageNames.Add(PackageName);
+		Result.ReasonsByPackage.Add(PackageName, FString::Printf(
+			TEXT("manifest %s (%s)"),
+			*NTEBuildTool::Project::AssetIntentToString(Asset->Intent),
+			*NTEBuildTool::Project::AssetOriginToString(Asset->Origin)));
+	}
+	return Result;
+}
+
+bool BuildPackagePlanFromManifest(
+	const NTEBuildTool::Project::FNtePakmodProject& Project,
+	FNtePackagePlan& OutPlan,
+	FString& OutError)
+{
+	const NTEBuildTool::Project::FNtePakmodProjectValidationResult Validation =
+		NTEBuildTool::Project::ValidatePakmodProject(Project);
+	if (Validation.HasErrors())
+	{
+		OutError = FString::Join(Validation.Errors, LINE_TERMINATOR);
+		return false;
+	}
+
+	const FNtePackageManifestResolution Resolution = ResolvePackageManifest(Project);
+	if (Resolution.HasErrors())
+	{
+		OutError = FString::Join(Resolution.Errors, LINE_TERMINATOR);
+		return false;
+	}
+	if (Resolution.PackageNames.IsEmpty())
+	{
+		OutError = TEXT("PackageManifest contains no package-owned assets.");
+		return false;
+	}
+	if (!BuildPackagePlanFromPackagesInternal(Resolution.PackageNames, TEXT("from PackageManifest"), OutPlan, OutError))
+	{
+		return false;
+	}
+
+	for (FNtePackagePlanCandidate& Candidate : OutPlan.Candidates)
+	{
+		const NTEBuildTool::Project::FNteAssetReference* Asset = Project.Assets.FindByPredicate([&Candidate](const NTEBuildTool::Project::FNteAssetReference& Item)
+		{
+			return NTEBuildTool::Project::NormalizePakmodPackagePath(Item.PackagePath).Equals(Candidate.PackageName, ESearchCase::IgnoreCase);
+		});
+		if (!Asset || Asset->Intent == NTEBuildTool::Project::ENteAssetIntent::ExternalReference)
+		{
+			continue;
+		}
+		Candidate.Kind = Asset->Intent == NTEBuildTool::Project::ENteAssetIntent::ReplacementAsset
+			? ENtePackagePlanCandidateKind::ManifestReplacementAsset
+			: ENtePackagePlanCandidateKind::ManifestAddedAsset;
+		Candidate.bDefaultIncluded = true;
+		if (const FString* Reason = Resolution.ReasonsByPackage.Find(Candidate.PackageName))
+		{
+			Candidate.Reason = *Reason;
+		}
+	}
+	return true;
+}
+
 bool BuildPackagePlanFromCharacterModSpec(
 	const NTEBuildTool::Character::FNteCharacterModSpec& Spec,
 	FNtePackagePlan& OutPlan,
 	FString& OutError)
 {
-	const TArray<FString> SeedPackages = NTEBuildTool::Character::CollectCharacterModSpecPackageSeeds(Spec);
-	TArray<FString> EffectiveSeedPackages = SeedPackages;
+	const NTEBuildTool::Character::FNteCharacterModSpecMigrationResult Migration =
+		NTEBuildTool::Character::MigrateCharacterModSpecToPakmodProject(Spec);
+	if (Migration.HasErrors())
+	{
+		OutError = FString::Join(Migration.Errors, LINE_TERMINATOR);
+		return false;
+	}
+	return BuildPackagePlanFromManifest(Migration.Project, OutPlan, OutError);
+}
+
+TArray<FString> CollectEffectiveCharacterPackageSeeds(const NTEBuildTool::Character::FNteCharacterModSpec& Spec)
+{
+	TArray<FString> EffectiveSeedPackages = NTEBuildTool::Character::CollectCharacterModSpecPackageSeeds(Spec);
+	TSet<FString> GeneratedKawaiiPackages;
 	const NTEBuildTool::Character::FNteCharacterMaterialPlan MaterialPlan =
 		NTEBuildTool::Character::BuildCharacterMaterialPlanFromSpec(Spec);
 	for (const FString& MaterialSeed : NTEBuildTool::Character::CollectCharacterMaterialPlanPackageSeeds(MaterialPlan))
@@ -330,14 +488,154 @@ bool BuildPackagePlanFromCharacterModSpec(
 	for (const FString& KawaiiSeed : NTEBuildTool::Character::CollectCharacterKawaiiPlanPackageSeeds(KawaiiPlan))
 	{
 		EffectiveSeedPackages.AddUnique(KawaiiSeed);
+		GeneratedKawaiiPackages.Add(KawaiiSeed);
 	}
-	EffectiveSeedPackages.Sort();
-	if (EffectiveSeedPackages.IsEmpty())
+	TSet<FString> ReferenceOnlyPackages;
+	AddReferenceOnlyPackage(ReferenceOnlyPackages, Spec.MainAnimBlueprintPath);
+	AddReferenceOnlyPackage(ReferenceOnlyPackages, Spec.Appearance.MainUIAnimBlueprintPath);
+	for (const NTEBuildTool::Character::FNteCharacterPresentationTargetSpec& Target : Spec.Appearance.PresentationTargets)
 	{
-		OutError = TEXT("CharacterModSpec produced no /Game package seeds.");
-		return false;
+		AddReferenceOnlyPackage(ReferenceOnlyPackages, Target.MainAnimBlueprintPath);
 	}
-	return BuildPackagePlanFromPackagesInternal(EffectiveSeedPackages, TEXT("from CharacterModSpec"), OutPlan, OutError);
+	for (const NTEBuildTool::Character::FNteCharacterAttachedMeshSpec& AttachedMesh : Spec.AttachedMeshes)
+	{
+		AddReferenceOnlyPackage(ReferenceOnlyPackages, AttachedMesh.AnimBlueprintPath);
+		AddReferenceOnlyPackage(ReferenceOnlyPackages, AttachedMesh.MobileAnimBlueprintPath);
+		AddReferenceOnlyPackage(ReferenceOnlyPackages, AttachedMesh.UIAnimBlueprintPath);
+	}
+	EffectiveSeedPackages.RemoveAll([&Spec, &GeneratedKawaiiPackages, &ReferenceOnlyPackages](const FString& PackageName)
+	{
+		const TOptional<NTEBuildTool::Character::ENteCharacterPackageAssetIntent> Intent =
+			NTEBuildTool::Character::FindPackageAssetIntent(Spec, PackageName);
+		if (Intent.IsSet())
+		{
+			return Intent.GetValue() == NTEBuildTool::Character::ENteCharacterPackageAssetIntent::ExternalReference;
+		}
+		return ReferenceOnlyPackages.Contains(PackageName) && !GeneratedKawaiiPackages.Contains(PackageName);
+	});
+	EffectiveSeedPackages.Sort();
+	return EffectiveSeedPackages;
+}
+
+FNteCharacterPackagePreflight BuildCharacterModSpecPackagePreflight(const NTEBuildTool::Character::FNteCharacterModSpec& Spec)
+{
+	FNteCharacterPackagePreflight Result;
+	const NTEBuildTool::Character::FNteCharacterModSpecValidationResult Validation =
+		NTEBuildTool::Character::ValidateCharacterModSpec(Spec);
+	Result.Errors.Append(Validation.Errors);
+	Result.Warnings.Append(Validation.Warnings);
+
+	const NTEBuildTool::Character::FNteAppearanceAssemblyPlan AppearancePlan =
+		NTEBuildTool::Character::BuildAppearanceAssemblyPlanFromSpec(Spec);
+	const NTEBuildTool::Character::FNteCharacterMaterialPlan MaterialPlan =
+		NTEBuildTool::Character::BuildCharacterMaterialPlanFromSpec(Spec);
+	const NTEBuildTool::Character::FNteCharacterRuntimeActionPlan RuntimeActionPlan =
+		NTEBuildTool::Character::BuildCharacterRuntimeActionPlanFromSpec(Spec);
+	const NTEBuildTool::Character::FNteCharacterKawaiiPlan KawaiiPlan =
+		NTEBuildTool::Character::BuildCharacterKawaiiPlanFromSpec(Spec);
+	AddPlanErrors(Result.Errors, TEXT("AppearanceAssemblyPlan"), AppearancePlan.Errors);
+	AddPlanErrors(Result.Errors, TEXT("MaterialPlan"), MaterialPlan.Errors);
+	AddPlanErrors(Result.Errors, TEXT("RuntimeActionPlan"), RuntimeActionPlan.Errors);
+	AddPlanErrors(Result.Errors, TEXT("KawaiiPlan"), KawaiiPlan.Errors);
+	if (!KawaiiPlan.Presets.IsEmpty())
+	{
+		const NTEBuildTool::Character::FNteCharacterKawaiiAssetPreflightResult KawaiiAssetPreflight =
+			NTEBuildTool::Character::ValidateCharacterKawaiiAssetsForPackage(KawaiiPlan);
+		AddPlanErrors(Result.Errors, TEXT("KawaiiAssetPreflight"), KawaiiAssetPreflight.Errors);
+		Result.Warnings.Append(KawaiiAssetPreflight.Warnings);
+
+		for (const NTEBuildTool::Character::FNteCharacterKawaiiPresetPlanItem& Preset : KawaiiPlan.Presets)
+		{
+			if (Preset.TargetKind.Equals(TEXT("MainMesh"), ESearchCase::IgnoreCase))
+			{
+				if (!Preset.SourcePoseStrategy.Equals(TEXT("PostProcessInputPose"), ESearchCase::IgnoreCase))
+				{
+					Result.Errors.Add(FString::Printf(
+						TEXT("Main mesh Kawaii preset '%s' must use PostProcessInputPose, resolved strategy is %s."),
+						*Preset.Id,
+						*Preset.SourcePoseStrategy));
+				}
+				if (NormalizePackageName(Spec.MainPostProcessAnimBlueprintPath) != NormalizePackageName(Preset.RuntimeAnimBlueprintPath))
+				{
+					Result.Errors.Add(FString::Printf(
+						TEXT("Main mesh Kawaii preset '%s' does not reference MainPostProcessAnimBlueprintPath %s; resolved RuntimeAnimBlueprintPath is %s."),
+						*Preset.Id,
+						*Spec.MainPostProcessAnimBlueprintPath,
+						*Preset.RuntimeAnimBlueprintPath));
+				}
+				continue;
+			}
+
+			const NTEBuildTool::Character::FNteAppearanceMeshDataPlan* AttachedMesh = AppearancePlan.AttachedMeshes.FindByPredicate(
+				[&Preset](const NTEBuildTool::Character::FNteAppearanceMeshDataPlan& Candidate)
+				{
+					return Candidate.Id == Preset.TargetMeshId;
+				});
+			if (!AttachedMesh)
+			{
+				Result.Errors.Add(FString::Printf(
+					TEXT("Kawaii preset '%s' target '%s' is not an attached mesh in AppearanceAssemblyPlan."),
+					*Preset.Id,
+					*Preset.TargetMeshId));
+				continue;
+			}
+			if (NormalizePackageName(AttachedMesh->AnimInstancePath) != NormalizePackageName(Preset.RuntimeAnimBlueprintPath))
+			{
+				Result.Errors.Add(FString::Printf(
+					TEXT("Attached mesh '%s' does not reference Kawaii Runtime AnimBlueprint %s; resolved AnimInstancePath is %s."),
+					*AttachedMesh->Id,
+					*Preset.RuntimeAnimBlueprintPath,
+					*AttachedMesh->AnimInstancePath));
+			}
+
+			bool bUsedByPresentationTarget = false;
+			for (const NTEBuildTool::Character::FNteAppearancePresentationTargetPlan& Target : AppearancePlan.PresentationTargets)
+			{
+				const bool bExplicitTargetList = !AttachedMesh->PresentationTargetIds.IsEmpty();
+				const bool bIncluded = bExplicitTargetList
+					? AttachedMesh->PresentationTargetIds.Contains(Target.Id)
+					: (!Target.Id.Equals(TEXT("ui"), ESearchCase::IgnoreCase) || AttachedMesh->bSyncToUIShow);
+				bUsedByPresentationTarget |= bIncluded;
+			}
+			if (!AppearancePlan.PresentationTargets.IsEmpty() && !bUsedByPresentationTarget)
+			{
+				Result.Errors.Add(FString::Printf(
+					TEXT("Attached mesh '%s' with Kawaii preset '%s' is not included by any presentation target."),
+					*AttachedMesh->Id,
+					*Preset.Id));
+			}
+		}
+
+		for (const FString& KawaiiSeed : NTEBuildTool::Character::CollectCharacterKawaiiPlanPackageSeeds(KawaiiPlan))
+		{
+			const TOptional<NTEBuildTool::Character::ENteCharacterPackageAssetIntent> Intent =
+				NTEBuildTool::Character::FindPackageAssetIntent(Spec, KawaiiSeed);
+			if (Intent.IsSet() && Intent.GetValue() == NTEBuildTool::Character::ENteCharacterPackageAssetIntent::ExternalReference)
+			{
+				Result.Errors.Add(FString::Printf(
+					TEXT("Generated Kawaii asset is marked ExternalReference and would be omitted from the package: %s"),
+					*KawaiiSeed));
+			}
+		}
+	}
+	Result.RequiredPackages = CollectEffectiveCharacterPackageSeeds(Spec);
+	if (Result.RequiredPackages.IsEmpty())
+	{
+		Result.Errors.Add(TEXT("CharacterModSpec produced no /Game package seeds."));
+		return Result;
+	}
+
+	for (const FString& PackageName : Result.RequiredPackages)
+	{
+		FAssetData AssetData;
+		if (!TryFindPackageAssetData(PackageName, AssetData))
+		{
+			Result.Errors.Add(FString::Printf(
+				TEXT("Required package is not present in the project: %s. Apply the generating step before creating a package job."),
+				*PackageName));
+		}
+	}
+	return Result;
 }
 
 TArray<FString> GetIncludedPackageNames(const FNtePackagePlan& Plan)

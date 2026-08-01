@@ -269,6 +269,14 @@ FNteCharacterKawaiiAdditionalRootBonePlanItem BuildAdditionalRootBonePlanItem(co
 	return Item;
 }
 
+FNteCharacterKawaiiBoneRemapPlanItem BuildBoneRemapPlanItem(const FNteCharacterKawaiiBoneRemapSpec& Remap)
+{
+	FNteCharacterKawaiiBoneRemapPlanItem Item;
+	Item.SourceBone = Remap.SourceBone;
+	Item.TargetBone = Remap.TargetBone;
+	return Item;
+}
+
 FNteCharacterKawaiiPhysicsSettingsPlanItem BuildPhysicsSettingsPlanItem(const FNteCharacterKawaiiPhysicsSettingsSpec& Settings)
 {
 	FNteCharacterKawaiiPhysicsSettingsPlanItem Item;
@@ -353,20 +361,110 @@ void AddReferencedBones(TArray<FString>& Bones, const TArray<FString>& BoneNames
 	}
 }
 
-void DiagnoseKawaiiPresetBonesAndTag(FNteCharacterKawaiiPresetPlanItem& Item)
+void CollectPresetBoneReferences(const FNteCharacterKawaiiPresetPlanItem& Item, TArray<FString>& OutBones)
 {
-	AddReferencedBone(Item.ReferencedBones, Item.RootBone);
-	AddReferencedBones(Item.ReferencedBones, Item.ExcludeBones);
+	AddReferencedBone(OutBones, Item.RootBone);
+	AddReferencedBones(OutBones, Item.ExcludeBones);
 	for (const FNteCharacterKawaiiAdditionalRootBonePlanItem& AdditionalRootBone : Item.AdditionalRootBones)
 	{
-		AddReferencedBone(Item.ReferencedBones, AdditionalRootBone.RootBone);
-		AddReferencedBones(Item.ReferencedBones, AdditionalRootBone.OverrideExcludeBones);
+		AddReferencedBone(OutBones, AdditionalRootBone.RootBone);
+		AddReferencedBones(OutBones, AdditionalRootBone.OverrideExcludeBones);
 	}
 	for (const FNteCharacterKawaiiLimitPlanItem& Limit : Item.CollisionLimits)
 	{
-		AddReferencedBone(Item.ReferencedBones, Limit.DrivingBone);
+		AddReferencedBone(OutBones, Limit.DrivingBone);
 	}
-	AddReferencedBones(Item.ReferencedBones, Item.IgnoreBones);
+	AddReferencedBones(OutBones, Item.IgnoreBones);
+}
+
+FString RemapBoneName(
+	const FString& BoneName,
+	const TMap<FString, FString>& Remaps,
+	TSet<FString>& OutUsedSourceBones)
+{
+	if (const FString* TargetBone = Remaps.Find(BoneName))
+	{
+		OutUsedSourceBones.Add(BoneName);
+		return *TargetBone;
+	}
+	return BoneName;
+}
+
+void RemapBoneNames(
+	TArray<FString>& BoneNames,
+	const TMap<FString, FString>& Remaps,
+	TSet<FString>& OutUsedSourceBones)
+{
+	for (FString& BoneName : BoneNames)
+	{
+		BoneName = RemapBoneName(BoneName, Remaps, OutUsedSourceBones);
+	}
+}
+
+void ApplyBoneRemaps(FNteCharacterKawaiiPresetPlanItem& Item)
+{
+	if (Item.BoneRemaps.IsEmpty())
+	{
+		return;
+	}
+
+	TArray<FString> SourceReferencedBones;
+	CollectPresetBoneReferences(Item, SourceReferencedBones);
+
+	TMap<FString, FString> Remaps;
+	for (const FNteCharacterKawaiiBoneRemapPlanItem& Remap : Item.BoneRemaps)
+	{
+		if (!Remap.SourceBone.IsEmpty() && !Remap.TargetBone.IsEmpty() && !Remaps.Contains(Remap.SourceBone))
+		{
+			Remaps.Add(Remap.SourceBone, Remap.TargetBone);
+		}
+	}
+
+	TSet<FString> UsedSourceBones;
+	Item.RootBone = RemapBoneName(Item.RootBone, Remaps, UsedSourceBones);
+	RemapBoneNames(Item.ExcludeBones, Remaps, UsedSourceBones);
+	for (FNteCharacterKawaiiAdditionalRootBonePlanItem& AdditionalRootBone : Item.AdditionalRootBones)
+	{
+		AdditionalRootBone.RootBone = RemapBoneName(AdditionalRootBone.RootBone, Remaps, UsedSourceBones);
+		RemapBoneNames(AdditionalRootBone.OverrideExcludeBones, Remaps, UsedSourceBones);
+	}
+	for (FNteCharacterKawaiiLimitPlanItem& Limit : Item.CollisionLimits)
+	{
+		Limit.DrivingBone = RemapBoneName(Limit.DrivingBone, Remaps, UsedSourceBones);
+	}
+	RemapBoneNames(Item.IgnoreBones, Remaps, UsedSourceBones);
+
+	for (const FNteCharacterKawaiiBoneRemapPlanItem& Remap : Item.BoneRemaps)
+	{
+		if (UsedSourceBones.Contains(Remap.SourceBone))
+		{
+			Item.AppliedBoneRemaps.Add(Remap);
+		}
+		else
+		{
+			Item.UnusedBoneRemaps.Add(Remap);
+		}
+	}
+	for (const FString& SourceBone : SourceReferencedBones)
+	{
+		if (!Remaps.Contains(SourceBone))
+		{
+			Item.UnmappedReferencedBones.AddUnique(SourceBone);
+		}
+	}
+	Item.UnmappedReferencedBones.Sort();
+	if (!Item.UnmappedReferencedBones.IsEmpty())
+	{
+		Item.Warnings.Add(FString::Printf(
+			TEXT("Kawaii preset '%s' has explicit BoneRemaps, but %d referenced bone(s) remain unchanged; audit UnmappedReferencedBones in the plan."),
+			*Item.Id,
+			Item.UnmappedReferencedBones.Num()));
+	}
+}
+
+void DiagnoseKawaiiPresetBonesAndTag(FNteCharacterKawaiiPresetPlanItem& Item)
+{
+	CollectPresetBoneReferences(Item, Item.ReferencedBones);
 	Item.ReferencedBones.Sort();
 
 	if (!Item.TargetMeshPath.IsEmpty())
@@ -386,6 +484,23 @@ void DiagnoseKawaiiPresetBonesAndTag(FNteCharacterKawaiiPresetPlanItem& Item)
 				{
 					Item.MissingBones.Add(BoneName);
 				}
+			}
+			for (const FNteCharacterKawaiiBoneRemapPlanItem& Remap : Item.BoneRemaps)
+			{
+				if (IsMeaningfulBoneName(Remap.TargetBone)
+					&& ReferenceSkeleton.FindBoneIndex(FName(*Remap.TargetBone)) == INDEX_NONE)
+				{
+					Item.MissingMappedTargetBones.AddUnique(Remap.TargetBone);
+				}
+			}
+			Item.MissingMappedTargetBones.Sort();
+			for (const FString& MissingTargetBone : Item.MissingMappedTargetBones)
+			{
+				Item.Errors.Add(FString::Printf(
+					TEXT("Kawaii preset '%s' explicitly maps to target bone '%s', but that bone is not present on target mesh %s."),
+					*Item.Id,
+					*MissingTargetBone,
+					*Item.TargetMeshPath));
 			}
 			Item.MissingBones.Sort();
 			for (const FString& MissingBone : Item.MissingBones)
@@ -434,6 +549,10 @@ FNteCharacterKawaiiPresetPlanItem BuildPresetPlanItem(
 	Item.ReferencedPresetId = Preset.ReferencedPresetId;
 	Item.TemplateKind = Preset.TemplateKind;
 	Item.SchemaStatus = Preset.SchemaStatus;
+	for (const FNteCharacterKawaiiBoneRemapSpec& Remap : Preset.BoneRemaps)
+	{
+		Item.BoneRemaps.Add(BuildBoneRemapPlanItem(Remap));
+	}
 	Item.RootBone = Preset.RootBone;
 	Item.ExcludeBones = Preset.ExcludeBones;
 	Item.PhysicsSettings = BuildPhysicsSettingsPlanItem(Preset.PhysicsSettings);
@@ -482,11 +601,13 @@ FNteCharacterKawaiiPresetPlanItem BuildPresetPlanItem(
 	if (Item.TargetMeshId == MainMeshId)
 	{
 		Item.TargetKind = TEXT("MainMesh");
+		Item.SourcePoseStrategy = TEXT("PostProcessInputPose");
 		Item.TargetMeshPath = NormalizeGamePackagePath(Spec.MainMeshPath);
 	}
 	else if (const FNteCharacterAttachedMeshSpec* AttachedMesh = FindAttachedMeshById(Spec, Item.TargetMeshId))
 	{
 		Item.TargetKind = TEXT("AttachedMesh");
+		Item.SourcePoseStrategy = TEXT("AttachedParentCopyPose");
 		Item.TargetMeshPath = NormalizeGamePackagePath(AttachedMesh->MeshPath);
 	}
 	else
@@ -502,6 +623,10 @@ FNteCharacterKawaiiPresetPlanItem BuildPresetPlanItem(
 	}
 
 	Item.RuntimeAnimBlueprintPath = NormalizeGamePackagePath(Preset.RuntimeAnimBlueprintPath);
+	if (Item.RuntimeAnimBlueprintPath.IsEmpty() && Item.TargetMeshId == MainMeshId)
+	{
+		Item.RuntimeAnimBlueprintPath = NormalizeGamePackagePath(Spec.MainPostProcessAnimBlueprintPath);
+	}
 	if (Item.RuntimeAnimBlueprintPath.IsEmpty() && Item.TargetMeshId != MainMeshId)
 	{
 		if (const FNteCharacterAttachedMeshSpec* AttachedMesh = FindAttachedMeshById(Spec, Item.TargetMeshId))
@@ -587,12 +712,12 @@ FNteCharacterKawaiiPresetPlanItem BuildPresetPlanItem(
 	{
 		Item.CollisionLimits.Add(BuildLimitPlanItem(Limit));
 	}
+	ApplyBoneRemaps(Item);
 
 	DiagnoseKawaiiPresetBonesAndTag(Item);
 
 	AddPackageSeed(Item.PackageSeeds, Item.RuntimeAnimBlueprintPath);
 	AddPackageSeed(Item.PackageSeeds, Item.OutputLimitsDataAssetPath);
-	AddPackageSeed(Item.PackageSeeds, Item.PhysicsAssetForLimitsPath);
 	AddPackageSeed(Item.PackageSeeds, Item.OutputBoneConstraintsDataAssetPath);
 	for (const FNteCharacterKawaiiCurvePlanItem& Curve : Item.Curves)
 	{
@@ -626,6 +751,24 @@ TSharedRef<FJsonObject> AdditionalRootBonePlanItemToJson(const FNteCharacterKawa
 	return Object;
 }
 
+TSharedRef<FJsonObject> BoneRemapPlanItemToJson(const FNteCharacterKawaiiBoneRemapPlanItem& Item)
+{
+	const TSharedRef<FJsonObject> Object = MakeShared<FJsonObject>();
+	AddStringIfNotEmpty(Object, TEXT("SourceBone"), Item.SourceBone);
+	AddStringIfNotEmpty(Object, TEXT("TargetBone"), Item.TargetBone);
+	return Object;
+}
+
+TArray<TSharedPtr<FJsonValue>> BoneRemapPlanItemsToJson(const TArray<FNteCharacterKawaiiBoneRemapPlanItem>& Items)
+{
+	TArray<TSharedPtr<FJsonValue>> Values;
+	for (const FNteCharacterKawaiiBoneRemapPlanItem& Item : Items)
+	{
+		Values.Add(MakeShared<FJsonValueObject>(BoneRemapPlanItemToJson(Item)));
+	}
+	return Values;
+}
+
 TSharedRef<FJsonObject> PhysicsSettingsPlanItemToJson(const FNteCharacterKawaiiPhysicsSettingsPlanItem& Item)
 {
 	const TSharedRef<FJsonObject> Object = MakeShared<FJsonObject>();
@@ -647,9 +790,15 @@ TSharedRef<FJsonObject> PresetPlanItemToJson(const FNteCharacterKawaiiPresetPlan
 	AddStringIfNotEmpty(Object, TEXT("Label"), Item.Label);
 	AddStringIfNotEmpty(Object, TEXT("TargetMeshId"), Item.TargetMeshId);
 	AddStringIfNotEmpty(Object, TEXT("TargetKind"), Item.TargetKind);
+	AddStringIfNotEmpty(Object, TEXT("SourcePoseStrategy"), Item.SourcePoseStrategy);
 	AddStringIfNotEmpty(Object, TEXT("TargetMeshPath"), Item.TargetMeshPath);
 	Object->SetBoolField(TEXT("TargetMeshLoaded"), Item.bTargetMeshLoaded);
 	AddStringIfNotEmpty(Object, TEXT("TargetSkeletonPath"), Item.TargetSkeletonPath);
+	Object->SetArrayField(TEXT("BoneRemaps"), BoneRemapPlanItemsToJson(Item.BoneRemaps));
+	Object->SetArrayField(TEXT("AppliedBoneRemaps"), BoneRemapPlanItemsToJson(Item.AppliedBoneRemaps));
+	Object->SetArrayField(TEXT("UnusedBoneRemaps"), BoneRemapPlanItemsToJson(Item.UnusedBoneRemaps));
+	Object->SetArrayField(TEXT("UnmappedReferencedBones"), Json::StringArrayToJsonValues(Item.UnmappedReferencedBones));
+	Object->SetArrayField(TEXT("MissingMappedTargetBones"), Json::StringArrayToJsonValues(Item.MissingMappedTargetBones));
 	Object->SetArrayField(TEXT("ReferencedBones"), Json::StringArrayToJsonValues(Item.ReferencedBones));
 	Object->SetArrayField(TEXT("MissingBones"), Json::StringArrayToJsonValues(Item.MissingBones));
 	AddStringIfNotEmpty(Object, TEXT("SourceKind"), Item.SourceKind);
